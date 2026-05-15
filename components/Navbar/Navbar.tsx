@@ -49,17 +49,13 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const { data: session, status } =
-    useSession()
+  const { data: session, status } =    useSession()
 
-  const isAuthenticated =
-    status === "authenticated"
+  const isAuthenticated =    status === "authenticated"
 
-  const [isOpen, setIsOpen] =
-    useState(false)
+  const [isOpen, setIsOpen] =    useState(false)
 
-  const [scrolled, setScrolled] =
-    useState(false)
+  const [scrolled, setScrolled] =    useState(false)
 
   /* =========================================================
      EFFECTS
@@ -168,16 +164,15 @@ export default function Navbar() {
 
   const handleDashboard = () => {
     closeMenu()
-
-    const role =
-      (session?.user as any)?.role
-
-    if (role === "supplier") {
-      router.push("/supplier")
-      return
+    const role = session?.user?.role // Typed from next-auth.d.ts
+    
+    const routes: Record<string, string> = {
+      supplier: "/supplier",
+      buyer: "/buyer",
+      admin: "/admin"
     }
 
-    router.push("/buyer")
+    router.push(routes[role as string] || "/buyer")
   }
 
   const handleSignOut = async () => {
@@ -240,7 +235,7 @@ export default function Navbar() {
               </div>
 
               <div className="flex flex-col leading-none">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
                   MedSupply
                 </h1>
 
@@ -326,7 +321,7 @@ export default function Navbar() {
 
                 <Link
                   href="/signup"
-                  className="group inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-[0.98]"
+                  className="group inline-flex items-center gap-2 bg-linear-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-[0.98]"
                 >
                   Get Started
 
@@ -415,7 +410,7 @@ export default function Navbar() {
                   </div>
 
                   <div className="flex flex-col leading-none">
-                    <h3 className="text-2xl bg-gradient-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent font-extrabold tracking-tight">
+                    <h3 className="text-2xl bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent font-extrabold tracking-tight">
                       MedSupply
                     </h3>
 
@@ -551,7 +546,7 @@ export default function Navbar() {
                       onClick={
                         closeMenu
                       }
-                      className="flex items-center justify-center w-full py-4 rounded-2xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-xl shadow-blue-500/20 hover:opacity-95 transition-all active:scale-[0.98] text-lg"
+                      className="flex items-center justify-center w-full py-4 rounded-2xl bg-linear-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-xl shadow-blue-500/20 hover:opacity-95 transition-all active:scale-[0.98] text-lg"
                     >
                       Get Started
                     </Link>
