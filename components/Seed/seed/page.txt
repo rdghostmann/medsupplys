@@ -1,0 +1,9 @@
+import SeedSystem from "@/components/Seed/SeedSystem";
+
+export default function Page() {
+  return (
+   <>
+   <SeedSystem />
+   </>
+  )
+}

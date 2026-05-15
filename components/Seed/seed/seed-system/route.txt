@@ -1,0 +1,320 @@
+// api/seed-system/route.ts
+import { NextResponse } from "next/server"
+import { Product } from "@/models/Product"
+import { User } from "@/models/User"
+import { SupplierProduct } from "@/models/SupplierProduct"
+import bcrypt from "bcryptjs"
+import { UNIT_CONFIG } from "@/lib/unit-config"
+import { connectToDB } from "@/lib/connectToDB"
+
+type SupplierType = keyof typeof UNIT_CONFIG
+
+// =========================
+// PRICE ENGINE
+// =========================
+function generateSupplierPrice(
+  proposedPrice: number,
+  supplierType: SupplierType
+) {
+  const ranges: Record<SupplierType, [number, number]> = {
+    importer: [0.7, 0.9],
+    distributor: [0.9, 1.1],
+    retailer: [1.1, 1.3],
+  }
+
+  const [min, max] = ranges[supplierType]
+
+  return Math.round(proposedPrice * (Math.random() * (max - min) + min))
+}
+
+// =========================
+// SAFE SUPPLIER TYPE
+// =========================
+function resolveSupplierType(user: any): SupplierType {
+  return user?.supplierProfile?.supplierType ?? "distributor"
+}
+
+// =========================
+// ROUTE
+// =========================
+export async function POST() {
+  await connectToDB()
+
+  try {
+    // prevent duplicate full reseed (optional safety)
+    const existingUsers = await User.find().lean()
+    const existingProducts = await Product.find().lean()
+
+    // =========================
+    // ALREADY SEEDED CHECK
+    // =========================
+    if (existingUsers.length > 0 && existingProducts.length > 0) {
+      return NextResponse.json({
+        success: true,
+        message: "System already seeded",
+        users: existingUsers.length,
+        products: existingProducts.length,
+      })
+    }
+
+    const hashed = await bcrypt.hash("password123", 10)
+
+    // =========================
+    // 1. PRODUCTS (10)
+    // =========================
+    const productsData = [
+      {
+        name: "Paracetamol 500mg",
+        category: "Analgesic",
+        description: "Pain relief medication",
+        pricing: { proposedPrice: 120, commissionPercent: 8, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Amoxicillin 500mg",
+        category: "Antibiotic",
+        description: "Antibiotic treatment",
+        pricing: { proposedPrice: 250, commissionPercent: 10, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Ibuprofen 400mg",
+        category: "NSAID",
+        description: "Anti-inflammatory drug",
+        pricing: { proposedPrice: 180, commissionPercent: 7, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Artemether Lumefantrine",
+        category: "Antimalarial",
+        description: "Malaria treatment",
+        pricing: { proposedPrice: 350, commissionPercent: 12, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Vitamin C 1000mg",
+        category: "Supplement",
+        description: "Immune booster",
+        pricing: { proposedPrice: 90, commissionPercent: 5, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Metformin 500mg",
+        category: "Antidiabetic",
+        description: "Blood sugar control",
+        pricing: { proposedPrice: 220, commissionPercent: 9, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Omeprazole 20mg",
+        category: "Antacid",
+        description: "Acid reflux treatment",
+        pricing: { proposedPrice: 160, commissionPercent: 6, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Cough Syrup",
+        category: "Respiratory",
+        description: "Cough relief",
+        pricing: { proposedPrice: 1400, commissionPercent: 7, maxMarkupPercent: 130 },
+      },
+      {
+        name: "ORS Sachets",
+        category: "Rehydration",
+        description: "Oral rehydration salts",
+        pricing: { proposedPrice: 50, commissionPercent: 4, maxMarkupPercent: 130 },
+      },
+      {
+        name: "Amlodipine 5mg",
+        category: "Antihypertensive",
+        description: "Blood pressure control",
+        pricing: { proposedPrice: 200, commissionPercent: 9, maxMarkupPercent: 130 },
+      },
+    ]
+
+    const products = await Product.insertMany(productsData)
+
+    // =========================
+    // 2. USERS (1 BUYER + 9 SUPPLIERS)
+    // =========================
+
+    const buyer = {
+      firstName: "St Mary",
+      lastName: "Hospital",
+      email: "buyer@test.com",
+      phone: "08000000001",
+      password: hashed,
+
+      role: "buyer",
+      verified: true,
+    }
+
+    const suppliersData = [
+      // ================= IMPORTERS =================
+      {
+        firstName: "May",
+        lastName: "Baker",
+        email: "maybaker@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "May & Baker Nigeria Plc",
+          supplierType: "importer",
+          phone: "08011111111",
+          address: "Ikeja, Lagos",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "Fidson",
+        lastName: "Healthcare",
+        email: "fidson@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Fidson Healthcare Plc",
+          supplierType: "importer",
+          phone: "08011111112",
+          address: "Victoria Island, Lagos",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "Neimeth",
+        lastName: "Pharma",
+        email: "neimeth@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Neimeth Pharmaceuticals",
+          supplierType: "importer",
+          phone: "08011111113",
+          address: "Lagos Mainland",
+          status: "approved",
+        },
+      },
+
+      // ================= DISTRIBUTORS =================
+      {
+        firstName: "Emzor",
+        lastName: "Pharma",
+        email: "emzor@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Emzor Pharmaceutical",
+          supplierType: "distributor",
+          phone: "08022222221",
+          address: "Lagos",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "Swiss",
+        lastName: "Pharma",
+        email: "swiss@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Swiss Pharma Nigeria",
+          supplierType: "distributor",
+          phone: "08022222222",
+          address: "Ogun State",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "Juhel",
+        lastName: "Nigeria",
+        email: "juhel@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Juhel Nigeria Ltd",
+          supplierType: "distributor",
+          phone: "08022222223",
+          address: "Enugu",
+          status: "approved",
+        },
+      },
+
+      // ================= RETAILERS =================
+      {
+        firstName: "HealthPlus",
+        lastName: "Pharmacy",
+        email: "healthplus@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "HealthPlus Pharmacy",
+          supplierType: "retailer",
+          phone: "08033333331",
+          address: "Lekki, Lagos",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "MedPlus",
+        lastName: "Pharmacy",
+        email: "medplus@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "MedPlus Pharmacy",
+          supplierType: "retailer",
+          phone: "08033333332",
+          address: "Surulere, Lagos",
+          status: "approved",
+        },
+      },
+      {
+        firstName: "Mopheth",
+        lastName: "Pharmacy",
+        email: "mopheth@pharma.ng",
+        password: hashed,
+
+        role: "supplier",
+        supplierProfile: {
+          businessName: "Mopheth Pharmacy",
+          supplierType: "retailer",
+          phone: "08033333333",
+          address: "Ikoyi, Lagos",
+          status: "approved",
+        },
+      },
+    ]
+
+    const users = await User.insertMany([buyer, ...suppliersData])
+
+    // =========================
+    // RESPONSE (CRITICAL FOR FRONTEND)
+    // =========================
+    return NextResponse.json({
+      success: true,
+      message: "System seeded successfully",
+      products: products.map((p) => ({
+        id: p._id,
+        name: p.name,
+      })),
+      users: {
+        buyer: buyer.email,
+        suppliers: suppliersData.map((s: any, i: number) => ({
+          id: users[i + 1]._id,
+          name: s.supplierProfile.businessName,
+          type: s.supplierProfile.supplierType,
+        })),
+      }
+    })
+  } catch (error) {
+    console.error("SEED ERROR:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Seeding failed",
+      },
+      { status: 500 }
+    )
+  }
+}

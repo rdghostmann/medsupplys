@@ -1,0 +1,246 @@
+// /components/Seed/SeedSystem.tsx
+"use client"
+
+import { useState } from "react"
+import { motion } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+type SeedResponse = {
+  message: string
+  products?: { id: string; name: string }[]
+  users?: {
+    buyer: any
+    suppliers: { id: string; name: string; type: string }[]
+  }
+  breakdown?: {
+    suppliers: number
+    products: number
+    totalInventory: number
+  }
+  totalRecords?: number
+}
+
+export default function SeedSystem() {
+  const [loading, setLoading] = useState(false)
+  const [step, setStep] = useState<"idle" | "system" | "inventory" | "done">("idle")
+
+  const [systemData, setSystemData] = useState<SeedResponse | null>(null)
+  const [inventoryData, setInventoryData] = useState<SeedResponse | null>(null)
+
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSeed = async () => {
+    setLoading(true)
+    setError(null)
+    setSystemData(null)
+    setInventoryData(null)
+
+    try {
+      // =========================
+      // STEP 1: SYSTEM SEED
+      // =========================
+      setStep("system")
+
+      const res1 = await fetch("/api/seed-system", {
+        method: "POST",
+      })
+
+      const data1 = await res1.json()
+
+      if (!res1.ok) throw new Error(data1.message)
+
+      setSystemData(data1)
+
+      // =========================
+      // STEP 2: INVENTORY SEED
+      // =========================
+      setStep("inventory")
+
+      const res2 = await fetch("/api/seed-inventory", {
+        method: "POST",
+      })
+
+      const data2 = await res2.json()
+
+      if (!res2.ok) throw new Error(data2.message)
+
+      setInventoryData(data2)
+
+      // DONE
+      setStep("done")
+    } catch (err: any) {
+      setError(err.message || "Seeding failed")
+      setStep("idle")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto mt-12 space-y-6">
+
+      {/* HEADER */}
+      <Card>
+        <CardHeader>
+          <CardTitle>System Seeder</CardTitle>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+
+          <p className="text-sm text-muted-foreground">
+            Seeds full marketplace system: Products → Users → Supplier Inventory
+          </p>
+
+          {/* BUTTON */}
+          <Button
+            onClick={handleSeed}
+            disabled={loading}
+            className="w-full"
+          >
+            {loading
+              ? step === "system"
+                ? "Seeding Core System..."
+                : step === "inventory"
+                ? "Seeding Inventory..."
+                : "Processing..."
+              : "Run Full Seed"}
+          </Button>
+
+          {/* STATUS */}
+          {step !== "idle" && (
+            <div className="text-xs text-muted-foreground">
+              Step: {step}
+            </div>
+          )}
+
+          {/* ERROR */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="p-3 rounded-md bg-red-50 text-red-600 border"
+            >
+              {error}
+            </motion.div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* =========================
+          SYSTEM RESULT
+      ========================= */}
+      {systemData && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardHeader>
+              <CardTitle>System Seed Result</CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-4">
+
+              <p className="text-sm text-green-600">
+                {systemData.message}
+              </p>
+
+              {/* PRODUCTS */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Products ({systemData.products?.length})
+                </h4>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                  {systemData.products?.map((p) => (
+                    <div
+                      key={p.id}
+                      className="border rounded-md p-2"
+                    >
+                      <p className="font-medium">{p.name}</p>
+                      <p className="text-muted-foreground">
+                        ID: {p.id}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* USERS */}
+              <div>
+                <h4 className="text-sm font-medium mb-2">
+                  Suppliers ({systemData.users?.suppliers.length})
+                </h4>
+
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                  {systemData.users?.suppliers.map((s) => (
+                    <div
+                      key={s.id}
+                      className="border rounded-md p-2"
+                    >
+                      <p className="font-medium">{s.name}</p>
+                      <p className="text-muted-foreground">
+                        {s.type}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {/* =========================
+          INVENTORY RESULT
+      ========================= */}
+      {inventoryData && (
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+          <Card>
+            <CardHeader>
+              <CardTitle>Inventory Seed Result</CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-3">
+
+              <p className="text-sm text-green-600">
+                {inventoryData.message}
+              </p>
+
+              <div className="text-sm text-muted-foreground">
+                Total Records: {inventoryData.totalRecords}
+              </div>
+
+              {inventoryData.breakdown && (
+                <div className="grid grid-cols-3 gap-3 text-xs">
+
+                  <div className="border rounded-md p-2">
+                    Suppliers
+                    <div className="font-semibold">
+                      {inventoryData.breakdown.suppliers}
+                    </div>
+                  </div>
+
+                  <div className="border rounded-md p-2">
+                    Products
+                    <div className="font-semibold">
+                      {inventoryData.breakdown.products}
+                    </div>
+                  </div>
+
+                  <div className="border rounded-md p-2">
+                    Inventory
+                    <div className="font-semibold">
+                      {inventoryData.breakdown.totalInventory}
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+    </div>
+  )
+}

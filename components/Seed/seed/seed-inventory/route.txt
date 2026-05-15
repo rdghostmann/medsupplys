@@ -1,0 +1,161 @@
+// api/seed-inventory/route.ts
+import { NextResponse } from "next/server"
+import { Product } from "@/models/Product"
+import { User } from "@/models/User"
+import { SupplierProduct } from "@/models/SupplierProduct"
+import { UNIT_CONFIG } from "@/lib/unit-config"
+import { connectToDB } from "@/lib/connectToDB"
+
+type SupplierType = keyof typeof UNIT_CONFIG
+
+// =========================
+// PRICE ENGINE
+// =========================
+function generateSupplierPrice(
+  proposedPrice: number,
+  supplierType: SupplierType
+) {
+  const ranges: Record<SupplierType, [number, number]> = {
+    importer: [0.7, 0.9],
+    distributor: [0.9, 1.1],
+    retailer: [1.1, 1.3],
+  }
+
+  const [min, max] = ranges[supplierType]
+  const multiplier = Math.random() * (max - min) + min
+
+  return Math.round(proposedPrice * multiplier)
+}
+
+// =========================
+// SAFE TYPE RESOLVER
+// =========================
+function resolveSupplierType(user: any): SupplierType | null {
+  const type = user?.supplierProfile?.supplierType
+  if (!type) return null
+  return type as SupplierType
+}
+
+// =========================
+// ROUTE
+// =========================
+export async function POST() {
+  await connectToDB()
+
+  try {
+    // =========================
+    // LOAD SAFE DATA
+    // =========================
+    const products = await Product.find().lean()
+    const users = await User.find().lean()
+
+    // =========================
+    // VALIDATE SUPPLIERS
+    // =========================
+    const suppliers = users
+      .filter((u) => u.role === "supplier")
+      .map((u) => {
+        const supplierType = resolveSupplierType(u)
+
+        if (!supplierType) return null
+
+        return {
+          _id: u._id,
+          supplierType,
+        }
+      })
+      .filter(Boolean) as {
+      _id: any
+      supplierType: SupplierType
+    }[]
+
+    // =========================
+    // HARD SAFETY CHECK
+    // =========================
+    if (products.length === 0 || suppliers.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Seed dependency missing: run /api/seed-system first OR check supplierProfile data",
+          debug: {
+            products: products.length,
+            users: users.length,
+            suppliers: suppliers.length,
+          },
+        },
+        { status: 400 }
+      )
+    }
+
+    // =========================
+    // AVOID DUPLICATES
+    // =========================
+    const existing = await SupplierProduct.findOne().lean()
+
+    if (existing) {
+      return NextResponse.json({
+        success: true,
+        message: "Inventory already seeded",
+      })
+    }
+
+    // =========================
+    // BUILD INVENTORY
+    // =========================
+    const inventory: any[] = []
+
+    for (const supplier of suppliers) {
+      const config = UNIT_CONFIG[supplier.supplierType]
+      if (!config) continue
+
+      for (const product of products) {
+        const price = generateSupplierPrice(
+          product.pricing?.proposedPrice ?? 100,
+          supplier.supplierType
+        )
+
+        const stockBase =
+          supplier.supplierType === "importer"
+            ? 5000
+            : supplier.supplierType === "distributor"
+            ? 1000
+            : 200
+
+        inventory.push({
+          supplierId: supplier._id,
+          productId: product._id,
+          supplierType: supplier.supplierType,
+          price,
+          stock: Math.floor(Math.random() * stockBase),
+          minOrderQuantity: config.minOrderQuantity,
+          maxOrderQuantity:
+            supplier.supplierType === "retailer" ? 100 : undefined,
+          status: "available",
+        })
+      }
+    }
+
+    const inserted = await SupplierProduct.insertMany(inventory)
+
+    return NextResponse.json({
+      success: true,
+      message: "Inventory seeded successfully",
+      summary: {
+        products: products.length,
+        suppliers: suppliers.length,
+        inventory: inserted.length,
+      },
+    })
+  } catch (error) {
+    console.error("Inventory seed error:", error)
+
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Inventory seeding failed",
+      },
+      { status: 500 }
+    )
+  }
+}
