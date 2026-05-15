@@ -8,7 +8,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { DataTable } from "@/components/data-table"
+// import { DataTable } from "@/components/data-table"
 import { BuyerStatsCard } from "./components/BuyerStatsCard/BuyerStatsCard"
 
 import data from "../data.json"
@@ -33,7 +33,7 @@ export default function Page() {
           <div className="px-4 lg:px-6">
             <ChartAreaInteractive />
           </div>
-          <DataTable data={data} />
+            {/* <DataTable data={data} /> */}
         </div>
       </div>
     </div>
