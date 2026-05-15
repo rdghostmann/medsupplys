@@ -5,8 +5,8 @@ import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
-import SessionWrapper from "@/components/SessionWrapper copy/SessionWrapper";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import SessionWrapper from "@/components/SessionWrapper/SessionWrapper";
 
 
 const fontSansBig = Space_Grotesk({
