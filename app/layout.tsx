@@ -63,14 +63,14 @@ export const metadata: Metadata = {
 
   publisher: "MedSupply",
 
-  metadataBase: new URL("https://med-supply.eight.vercel.app"),
+  metadataBase: new URL("https://medsupplys.vercel.app"),
 
   openGraph: {
     title: "MedSupply",
     description:
       "B2B pharmaceutical procurement and verification marketplace for hospitals, pharmacies, clinics, and verified medicine suppliers.",
 
-    url: "https://med-supply.eight.vercel.app",
+    url: "https://medsupplys.vercel.app",
 
     siteName: "MedSupply",
 
