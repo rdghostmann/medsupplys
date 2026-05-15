@@ -13,6 +13,7 @@ import {
 
 import PhoneInput, { isValidPhoneNumber, parsePhoneNumber } from 'react-phone-number-input'
 import countryNames from 'react-phone-number-input/locale/en.json'
+import 'react-phone-number-input/style.css';
 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -25,6 +26,9 @@ import { cn } from "@/lib/utils"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import Image from "next/image"
+
+import { UseFormReturn } from "react-hook-form";
+
 
 // IMPORT signIn to auto-login after signup
 import { signIn } from "next-auth/react"
@@ -115,59 +119,59 @@ export default function SignupPage() {
 
   const prevStep = () => setStep((s) => Math.max(s - 1, 1))
 
-const onSubmit = (values: FormData) => {
-  startTransition(async () => {
-    try {
-      // Pre-flight validation
-      if (!values.email?.trim() || !values.password?.trim()) {
-        toast.error("Email and password are required")
-        return
+  const onSubmit = (values: FormData) => {
+    startTransition(async () => {
+      try {
+        // Pre-flight validation
+        if (!values.email?.trim() || !values.password?.trim()) {
+          toast.error("Email and password are required")
+          return
+        }
+
+        const response = await fetch("/api/onboarding", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        })
+
+        const contentType = response.headers.get("content-type")
+        if (!contentType?.includes("application/json")) {
+          throw new Error("Invalid server response received")
+        }
+
+        const data = await response.json()
+
+        if (!response.ok) {
+          throw new Error(data.message || "Registration failed")
+        }
+
+        toast.success("Registration successful")
+
+        // Auto-login after successful registration
+        const signInResponse = await signIn("credentials", {
+          email: values.email.trim().toLowerCase(),
+          password: values.password,
+          redirect: false,
+        })
+
+        if (!signInResponse?.ok || signInResponse?.error) {
+          toast.warning("Please sign in with your credentials")
+          router.push("/signin")
+          return
+        }
+
+        toast.success("Authenticated successfully")
+        router.refresh()
+        router.push(values.role === "supplier" ? "/supplier" : "/buyer")
+      } catch (error) {
+        console.error("SIGNUP_ERROR:", error)
+        const errorMessage = error instanceof Error ? error.message : "Something went wrong. Please try again."
+        toast.error(errorMessage)
       }
-
-      const response = await fetch("/api/onboarding", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
-
-      const contentType = response.headers.get("content-type")
-      if (!contentType?.includes("application/json")) {
-        throw new Error("Invalid server response received")
-      }
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || "Registration failed")
-      }
-
-      toast.success("Registration successful")
-
-      // Auto-login after successful registration
-      const signInResponse = await signIn("credentials", {
-        email: values.email.trim().toLowerCase(),
-        password: values.password,
-        redirect: false,
-      })
-
-      if (!signInResponse?.ok || signInResponse?.error) {
-        toast.warning("Please sign in with your credentials")
-        router.push("/signin")
-        return
-      }
-
-      toast.success("Authenticated successfully")
-      router.refresh()
-      router.push(values.role === "supplier" ? "/supplier" : "/buyer")
-    } catch (error) {
-      console.error("SIGNUP_ERROR:", error)
-      const errorMessage = error instanceof Error ? error.message : "Something went wrong. Please try again."
-      toast.error(errorMessage)
-    }
-  })
-}
+    })
+  }
 
   return (
     <section className="h-screen flex bg-white font-sora">
@@ -319,16 +323,16 @@ const onSubmit = (values: FormData) => {
    INPUT FIELD INTERFACE & COMPONENT
 ========================================================= */
 interface InputFieldProps {
-  form: any
-  name: string
-  label: string
-  icon: React.ReactNode
-  placeholder: string
-  type?: string
-  isPassword?: boolean
-  showPassword?: boolean
-  togglePassword?: () => void
-  readOnly?: boolean
+  form: UseFormReturn<FormData>;
+  name: keyof FormData; // This ensures 'name' must be a valid key of your schema
+  label: string;
+  icon: React.ReactNode;
+  placeholder: string;
+  type?: string;
+  isPassword?: boolean;
+  showPassword?: boolean;
+  togglePassword?: () => void;
+  readOnly?: boolean;
 }
 
 function InputField({
@@ -343,8 +347,9 @@ function InputField({
   togglePassword,
   readOnly,
 }: InputFieldProps) {
-  const { register, formState: { errors } } = form
-  const error = errors[name]?.message as string | undefined
+  // Now 'register' and 'errors' are strictly typed
+  const { register, formState: { errors } } = form;
+  const error = errors[name]?.message as string | undefined;
 
   return (
     <div className="space-y-1.5">
@@ -356,7 +361,7 @@ function InputField({
           type={type}
           placeholder={placeholder}
           readOnly={readOnly}
-          className={`pl-12 h-12 ${error ? "border-red-500" : ""}`}
+          className={cn("pl-12 h-12", error && "border-red-500")}
         />
         {isPassword && (
           <button
@@ -382,13 +387,14 @@ interface SelectOption {
 }
 
 interface SelectFieldProps {
-  form: any
-  name: string
-  label: string
-  icon: React.ReactNode
-  placeholder: string
-  options: SelectOption[]
+  form: UseFormReturn<FormData>;
+  name: keyof FormData; // Same type-safety here
+  label: string;
+  icon: React.ReactNode;
+  placeholder: string;
+  options: SelectOption[];
 }
+
 
 function SelectField({
   form,
@@ -398,8 +404,8 @@ function SelectField({
   placeholder,
   options,
 }: SelectFieldProps) {
-  const { control, formState: { errors } } = form
-  const error = errors[name]?.message as string | undefined
+  const { control, formState: { errors } } = form;
+  const error = errors[name]?.message as string | undefined;
 
   return (
     <div className="space-y-1.5">
@@ -410,8 +416,12 @@ function SelectField({
           name={name}
           control={control}
           render={({ field }) => (
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <SelectTrigger className={`pl-12 h-12 ${error ? "border-red-500" : ""}`}>
+            <Select
+              onValueChange={field.onChange}
+              // FIX: Cast field.value to string, or fallback to "" if it's undefined
+              value={typeof field.value === 'string' ? field.value : String(field.value || "")}
+            >
+              <SelectTrigger className={cn("pl-12 h-12", error && "border-red-500")}>
                 <SelectValue placeholder={placeholder} />
               </SelectTrigger>
               <SelectContent>
@@ -430,6 +440,7 @@ function SelectField({
   )
 }
 
+
 /* =========================================================
    ROLE CARD INTERFACE & COMPONENT
 ========================================================= */
@@ -445,18 +456,16 @@ function RoleCard({ active, onClick, title, description }: RoleCardProps) {
     <button
       type="button"
       onClick={onClick}
-      className={`w-full p-6 text-left flex justify-between gap-5 border-2 rounded-xl transition-all ${
-        active ? "border-blue-700 bg-blue-50" : "border-slate-100"
-      }`}
+      className={`w-full p-6 text-left flex justify-between gap-5 border-2 rounded-xl transition-all ${active ? "border-blue-700 bg-blue-50" : "border-slate-100"
+        }`}
     >
       <div>
         <h4 className="font-semibold">{title}</h4>
         <p className="text-sm text-slate-500">{description}</p>
       </div>
       <div
-        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-          active ? "border-blue-700 bg-blue-700" : "border-slate-200"
-        }`}
+        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${active ? "border-blue-700 bg-blue-700" : "border-slate-200"
+          }`}
       >
         {active && <CheckCircle2 className="w-4 h-4 text-white" />}
       </div>

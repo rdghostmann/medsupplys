@@ -1,10 +1,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  ThemeProvider as NextThemesProvider,
-  useTheme,
-} from "next-themes"
+import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
 
 function ThemeProvider({
   children,
@@ -46,29 +43,23 @@ function ThemeHotkey() {
         return
       }
 
+      // Modifier key check
       if (event.metaKey || event.ctrlKey || event.altKey) {
         return
       }
 
+      // FIX: Use optional chaining and nullish coalescing to prevent 
+      // "Cannot read properties of undefined (reading 'toLowerCase')"
+      if ((event.key?.toLowerCase() ?? "") !== "d") {
+        return
+      }
+
+      // Ignore if user is currently typing in an input
       if (isTypingTarget(event.target)) {
         return
       }
 
-      // SAFE KEY CHECK
-      const key =
-        typeof event.key === "string"
-          ? event.key.toLowerCase()
-          : ""
-
-      if (key !== "d") {
-        return
-      }
-
-      setTheme(
-        resolvedTheme === "dark"
-          ? "light"
-          : "dark"
-      )
+      setTheme(resolvedTheme === "dark" ? "light" : "dark")
     }
 
     window.addEventListener("keydown", onKeyDown)
@@ -82,3 +73,4 @@ function ThemeHotkey() {
 }
 
 export { ThemeProvider }
+

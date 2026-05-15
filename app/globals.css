@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@import 'react-phone-number-input/style.css';
+
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
@@ -123,7 +126,16 @@
   body {
     @apply bg-background text-foreground;
     }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+    }
   html {
     @apply font-sans;
     }
+}
+
+.no-select {
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
