@@ -5,8 +5,8 @@ import mongoose from "mongoose"
 import { Product } from "@/models/Product"
 import { SupplierProduct } from "@/models/SupplierProduct"
 import { User } from "@/models/User"
+import { connectToDB } from "@/lib/connectToDB"
 
-import { connectDB } from "@/lib/connectDB"
 
 /* =========================================================
    TYPES
@@ -32,7 +32,7 @@ export async function getMarketplaceProductById({
        DB CONNECTION
     ===================================================== */
 
-    await connectDB()
+    await connectToDB()
 
     /* =====================================================
        VALIDATE PRODUCT ID
