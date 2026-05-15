@@ -1,7 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { ThemeProvider as NextThemesProvider, useTheme } from "next-themes"
+import {
+  ThemeProvider as NextThemesProvider,
+  useTheme,
+} from "next-themes"
 
 function ThemeProvider({
   children,
@@ -47,15 +50,25 @@ function ThemeHotkey() {
         return
       }
 
-      if (event.key.toLowerCase() !== "d") {
-        return
-      }
-
       if (isTypingTarget(event.target)) {
         return
       }
 
-      setTheme(resolvedTheme === "dark" ? "light" : "dark")
+      // SAFE KEY CHECK
+      const key =
+        typeof event.key === "string"
+          ? event.key.toLowerCase()
+          : ""
+
+      if (key !== "d") {
+        return
+      }
+
+      setTheme(
+        resolvedTheme === "dark"
+          ? "light"
+          : "dark"
+      )
     }
 
     window.addEventListener("keydown", onKeyDown)
