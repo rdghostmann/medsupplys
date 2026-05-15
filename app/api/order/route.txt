@@ -1,6 +1,7 @@
+
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/auth" // Ensure this path is correct
+import { authOptions } from "@/auth"
 import { connectToDB } from "@/lib/connectToDB"
 import { Order } from "@/models/Order"
 import { OrderEvent } from "@/models/OrderEvent"
@@ -8,37 +9,20 @@ import { paystack } from "@/lib/paystack"
 
 export async function POST(request: NextRequest) {
     try {
-
-    
-
-        const body = await request.json()
-        const { 
-            productId, supplierId, quantity, supplierPrice, totalPrice, 
-            commission, candidateSuppliers, fulfillmentMode, deliveryDetails 
-        } = body
-
-        // 1. Initialize Paystack payment FIRST
-        // If this fails, we don't pollute the DB with partial/failed orders
-       const response = await paystack.transaction.initialize({
-            email: session.user.email!,
-            amount: Math.round(totalPrice * 100),
-            currency: "NGN",
-            callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/orders/${order._id}/verify`,
-
-            metadata: {
-                orderId: order._id.toString(),
-                buyerId: session.user.id,
-                supplierId,
-            },
-        })
-
-        if (!response.status) {
-            throw new Error("Paystack initialization failed")
+        const session = await getServerSession(authOptions)
+        if (!session?.user) {
+            return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
         }
 
         await connectToDB()
 
-        // 2. Create the order with the returned reference
+        const body = await request.json()
+        const {
+            productId, supplierId, quantity, supplierPrice, totalPrice,
+            commission, candidateSuppliers, fulfillmentMode, deliveryDetails
+        } = body
+
+        // 1. Create the order in DB FIRST to get an _id
         const order = await Order.create({
             buyerId: session.user.id,
             productId,
@@ -51,11 +35,34 @@ export async function POST(request: NextRequest) {
             paymentStatus: "pending",
             status: "pending",
             candidateSuppliers,
-            paystackReference: response.data.reference, // Store the ref here
             deliveryDetails
         })
 
-        // 3. Log the event
+        // 2. Initialize Paystack payment
+        // We use the newly created order._id for the metadata and callback
+        const response = await paystack.transaction.initialize({
+            email: session.user.email!,
+            amount: Math.round(totalPrice * 100),
+            currency: "NGN",
+            callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/orders/${order._id}/verify`,
+            metadata: {
+                orderId: order._id.toString(),
+                buyerId: session.user.id,
+                supplierId,
+            },
+        })
+
+        if (!response.status) {
+            // Clean up: Delete order if payment init fails
+            await Order.findByIdAndDelete(order._id)
+            throw new Error("Paystack initialization failed")
+        }
+
+        // 3. Update the order with the Paystack reference
+        order.paystackReference = response.data.reference
+        await order.save()
+
+        // 4. Log the event
         await OrderEvent.create({
             orderId: order._id,
             supplierId,
@@ -69,9 +76,9 @@ export async function POST(request: NextRequest) {
             reference: response.data.reference,
             orderId: order._id,
         })
-        
+
     } catch (error: any) {
-        console.error("PAYMENT_INIT_ERROR:", error.message || error)
+        console.error("PAYMENT_INIT_ERROR:", error)
         return NextResponse.json(
             {
                 success: false,
