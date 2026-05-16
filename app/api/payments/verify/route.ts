@@ -1,5 +1,4 @@
-// Refactored Verification Route
-
+// /api/payments/verify/route.ts
 import { NextRequest, NextResponse } from "next/server"
 import { connectToDB } from "@/lib/connectToDB"
 import { Order } from "@/models/Order"
@@ -60,9 +59,10 @@ export async function GET(req: NextRequest) {
     ])
 
     return NextResponse.json({ success: true })
-  } catch (error: any) {
-    console.error("Verification error:", error.message)
-    return NextResponse.json({ message: "Verification failed" }, { status: 500 })
+ } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Verification failed";
+    console.error("Verification error:", message);
+    return NextResponse.json({ message }, { status: 500 });
   }
 }
 
