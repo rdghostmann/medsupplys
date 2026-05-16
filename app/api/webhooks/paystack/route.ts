@@ -34,7 +34,14 @@ export async function POST(req: NextRequest) {
       { new: true }
     );
 
-     if (order) {
+     if (!order) {
+      return NextResponse.json(
+        { message: "Order not found" },
+        { status: 404 }
+      )
+    }
+
+    if (order) {
       await Promise.all([
         OrderEvent.create({
           orderId: order._id,

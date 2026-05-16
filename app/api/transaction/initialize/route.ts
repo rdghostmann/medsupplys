@@ -64,8 +64,9 @@ export async function POST(req: NextRequest) {
       email: session.user.email,
       amount: Math.round(totalPrice * 100),
       reference,
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/orders/${order._id}/verify?reference=${reference}`,
+      // callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/orders/${order._id}/verify?reference=${reference}`,
       // callback_url: `${process.env.NEXT_LOCAL_APP_URL}/buyer/orders/${order._id}/verify?reference=${reference}`,
+      callback_url: `${process.env.NEXT_LOCAL_APP_URL}/buyer/orders/${order._id}/verify?reference=${reference}`,
       metadata: {
         buyerId: session.user.id,
         productId,
