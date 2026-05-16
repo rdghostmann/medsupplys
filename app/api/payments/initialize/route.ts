@@ -27,25 +27,12 @@ export async function POST(req: NextRequest) {
 
     await connectToDB()
     const body = await req.json()
-    const { 
-      productId, supplierId, quantity, supplierPrice, 
-      totalPrice, commission, fulfillmentMode, candidateSuppliers, deliveryDetails 
+    const {
+      productId, supplierId, quantity, supplierPrice,
+      totalPrice, commission, fulfillmentMode, candidateSuppliers, deliveryDetails
     } = body
 
     const reference = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000000)}`
-
-    // Initialize Paystack
-    const paystackRes = await paystack.post("/transaction/initialize", {
-      email: session.user.email,
-      amount: Math.round(totalPrice * 100),
-      reference,
-      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/verify-payment`,
-      metadata: { 
-        buyerId: session.user.id,
-        productId,
-        supplierId 
-      },
-    })
 
     // Create Order
     const order = await Order.create({
@@ -71,18 +58,35 @@ export async function POST(req: NextRequest) {
       metadata: { totalPrice }
     })
 
-    return NextResponse.json({ 
-      authorizationUrl: paystackRes.data.data.authorization_url 
+    
+    // Initialize Paystack
+    const paystackRes = await paystack.post("/transaction/initialize", {
+      email: session.user.email,
+      amount: Math.round(totalPrice * 100),
+      reference,
+      callback_url: `${process.env.NEXT_PUBLIC_APP_URL}/buyer/orders/${order._id}/verify?reference=${reference}`,
+      metadata: {
+        buyerId: session.user.id,
+        productId,
+        supplierId,
+        orderId: order._id.toString(),
+
+      },
+    })
+
+
+    return NextResponse.json({
+      authorizationUrl: paystackRes.data.data.authorization_url
     })
   } catch (error: unknown) {
     // Type-safe error handling
     const err = error as PaystackError;
     const errorMessage = err.response?.data?.message || err.message || "Payment initialization failed";
-    
+
     console.error("Payment Init Error:", errorMessage);
-    
+
     return NextResponse.json(
-      { message: errorMessage }, 
+      { message: errorMessage },
       { status: 500 }
     )
   }
