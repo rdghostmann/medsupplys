@@ -1,0 +1,118 @@
+"use client"
+
+import dynamic from "next/dynamic"
+import { useMemo } from "react"
+import { toast } from "sonner"
+
+import { Button } from "@/components/ui/button"
+
+const PaystackButton = dynamic(
+  () =>
+    import("react-paystack").then(
+      (module) => module.PaystackButton
+    ),
+  {
+    ssr: false,
+  }
+)
+
+type PayWithPaystackProps = {
+  email: string
+  amount: number
+  name: string
+  disabled?: boolean
+}
+
+export default function PayWithPaystack({
+  email,
+  amount,
+  name,
+  disabled,
+}: PayWithPaystackProps) {
+  const publicKey =
+    process.env.PAYSTACK_PUBLIC_KEY
+
+  // Convert Naira to Kobo
+  const amountInKobo = useMemo(() => {
+    return Math.round(amount * 100)
+  }, [amount])
+
+  if (!publicKey) {
+    console.error(
+      "PAYSTACK_PUBLIC_KEY is missing"
+    )
+
+    return (
+      <Button disabled className="w-full rounded-2xl">
+        Paystack Configuration Error
+      </Button>
+    )
+  }
+
+  const paystackProps = {
+    email,
+    amount: amountInKobo,
+    publicKey,
+
+    metadata: {
+      custom_fields: [
+        {
+          display_name: "Customer Name",
+          variable_name: "customer_name",
+          value: name,
+        },
+      ],
+    },
+
+    text: "Pay with Paystack",
+
+    onSuccess: (reference: {
+      reference: string
+      status: string
+      trans: string
+      transaction: string
+    }) => {
+      toast.success("Payment Successful", {
+        description: `Reference: ${reference.reference}`,
+      })
+
+      console.log("Payment Reference:", reference)
+    },
+
+    onClose: () => {
+      toast.info("Payment Cancelled", {
+        description:
+          "You closed the payment window.",
+      })
+    },
+  }
+
+  return (
+    <PaystackButton
+      {...paystackProps}
+      disabled={
+        disabled ||
+        !email ||
+        !amount ||
+        amount <= 0
+      }
+      className="
+        inline-flex
+        h-11
+        w-full
+        items-center
+        justify-center
+        rounded-2xl
+        bg-emerald-600
+        px-4
+        text-sm
+        font-semibold
+        text-white
+        transition-all
+        hover:bg-emerald-700
+        disabled:cursor-not-allowed
+        disabled:opacity-50
+      "
+    />
+  )
+}

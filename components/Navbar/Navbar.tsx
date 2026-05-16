@@ -339,7 +339,7 @@ export default function Navbar() {
             onClick={() =>
               setIsOpen(true)
             }
-            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-2xl border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
+            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
             aria-label="Open Menu"
           >
             <Menu className="w-5 h-5" />
@@ -422,7 +422,7 @@ export default function Navbar() {
 
                 <button
                   onClick={closeMenu}
-                  className="w-10 h-10 rounded-xl border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-all"
+                  className="w-10 h-10 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-all"
                   aria-label="Close Menu"
                 >
                   <X className="w-5 h-5" />
