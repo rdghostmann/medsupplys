@@ -1,36 +1,19 @@
 // app/(dashboard)/buyer/procurement-wizard/[productId]/components/ProcurementWizard.tsx
-
 "use client"
 
 import { useMemo, useState } from "react"
-
 import { motion } from "framer-motion"
-
-import {
-  AlertTriangle,
-  ArrowLeft,
-} from "lucide-react"
-
+import { AlertTriangle, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
-
 import axios from "axios"
-
 import { toast } from "sonner"
-
 import { Button } from "@/components/ui/button"
-
 import { Card } from "@/components/ui/card"
-
 import WizardStepper from "./WizardStepper"
-
 import QuantityStep from "./QuantityStep"
-
 import DeliveryStep from "./DeliveryStep"
-
 import SummaryStep from "./SummaryStep"
-
 import ReviewOrderStep from "./ReviewOrderStep"
-
 import { Supplier } from "@/types"
 
 /* =========================================================
@@ -79,57 +62,11 @@ export default function ProcurementWizard({
   initialSupplierId,
 }: Props) {
   const router = useRouter()
-
-  /* ======================================================
-     STEP STATE
-  ====================================================== */
-
-  const [step, setStep] =
-    useState(1)
-
-  /* ======================================================
-     PAYMENT STATE
-  ====================================================== */
-
-  const [
-    isProcessingPayment,
-    setIsProcessingPayment,
-  ] = useState(false)
-
-  /* ======================================================
-     SUPPLIER
-  ====================================================== */
-
-  const selectedSupplier =
-    useMemo(() => {
-      return suppliers.find(
-        (supplier) =>
-          supplier.supplierProductId ===
-          initialSupplierId
-      )
-    }, [
-      suppliers,
-      initialSupplierId,
-    ])
-
-  /* ======================================================
-     ORDER STATE
-  ====================================================== */
-
-  const [quantity, setQuantity] =
-    useState(1)
-
-  const [unitType, setUnitType] =
-    useState<
-      | "carton"
-      | "pack"
-      | "unit"
-    >("unit")
-
-  const [
-    deliveryDetails,
-    setDeliveryDetails,
-  ] = useState<DeliveryDetails>({
+  const [step, setStep] = useState(1)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [quantity, setQuantity] = useState(1)
+  const [unitType, setUnitType] = useState<"carton" | "pack" | "unit">("unit")
+  const [deliveryDetails, setDeliveryDetails] = useState<DeliveryDetails>({
     contactName: "",
     phone: "",
     address: "",
@@ -137,295 +74,95 @@ export default function ProcurementWizard({
     notes: "",
   })
 
-  /* ======================================================
-     UNIT CONVERSION
-  ====================================================== */
+  const selectedSupplier = useMemo(() => {
+    return suppliers.find((s) => s.supplierProductId === initialSupplierId)
+  }, [suppliers, initialSupplierId])
 
-  const unitsPerType = {
-    carton: 120,
-    pack: 12,
-    unit: 1,
-  }
-
-  const totalUnits =
-    quantity *
-    unitsPerType[unitType]
-
-  const totalCost =
-    totalUnits *
-    (selectedSupplier?.price ?? 0)
-
-  /* ======================================================
-     STEPS
-  ====================================================== */
+  const unitsPerType = { carton: 120, pack: 12, unit: 1 }
+  const totalUnits = quantity * unitsPerType[unitType]
+  const totalCost = totalUnits * (selectedSupplier?.price ?? 0)
 
   const steps = [
-    {
-      id: 1,
-      title: "Review",
-    },
-
-    {
-      id: 2,
-      title: "Quantity",
-    },
-
-    {
-      id: 3,
-      title: "Delivery",
-    },
-
-    {
-      id: 4,
-      title: "Summary",
-    },
+    { id: 1, title: "Review" },
+    { id: 2, title: "Quantity" },
+    { id: 3, title: "Delivery" },
+    { id: 4, title: "Summary" },
   ]
 
-  /* ======================================================
-     VALIDATION
-  ====================================================== */
-
-  const validateOrder =
-    () => {
-      if (!selectedSupplier) {
-        toast.error(
-          "Supplier not found"
-        )
-
-        return false
-      }
-
-      if (
-        quantity <
-        selectedSupplier.minOrderQuantity
-      ) {
-        toast.error(
-          `Minimum order quantity is ${selectedSupplier.minOrderQuantity}`
-        )
-
-        return false
-      }
-
-      if (
-        !deliveryDetails.contactName.trim()
-      ) {
-        toast.error(
-          "Contact name is required"
-        )
-
-        return false
-      }
-
-      if (
-        !deliveryDetails.phone.trim()
-      ) {
-        toast.error(
-          "Phone number is required"
-        )
-
-        return false
-      }
-
-      if (
-        !deliveryDetails.address.trim()
-      ) {
-        toast.error(
-          "Delivery address is required"
-        )
-
-        return false
-      }
-
-      return true
+  const validateOrder = () => {
+    if (!selectedSupplier) { toast.error("Supplier not found"); return false }
+    if (quantity < selectedSupplier.minOrderQuantity) {
+      toast.error(`Min order quantity is ${selectedSupplier.minOrderQuantity}`); return false
     }
+    if (!deliveryDetails.contactName.trim()) { toast.error("Contact name required"); return false }
+    if (!deliveryDetails.phone.trim()) { toast.error("Phone required"); return false }
+    if (!deliveryDetails.address.trim()) { toast.error("Address required"); return false }
+    return true
+  }
 
   /* ======================================================
      PAYMENT HANDLER
   ====================================================== */
+  const handleMakePayment = async () => {
+    if (!validateOrder()) return
 
-  const handleMakePayment =
-    async () => {
-      try {
-        const isValid =
-          validateOrder()
+    // Safety check for payment amount
+    if (totalCost <= 0) {
+      toast.error("Invalid total cost")
+      return
+    }
 
-        if (!isValid) {
-          return
-        }
-
-        setIsProcessingPayment(
-          true
-        )
-
-        const payload = {
-          productId:
-            product._id,
-
-          supplierId:
-            selectedSupplier?.supplierProductId,
-
-          quantity:
-            totalUnits,
-
-          supplierPrice:
-            selectedSupplier?.price,
-
-          totalPrice:
-            totalCost,
-
-          commission:
-            Math.floor(
-              totalCost * 0.05
-            ),
-
-          fulfillmentMode:
-            "single",
-
-          candidateSuppliers:
-            suppliers.map(
-              (
-                supplier,
-                index
-              ) => ({
-                supplierId:
-                  supplier?.supplierProductId,
-
-                position:
-                  index + 1,
-              })
-            ),
-
-          deliveryDetails,
-        }
-
-        const response =
-          await axios.post(
-            "/api/payments/initialize",
-            payload
-          )
-
-        if (
-          response.data
-            ?.authorizationUrl
-        ) {
-          window.location.href =
-            response.data.authorizationUrl
-
-          return
-        }
-
-        toast.error(
-          "Payment initialization failed"
-        )
-      } catch (error: any) {
-        console.log(error)
-
-        toast.error(
-          error?.response?.data
-            ?.message ||
-            "Unable to initialize payment"
-        )
-      } finally {
-        setIsProcessingPayment(
-          false
-        )
+    setIsProcessingPayment(true)
+    try {
+      const payload = {
+        productId: product._id,
+        supplierId: selectedSupplier?.supplierProductId,
+        quantity: totalUnits,
+        supplierPrice: selectedSupplier?.price,
+        totalPrice: totalCost,
+        commission: Math.floor(totalCost * 0.05),
+        fulfillmentMode: "single",
+        candidateSuppliers: suppliers.map((s, idx) => ({
+          supplierId: s?.supplierProductId,
+          position: idx + 1,
+        })),
+        deliveryDetails,
       }
-    }
 
-  /* ======================================================
-     NAVIGATION
-  ====================================================== */
+      const { data } = await axios.post("/api/payments/initialize", payload)
 
-  const nextStep = () => {
-    if (step < 4) {
-      setStep((prev) => prev + 1)
+      if (data?.authorizationUrl) {
+        // Use assign for proper history management
+        window.location.assign(data.authorizationUrl)
+      } else {
+        throw new Error("No authorization URL received")
+      }
+    } catch (error: unknown) {
+      // Create a type-safe way to access the error object
+      const err = error as { response?: { data?: { message?: string } } };
+
+      console.error("PAYMENT_INIT_ERROR:", err);
+
+      // Extract the message safely
+      const message = err.response?.data?.message || "Payment initialization failed";
+
+      toast.error(message);
+      setIsProcessingPayment(false);
     }
   }
 
-  const prevStep = () => {
-    if (step > 1) {
-      setStep((prev) => prev - 1)
-    }
-  }
-
-  /* ======================================================
-     EMPTY SUPPLIER
-  ====================================================== */
+  const nextStep = () => step < 4 && setStep((prev) => prev + 1)
+  const prevStep = () => step > 1 && setStep((prev) => prev - 1)
 
   if (!selectedSupplier) {
     return (
-      <div
-        className="
-          flex
-          min-h-screen
-          items-center
-          justify-center
-          p-6
-        "
-      >
-        <Card
-          className="
-            w-full
-            max-w-md
-            rounded-3xl
-            p-8
-            text-center
-          "
-        >
-          <div
-            className="
-              mx-auto
-              mb-4
-              flex
-              h-16
-              w-16
-              items-center
-              justify-center
-              rounded-full
-              bg-red-100
-            "
-          >
-            <AlertTriangle
-              className="
-                h-8
-                w-8
-                text-red-500
-              "
-            />
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <Card className="w-full max-w-md rounded-3xl p-8 text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
+            <AlertTriangle className="h-8 w-8 text-red-500" />
           </div>
-
-          <h2
-            className="
-              text-xl
-              font-bold
-            "
-          >
-            Supplier Not Found
-          </h2>
-
-          <p
-            className="
-              mt-2
-              text-sm
-              text-slate-500
-            "
-          >
-            Please select a supplier
-            from the marketplace.
-          </p>
-
-          <Button
-            className="
-              mt-6
-              w-full
-              rounded-2xl
-            "
-            onClick={() =>
-              router.back()
-            }
-          >
-            Go Back
-          </Button>
+          <h2 className="text-xl font-bold">Supplier Not Found</h2>
+          <Button className="mt-6 w-full rounded-2xl" onClick={() => router.back()}>Go Back</Button>
         </Card>
       </div>
     )
@@ -648,22 +385,11 @@ export default function ProcurementWizard({
                   </Button>
                 ) : (
                   <Button
-                    className="
-                      h-12
-                      rounded-2xl
-                      px-8
-                      font-semibold
-                    "
-                    onClick={
-                      handleMakePayment
-                    }
-                    disabled={
-                      isProcessingPayment
-                    }
+                    className="h-12 rounded-2xl px-8 font-semibold"
+                    onClick={handleMakePayment}
+                    disabled={isProcessingPayment}
                   >
-                    {isProcessingPayment
-                      ? "Processing..."
-                      : "Proceed to Payment"}
+                    {isProcessingPayment ? "Processing..." : "Proceed to Payment"}
                   </Button>
                 )}
               </div>
