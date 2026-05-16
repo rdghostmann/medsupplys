@@ -129,7 +129,7 @@ export default function ProcurementWizard({
         deliveryDetails,
       }
 
-      const { data } = await axios.post("/api/payments/initialize", payload)
+      const { data } = await axios.post("/api/transaction/initialize", payload)
 
       if (data?.authorizationUrl) {
         // Use assign for proper history management

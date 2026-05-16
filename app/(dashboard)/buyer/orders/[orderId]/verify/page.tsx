@@ -30,18 +30,14 @@ export default function VerificationPaymentPage() {
       try {
         setStatus("verifying")
 
-        await axios.get(
-          `/api/payments/verify?reference=${reference}`
-        )
+        await axios.get(`/api/transaction/verify?reference=${reference}`)
 
         if (!mounted) return
 
         setStatus("success")
 
         setTimeout(() => {
-          router.push(
-            `/buyer/orders/${params.orderId}`
-          )
+          router.push( `/buyer/orders/${params.orderId}` )
         }, 2000)
       } catch (err) {
         console.error(err)
