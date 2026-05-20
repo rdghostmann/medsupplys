@@ -7,9 +7,19 @@ import { calculateFinalPrice } from "./pricing-policy.service"
 export async function createOrder(data: any) {
   const product = await Product.findById(data.productId)
 
+  if (!product) {
+    throw new Error("Product not found")
+  }
+
+  const pricing = product.pricing
+
+  if (!pricing?.commissionPercent) {
+    throw new Error("Invalid product pricing configuration")
+  }
+
   const { commission, totalPrice } = calculateFinalPrice({
     supplierPrice: data.supplierPrice,
-    commissionPercent: product.pricing.commissionPercent,
+    commissionPercent: pricing.commissionPercent,
   })
 
   return await Order.create({
@@ -28,9 +38,9 @@ export async function buildSupplierQueue({
 }) {
   const queue = suppliers.slice(0, 3).map((s, index) => ({
     supplierId: s._id,
-    rank: index + 1,
+    position: index + 1,
     status: "pending",
-    notifiedAt: index === 0 ? new Date() : null, // 🔥 only first is pinged
+    notifiedAt: index === 0 ? new Date() : null,
   }))
 
   await Order.findByIdAndUpdate(orderId, {

@@ -31,10 +31,8 @@ export function validateSupplierPrice({
 }) {
   const maxAllowed = benchmarkPrice * (1 + maxMarkupPercent / 100)
 
-  const isValid = supplierPrice <= maxAllowed
-
   return {
-    isValid,
+    isValid: supplierPrice <= maxAllowed,
     maxAllowed,
     deviation: supplierPrice - benchmarkPrice,
   }

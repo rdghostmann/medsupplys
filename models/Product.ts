@@ -16,7 +16,7 @@ const ProductSchema = new Schema(
       commissionPercent: Number,
       maxMarkupPercent: {
         type: Number,
-        default: 130, // critical rule
+        default: 30, // 🔥 realistic business constraint
       },
     },
   },
