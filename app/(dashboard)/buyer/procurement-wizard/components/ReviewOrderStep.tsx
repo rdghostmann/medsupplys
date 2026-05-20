@@ -120,6 +120,7 @@ export default function ReviewOrderStep({
                   text-2xl
                   font-black
                   text-slate-900
+                  dark:text-white
                 "
               >
                 {product.name}
@@ -194,6 +195,7 @@ export default function ReviewOrderStep({
                     text-lg
                     font-bold
                     text-slate-900
+                    dark:text-white
                   "
                 >
                   {supplier.name}

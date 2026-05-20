@@ -32,7 +32,7 @@ export default async function Page({
 }: PageProps) {
   const { id } = await params
 
-  await connectToDB()
+  await connectToDB();
 
   const supplierProducts =
     await SupplierProduct.find({

@@ -360,7 +360,7 @@ export default function ProcurementWizard({
                 "
               >
                 <Button
-                  variant="outline"
+                  // variant="outline"
                   className="
                     h-12
                     rounded-2xl

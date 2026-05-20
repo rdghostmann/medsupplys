@@ -250,7 +250,7 @@ function InputField({ label, placeholder, icon, error, type = "text", registrati
     <div className="space-y-1.5">
       <Label className="text-sm font-semibold text-slate-700 ml-1">{label}</Label>
       <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">{icon}</div>
         <Input {...registration} type={type} placeholder={placeholder} className={cn("h-12 pl-12 pr-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all", error && "border-red-500 focus:ring-red-500/20")} />
         {isPassword && (
           <button type="button" onClick={togglePassword} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">

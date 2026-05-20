@@ -29,12 +29,18 @@ export async function POST(req: NextRequest) {
     await connectToDB();
 
     const order = await Order.findOneAndUpdate(
-      { paystackReference: reference, paymentStatus: "pending" },
-      { paymentStatus: "paid", status: "supplier_contacted" },
+      {
+        paystackReference: reference,
+        paymentStatus: "pending"
+      },
+      {
+        paymentStatus: "paid",
+        status: "supplier_contacted"
+      },
       { new: true }
     );
 
-     if (!order) {
+    if (!order) {
       return NextResponse.json(
         { message: "Order not found" },
         { status: 404 }

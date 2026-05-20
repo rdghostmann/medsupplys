@@ -86,7 +86,7 @@ function SummaryItem({
   return (
     <div className={`flex justify-between gap-4 ${className}`}>
       <span className="text-sm text-slate-500 whitespace-nowrap">{label}</span>
-      <span className={`text-right font-semibold text-slate-900 ${large ? "text-2xl font-black text-primary" : "text-sm"}`}>
+      <span className={`text-right font-semibold text-slate-900 dark:text-white ${large ? "text-2xl font-black text-primary" : "text-sm"}`}>
         {value}
       </span>
     </div>
