@@ -367,7 +367,7 @@ export default function Navbar() {
                 opacity: 0,
               }}
               onClick={closeMenu}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[60] lg:hidden"
+              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 lg:hidden"
             />
 
             {/* DRAWER */}
@@ -387,7 +387,7 @@ export default function Navbar() {
                 stiffness: 260,
                 damping: 24,
               }}
-              className="fixed top-0 left-0 h-screen w-full max-w-sm bg-white z-[70] lg:hidden flex flex-col shadow-2xl"
+              className="fixed top-0 left-0 h-screen w-full max-w-sm bg-white z-70 lg:hidden flex flex-col shadow-2xl"
             >
               {/* HEADER */}
 
