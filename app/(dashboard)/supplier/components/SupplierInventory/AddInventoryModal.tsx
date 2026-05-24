@@ -9,6 +9,9 @@ type Product = {
   _id: string
   name: string
   category: string
+  unit?: string
+  moq?: number
+  type?: "IMPORTER" | "DISTRIBUTOR"
   pricing?: {
     proposedPrice?: number
     commissionPercent?: number
@@ -91,6 +94,9 @@ export const AddInventoryModal: React.FC<Props> = ({
       commission,
       finalPrice,
       batchInfo,
+      moq: selectedProduct.moq ?? 0,
+      unit: selectedProduct.unit ?? "unit",
+      type: selectedProduct.type ?? "DISTRIBUTOR",
     })
 
     onClose()

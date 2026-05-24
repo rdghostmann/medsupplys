@@ -195,3 +195,23 @@ export type DeliveryDetails = {
   deliveryDate?: string;
   notes?: string;
 };
+
+
+export type InventoryProduct = {
+  id: string
+  productId: string
+  name: string
+  category: string
+
+  type?: "IMPORTER" | "DISTRIBUTOR"
+  unit?: string
+  moq?: number
+
+  basePrice: number
+  stock: number
+
+  commission: number
+  finalPrice: number
+
+  batchInfo: string
+}
