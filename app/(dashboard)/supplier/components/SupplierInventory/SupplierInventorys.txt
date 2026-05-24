@@ -4,20 +4,20 @@
 
 import React, { useEffect, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { 
-  Plus, 
-  Search, 
-  Edit3, 
-  X, 
-  Package, 
-  AlertTriangle, 
-  TrendingUp, 
-  Check, 
-  Info, 
-  TrendingDown, 
-  DollarSign, 
-  Filter, 
-  Clipboard, 
+import {
+  Plus,
+  Search,
+  Edit3,
+  X,
+  Package,
+  AlertTriangle,
+  TrendingUp,
+  Check,
+  Info,
+  TrendingDown,
+  DollarSign,
+  Filter,
+  Clipboard,
   RotateCcw,
   CheckCircle2,
   Lock,
@@ -32,7 +32,7 @@ export default function SupplierInventory() {
   const [inventory, setInventory] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
 
-   // Modal State
+  // Modal State
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<InventoryProduct | null>(null);
 
@@ -50,7 +50,7 @@ export default function SupplierInventory() {
   }, [inventory]);
 
 
-    // Filtering & Sorting State
+  // Filtering & Sorting State
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortField, setSortField] = useState<'name' | 'basePrice' | 'stock' | 'finalPrice'>('name');
@@ -69,12 +69,12 @@ export default function SupplierInventory() {
     setInventory(prev => [item, ...prev])
   }
 
-   // Handle addition of product
+  // Handle addition of product
   const handleOpenAddModal = () => {
     setIsAddModalOpen(true);
   };
 
-  
+
   // Handle editing triggers
   const handleOpenEditModal = (product: InventoryProduct) => {
     setEditingProduct(product);
@@ -83,12 +83,12 @@ export default function SupplierInventory() {
     setEditBatchInfo(product.batchInfo);
   };
 
-   const handleEditProductSubmit = (e: React.FormEvent) => {
+  const handleEditProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-		return;
+    return;
   };
 
-    // Calculate stats dynamically in real-time
+  // Calculate stats dynamically in real-time
   const stats: InventoryStats = useMemo(() => {
     let totalStockElements = 0;
     let outOfStockCount = 0;
@@ -164,7 +164,7 @@ export default function SupplierInventory() {
   return (
     <div className="">
       {/* Header */}
-   {/* Main Title Banner Header */}
+      {/* Main Title Banner Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
@@ -188,7 +188,7 @@ export default function SupplierInventory() {
         </div>
       </div>
 
-		 {/* Dynamic Real-time Analytics Dashboard Strip */}
+      {/* Dynamic Real-time Analytics Dashboard Strip */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
         {/* SKUs */}
         <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs flex flex-col justify-between">
@@ -267,7 +267,7 @@ export default function SupplierInventory() {
         </div>
       </div>
 
-		  {/* Beautiful Filter, Search & Sort Shelf */}
+      {/* Beautiful Filter, Search & Sort Shelf */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs mb-6 grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
         {/* Search */}
         <div className="relative md:col-span-2">
@@ -326,7 +326,7 @@ export default function SupplierInventory() {
         ))}
       </div>
 
-		   {/* FOOTER INFORMATIONAL BLOCK OF COMPLIANCE */}
+      {/* FOOTER INFORMATIONAL BLOCK OF COMPLIANCE */}
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4">
         <div className="p-2 bg-blue-100 text-blue-600 rounded-lg mt-0.5 shrink-0">
           <Info className="w-5 h-5" />
@@ -348,7 +348,7 @@ export default function SupplierInventory() {
         products={products}
       />
 
-		
+
       {/* ==================================== MODAL: EDIT PRODUCT (STOCK & BASE PRICE ONLY) ==================================== */}
       <AnimatePresence>
         {editingProduct && (
