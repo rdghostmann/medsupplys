@@ -25,7 +25,7 @@ export function SiteHeader() {
       <div className="ml-auto flex items-center gap-3">
 
         {/* SEARCH */}
-        <div className="relative hidden sm:block">
+        <div className="relative hidden">
           <Input
             placeholder="Search products..."
             className="w-[240px] pl-9 focus-visible:ring-1"
@@ -61,14 +61,6 @@ export function SiteHeader() {
               <span className="text-[10px] font-medium text-slate-400 font-mono">
                 user@medsupply.com
               </span>
-            </div>
-
-            {/* AVATAR */}
-            <div
-              className="w-9 h-9 bg-slate-100 border border-slate-200 rounded-full flex items-center justify-center text-slate-600 font-semibold hover:border-slate-300 transition-colors cursor-pointer"
-              title="User Profile"
-            >
-              <User className="w-4 h-4" />
             </div>
 
           </div>

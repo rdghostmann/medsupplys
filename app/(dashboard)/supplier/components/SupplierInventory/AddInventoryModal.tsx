@@ -129,7 +129,7 @@ export const AddInventoryModal: React.FC<Props> = ({
               {/* Product Select */}
               <div>
                 <label className="text-xs font-semibold uppercase text-slate-500">
-                  Select Product
+                  Select Product from Catalog
                 </label>
 
                 <select
@@ -147,48 +147,89 @@ export const AddInventoryModal: React.FC<Props> = ({
 
               {/* Price + Stock */}
               <div className="grid grid-cols-2 gap-4">
-                <input
-                  type="number"
-                  value={basePrice}
-                  onChange={(e) => setBasePrice(Number(e.target.value))}
-                  className="border p-2 rounded-lg text-sm"
-                  placeholder="Base Price"
-                />
+                    {/* Base Price Field */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    Base Price (₦)
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 15000"
+                      onChange={(e) => setBasePrice(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold"
+                      required
+                    />
+                  </div>
+                </div>
 
-                <input
-                  type="number"
-                  value={stock}
-                  onChange={(e) => setStock(Number(e.target.value))}
-                  className="border p-2 rounded-lg text-sm"
-                  placeholder="Stock"
-                />
+               
+                {/* Stock level Quantity Field */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    Stock Quantity
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    placeholder="e.g. 500"
+                    onChange={(e) => setStock(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
+                    required
+                  />
+                </div>
+
               </div>
+              
 
-              {/* Batch */}
-              <input
-                value={batchInfo}
+               {/* Batch and Expiry Expiration metadata */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                  Batch / Expiry Info
+                </label>
+                <input
+                  type="text"
+                  placeholder="Batch B-2024-04, Exp: Jun 2026"
+               
                 onChange={(e) => setBatchInfo(e.target.value)}
-                className="w-full border p-2 rounded-lg text-sm"
-                placeholder="Batch Info"
-              />
+                  className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm text-slate-800 font-medium"
+                  required
+                />
+                <p className="text-[10px] text-slate-400 mt-1.5 leading-normal">
+                  Batch number and expiration details are registered onto regulatory drug logs automatically.
+                </p>
+              </div>
 
               {/* Live Pricing Preview */}
-              <div className="bg-slate-50 p-4 rounded-xl text-sm space-y-1">
-                <div className="flex justify-between">
-                  <span>Commission ({commissionPercent}%)</span>
-                  <span>₦{commission.toLocaleString()}</span>
+                {basePrice !== '' && Number(basePrice) > 0 && (
+                <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-4 text-xs font-medium text-blue-800 space-y-1.5 leading-snug">
+                  <div className="flex justify-between items-center text-blue-700">
+                    <span>Platform Commission Rate:</span>
+                    <span className="font-bold font-mono">10%</span>
+                  </div>
+                  <div className="flex justify-between items-center text-blue-700">
+                    <span>Calculated Commission:</span>
+                    <span className="font-bold font-mono">+₦{Math.round(Number(basePrice) * 0.1).toLocaleString()}</span>
+                  </div>
+                  <div className="h-px bg-blue-100/50 my-1" />
+                  <div className="flex justify-between items-center text-blue-900 text-sm font-bold pt-0.5">
+                    <span>Final listing buyer price:</span>
+                    <span className="font-mono text-blue-600">
+                      ₦{Math.round(Number(basePrice) * 1.1).toLocaleString()}
+                    </span>
+                  </div>
+                  
+                  <p className="text-[10px] text-blue-500 leading-normal pt-1 text-center font-normal">
+                    Platform commission: 10% — Final buyer price = Base price + ₦(Base × 10%)
+                  </p>
                 </div>
-
-                <div className="flex justify-between font-bold text-blue-600">
-                  <span>Final Price</span>
-                  <span>₦{finalPrice.toLocaleString()}</span>
-                </div>
-              </div>
+              )}
 
               {/* Submit */}
               <button
                 type="submit"
-                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm cursor-pointer hover:scale-101 active:scale-99 text-center"
               >
                 Add Inventory
               </button>
