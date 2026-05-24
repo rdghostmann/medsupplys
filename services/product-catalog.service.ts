@@ -12,7 +12,6 @@ export async function getProductCatalog() {
   await connectToDB()
 
   const products = await Product.find({})
-    .select("name category description pricing images")
     .sort({ name: 1 })
     .lean()
 

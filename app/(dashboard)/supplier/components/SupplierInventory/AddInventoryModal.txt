@@ -1,0 +1,172 @@
+"use client"
+
+import React, { useEffect, useMemo, useState } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { X, Package } from "lucide-react"
+
+type Product = {
+  _id: string
+  name: string
+  category: string
+  pricing?: {
+    proposedPrice?: number
+    commissionPercent?: number
+  }
+}
+
+type InventoryItem = {
+  id: string
+  productId: string
+  name: string
+  category: string
+  basePrice: number
+  stock: number
+  commission: number
+  finalPrice: number
+  batchInfo: string
+}
+
+interface Props {
+  isOpen: boolean
+  onClose: () => void
+  onAdd: (item: InventoryItem) => void
+  existingInventory: InventoryItem[]
+  products: Product[]
+}
+
+export const AddInventoryModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onAdd,
+  existingInventory,
+  products,
+}) => {
+  const [productId, setProductId] = useState("")
+  const [basePrice, setBasePrice] = useState(0)
+  const [stock, setStock] = useState(0)
+  const [batch, setBatch] = useState("")
+
+  const available = useMemo(() => {
+    const used = new Set(existingInventory.map((i) => i.productId))
+    return products.filter((p) => !used.has(p._id))
+  }, [products, existingInventory])
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    const first = available[0]
+    if (!first) return
+
+    setProductId(first._id)
+    setBasePrice(first.pricing?.proposedPrice || 0)
+    setStock(50)
+    setBatch(`BATCH-${Date.now()}`)
+  }, [isOpen, available])
+
+  const selected = useMemo(
+    () => available.find((p) => p._id === productId),
+    [productId, available]
+  )
+
+  const commission = Math.round(basePrice * 0.1)
+  const finalPrice = basePrice + commission
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selected) return
+
+    onAdd({
+      id: crypto.randomUUID(),
+      productId: selected._id,
+      name: selected.name,
+      category: selected.category,
+      basePrice,
+      stock,
+      commission,
+      finalPrice,
+      batchInfo: batch,
+    })
+  }
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+
+          {/* backdrop */}
+          <motion.div
+            onClick={onClose}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/50"
+          />
+
+          {/* modal */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            className="relative w-full max-w-lg bg-white rounded-xl shadow-xl"
+          >
+            <div className="flex justify-between p-4 border-b">
+              <h2 className="font-semibold">Add Inventory</h2>
+              <button onClick={onClose}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={submit} className="p-4 space-y-4">
+
+              <select
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                className="w-full border p-2 rounded-lg"
+              >
+                {available.map((p) => (
+                  <option key={p._id} value={p._id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+
+              <input
+                type="number"
+                value={basePrice}
+                onChange={(e) => setBasePrice(Number(e.target.value))}
+                className="w-full border p-2 rounded-lg"
+                placeholder="Base Price"
+              />
+
+              <input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(Number(e.target.value))}
+                className="w-full border p-2 rounded-lg"
+                placeholder="Stock"
+              />
+
+              <input
+                value={batch}
+                onChange={(e) => setBatch(e.target.value)}
+                className="w-full border p-2 rounded-lg"
+                placeholder="Batch Info"
+              />
+
+              <div className="bg-slate-50 p-3 rounded-lg text-sm">
+                <p>Commission: ₦{commission}</p>
+                <p className="font-bold text-blue-600">
+                  Final: ₦{finalPrice}
+                </p>
+              </div>
+
+              <button className="w-full bg-blue-600 text-white py-2 rounded-lg">
+                Add Item
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}

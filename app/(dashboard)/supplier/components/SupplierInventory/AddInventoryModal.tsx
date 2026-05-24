@@ -1,450 +1,201 @@
-// /dashboard/supplier/inventory/AddInventoryModal.tsx
+// Codebase AddInventoryModal.tsx
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
-import { X } from "lucide-react"
+import React, { useState, useEffect, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import { X, CheckCircle2, Package } from "lucide-react"
 
-import {
-  createSupplierInventory,
-} from "@/services/supplier-inventory.service"
-
-type ProductType = {
+type Product = {
   _id: string
-
   name: string
-
   category: string
-
   pricing?: {
     proposedPrice?: number
     commissionPercent?: number
   }
-
-  images?: {
-    primary?: string
-  }
 }
 
-type Props = {
-  open: boolean
+interface InventoryProduct {
+  id: string
+  productId: string
+  name: string
+  category: string
+  basePrice: number
+  stock: number
+  commission: number
+  finalPrice: number
+  batchInfo: string
+}
 
+interface Props {
+  isOpen: boolean
   onClose: () => void
-
-  onCreated: () => void
-
-  supplierId: string
+  onAdd: (item: InventoryProduct) => void
+  existingInventory: InventoryProduct[]
+  products: Product[]
 }
 
-export function AddInventoryModal({
-  open,
+export const AddInventoryModal: React.FC<Props> = ({
+  isOpen,
   onClose,
-  onCreated,
-  supplierId,
-}: Props) {
-  const [products, setProducts] = useState<
-    ProductType[]
-  >([])
+  onAdd,
+  existingInventory,
+  products,
+}) => {
+  const [productId, setProductId] = useState("")
+  const [basePrice, setBasePrice] = useState<number>(0)
+  const [stock, setStock] = useState<number>(0)
+  const [batchInfo, setBatchInfo] = useState("")
 
-  const [selectedProduct, setSelectedProduct] =
-    useState("")
-
-  const [supplierType, setSupplierType] =
-    useState("distributor")
-
-  const [salesUnit, setSalesUnit] =
-    useState("pack")
-
-  const [basePrice, setBasePrice] =
-    useState("")
-
-  const [stock, setStock] = useState("")
-
-  const [reorderLevel, setReorderLevel] =
-    useState("10")
-
-  const [batchNumber, setBatchNumber] =
-    useState("")
-
-  const [expiryDate, setExpiryDate] =
-    useState("")
-
-  const [warehouseLocation, setWarehouseLocation] =
-    useState("")
-
-  const [isPending, startTransition] =
-    useTransition()
+  const availableProducts = useMemo(() => {
+    const used = new Set(existingInventory.map(i => i.productId))
+    return products.filter(p => !used.has(p._id))
+  }, [products, existingInventory])
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      const response = await fetch(
-        "/api/products"
-      )
+    if (!isOpen) return
 
-      const data = await response.json()
+    const first = availableProducts[0]
+    if (!first) return
 
-      setProducts(data.products || [])
-    }
+    setProductId(first._id)
+    setBasePrice(first.pricing?.proposedPrice || 0)
+    setStock(100)
 
-    if (open) {
-      fetchProducts()
-    }
-  }, [open])
+    const year = new Date().getFullYear()
+    setBatchInfo(`Batch-${year}-${Math.floor(Math.random() * 9999)}`)
+  }, [isOpen, availableProducts])
 
-  const selectedProductData = products.find(
-    (item) => item._id === selectedProduct
+  const selectedProduct = useMemo(
+    () => availableProducts.find(p => p._id === productId),
+    [productId, availableProducts]
   )
 
   const commissionPercent =
-    selectedProductData?.pricing
-      ?.commissionPercent || 10
+    selectedProduct?.pricing?.commissionPercent || 10
 
-  const calculatedFinalPrice =
-    Number(basePrice || 0) +
-    Number(basePrice || 0) *
-      (commissionPercent / 100)
+  const commission = Math.round(basePrice * (commissionPercent / 100))
+  const finalPrice = basePrice + commission
 
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!selectedProduct) return
 
-    startTransition(async () => {
-      const response =
-        await createSupplierInventory({
-          supplierId,
-          productId: selectedProduct,
-          supplierType,
-          salesUnit,
-          basePrice: Number(basePrice),
-          stock: Number(stock),
-          reorderLevel:
-            Number(reorderLevel),
-          batchInfo: {
-            batchNumber,
-            expiryDate,
-          },
-          warehouseLocation,
-        })
-
-      if (response.success) {
-        onCreated()
-        onClose()
-      }
+    onAdd({
+      id: crypto.randomUUID(),
+      productId: selectedProduct._id,
+      name: selectedProduct.name,
+      category: selectedProduct.category,
+      basePrice,
+      stock,
+      commission,
+      finalPrice,
+      batchInfo,
     })
+
+    onClose()
   }
 
-  if (!open) return null
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-2xl rounded-3xl bg-white shadow-2xl">
-
-        {/* HEADER */}
-        <div className="flex items-center justify-between border-b px-6 py-5">
-          <div>
-            <h2 className="text-xl font-bold">
-              Add Product Inventory
-            </h2>
-
-            <p className="mt-1 text-sm text-muted-foreground">
-              Select a product from the
-              MedSupply catalog and configure
-              your stock listing.
-            </p>
-          </div>
-
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className="rounded-xl p-2 transition hover:bg-slate-100"
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+          />
+
+          {/* Modal */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0, y: 20 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.95, opacity: 0, y: 20 }}
+            transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden z-10"
           >
-            <X className="h-5 w-5" />
-          </button>
-        </div>
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b">
+              <h2 className="font-semibold text-lg">Add Inventory Item</h2>
+              <button onClick={onClose}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-        {/* FORM */}
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5 p-6"
-        >
+            <form onSubmit={handleSubmit} className="p-6 space-y-5">
+              {/* Product Select */}
+              <div>
+                <label className="text-xs font-semibold uppercase text-slate-500">
+                  Select Product
+                </label>
 
-          {/* PRODUCT SELECT */}
-          <div>
-            <label className="mb-2 block text-sm font-medium">
-              Product Catalog
-            </label>
-
-            <select
-              value={selectedProduct}
-              onChange={(e) =>
-                setSelectedProduct(
-                  e.target.value
-                )
-              }
-              required
-              className="h-12 w-full rounded-2xl border px-4 text-sm outline-none focus:border-blue-500"
-            >
-              <option value="">
-                Select product
-              </option>
-
-              {products.map((product) => (
-                <option
-                  key={product._id}
-                  value={product._id}
+                <select
+                  value={productId}
+                  onChange={(e) => setProductId(e.target.value)}
+                  className="w-full mt-2 border rounded-lg p-2 text-sm"
                 >
-                  {product.name} •{" "}
-                  {product.category}
-                </option>
-              ))}
-            </select>
-          </div>
+                  {availableProducts.map(p => (
+                    <option key={p._id} value={p._id}>
+                      {p.name} ({p.category})
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-          {/* PRODUCT PREVIEW */}
-          {selectedProductData && (
-            <div className="flex items-center gap-4 rounded-2xl border bg-slate-50 p-4">
-              <div className="h-20 w-20 overflow-hidden rounded-2xl border bg-white">
-                <img
-                  src={
-                    selectedProductData.images
-                      ?.primary ||
-                    "/placeholder.png"
-                  }
-                  alt={
-                    selectedProductData.name
-                  }
-                  className="h-full w-full object-cover"
+              {/* Price + Stock */}
+              <div className="grid grid-cols-2 gap-4">
+                <input
+                  type="number"
+                  value={basePrice}
+                  onChange={(e) => setBasePrice(Number(e.target.value))}
+                  className="border p-2 rounded-lg text-sm"
+                  placeholder="Base Price"
+                />
+
+                <input
+                  type="number"
+                  value={stock}
+                  onChange={(e) => setStock(Number(e.target.value))}
+                  className="border p-2 rounded-lg text-sm"
+                  placeholder="Stock"
                 />
               </div>
 
-              <div>
-                <h3 className="font-semibold">
-                  {
-                    selectedProductData.name
-                  }
-                </h3>
+              {/* Batch */}
+              <input
+                value={batchInfo}
+                onChange={(e) => setBatchInfo(e.target.value)}
+                className="w-full border p-2 rounded-lg text-sm"
+                placeholder="Batch Info"
+              />
 
-                <p className="text-sm text-muted-foreground">
-                  {
-                    selectedProductData.category
-                  }
-                </p>
+              {/* Live Pricing Preview */}
+              <div className="bg-slate-50 p-4 rounded-xl text-sm space-y-1">
+                <div className="flex justify-between">
+                  <span>Commission ({commissionPercent}%)</span>
+                  <span>₦{commission.toLocaleString()}</span>
+                </div>
 
-                <p className="mt-2 text-xs text-blue-600">
-                  Platform Commission:{" "}
-                  {commissionPercent}%
-                </p>
+                <div className="flex justify-between font-bold text-blue-600">
+                  <span>Final Price</span>
+                  <span>₦{finalPrice.toLocaleString()}</span>
+                </div>
               </div>
-            </div>
-          )}
 
-          {/* GRID */}
-          <div className="grid gap-5 md:grid-cols-2">
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Supplier Type
-              </label>
-
-              <select
-                value={supplierType}
-                onChange={(e) =>
-                  setSupplierType(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
               >
-                <option value="importer">
-                  Importer
-                </option>
-
-                <option value="distributor">
-                  Distributor
-                </option>
-
-                <option value="retailer">
-                  Retailer
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Sales Unit
-              </label>
-
-              <select
-                value={salesUnit}
-                onChange={(e) =>
-                  setSalesUnit(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              >
-                <option value="unit">
-                  Unit
-                </option>
-
-                <option value="pack">
-                  Pack
-                </option>
-
-                <option value="carton">
-                  Carton
-                </option>
-              </select>
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Base Price (₦)
-              </label>
-
-              <input
-                type="number"
-                required
-                value={basePrice}
-                onChange={(e) =>
-                  setBasePrice(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Stock Quantity
-              </label>
-
-              <input
-                type="number"
-                required
-                value={stock}
-                onChange={(e) =>
-                  setStock(e.target.value)
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Reorder Level
-              </label>
-
-              <input
-                type="number"
-                value={reorderLevel}
-                onChange={(e) =>
-                  setReorderLevel(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Batch Number
-              </label>
-
-              <input
-                type="text"
-                value={batchNumber}
-                onChange={(e) =>
-                  setBatchNumber(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Expiry Date
-              </label>
-
-              <input
-                type="date"
-                value={expiryDate}
-                onChange={(e) =>
-                  setExpiryDate(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                Warehouse Location
-              </label>
-
-              <input
-                type="text"
-                value={warehouseLocation}
-                onChange={(e) =>
-                  setWarehouseLocation(
-                    e.target.value
-                  )
-                }
-                className="h-12 w-full rounded-2xl border px-4 text-sm"
-              />
-            </div>
-          </div>
-
-          {/* PRICE SUMMARY */}
-          <div className="rounded-2xl border border-blue-100 bg-blue-50 p-5">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-blue-700">
-                Commission
-              </span>
-
-              <span className="font-semibold text-blue-900">
-                {commissionPercent}%
-              </span>
-            </div>
-
-            <div className="mt-3 flex items-center justify-between">
-              <span className="text-sm text-blue-700">
-                Final Buyer Price
-              </span>
-
-              <span className="text-2xl font-bold text-blue-600">
-                ₦
-                {calculatedFinalPrice.toLocaleString()}
-              </span>
-            </div>
-          </div>
-
-          {/* ACTIONS */}
-          <div className="flex items-center justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-2xl border px-5 py-3 text-sm font-medium transition hover:bg-slate-100"
-            >
-              Cancel
-            </button>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isPending
-                ? "Creating..."
-                : "Add Inventory"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+                Add Inventory
+              </button>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   )
 }

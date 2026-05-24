@@ -1,0 +1,255 @@
+"use client"
+
+import React, { useEffect, useState, useMemo } from "react"
+import { motion, AnimatePresence } from "framer-motion"
+import {
+  Plus,
+  Search,
+  Package,
+  TrendingUp,
+  AlertTriangle,
+  Info,
+  X,
+  Clipboard,
+  RotateCcw,
+  ArrowUpDown,
+  Filter,
+} from "lucide-react"
+
+import { AddInventoryModal } from "./AddInventoryModal"
+import { getProductCatalog } from "@/services/product-catalog.service"
+
+type InventoryItem = {
+  id: string
+  productId: string
+  name: string
+  category: string
+  basePrice: number
+  stock: number
+  commission: number
+  finalPrice: number
+  batchInfo: string
+}
+
+type Toast = {
+  message: string
+  type: "success" | "info" | "warning"
+}
+
+export const SupplierInventory = () => {
+  const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [products, setProducts] = useState<any[]>([])
+  const [open, setOpen] = useState(false)
+
+  // UI STATE
+  const [search, setSearch] = useState("")
+  const [category, setCategory] = useState("All")
+  const [sort, setSort] = useState<"name" | "basePrice" | "stock" | "finalPrice">("name")
+  const [order, setOrder] = useState<"asc" | "desc">("asc")
+
+  const [toast, setToast] = useState<Toast | null>(null)
+
+  useEffect(() => {
+    const load = async () => {
+      const data = await getProductCatalog()
+      setProducts(data)
+    }
+    load()
+  }, [])
+
+  const showToast = (message: string, type: Toast["type"] = "success") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3500)
+  }
+
+  const handleAdd = (item: InventoryItem) => {
+    setInventory((prev) => [item, ...prev])
+    setOpen(false)
+    showToast(`${item.name} added successfully`, "success")
+  }
+
+  const categories = useMemo(() => {
+    const set = new Set(inventory.map((i) => i.category))
+    return ["All", ...Array.from(set)]
+  }, [inventory])
+
+  const stats = useMemo(() => {
+    return {
+      total: inventory.length,
+      stock: inventory.reduce((a, b) => a + b.stock, 0),
+      value: inventory.reduce((a, b) => a + b.finalPrice * b.stock, 0),
+      lowStock: inventory.filter((i) => i.stock < 20).length,
+    }
+  }, [inventory])
+
+  const filtered = useMemo(() => {
+    let data = [...inventory]
+
+    if (search) {
+      const q = search.toLowerCase()
+      data = data.filter((i) =>
+        i.name.toLowerCase().includes(q) ||
+        i.category.toLowerCase().includes(q)
+      )
+    }
+
+    if (category !== "All") {
+      data = data.filter((i) => i.category === category)
+    }
+
+    data.sort((a, b) => {
+      const A = a[sort]
+      const B = b[sort]
+
+      if (A < B) return order === "asc" ? -1 : 1
+      if (A > B) return order === "asc" ? 1 : -1
+      return 0
+    })
+
+    return data
+  }, [inventory, search, category, sort, order])
+
+  const toggleSort = (field: typeof sort) => {
+    if (sort === field) setOrder(order === "asc" ? "desc" : "asc")
+    else setSort(field)
+  }
+
+  return (
+    <div className="w-full max-w-7xl mx-auto p-6">
+
+      {/* TOAST */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="fixed top-6 left-1/2 -translate-x-1/2 z-50"
+          >
+            <div className="bg-white border shadow-lg px-4 py-3 rounded-xl flex gap-2 items-center">
+              <Info className="w-4 h-4 text-blue-500" />
+              <p className="text-sm">{toast.message}</p>
+              <button onClick={() => setToast(null)}>
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Inventory</h1>
+          <p className="text-sm text-slate-500">Supplier management dashboard</p>
+        </div>
+
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          <Plus className="w-4 h-4" />
+          Add Product
+        </button>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="p-4 bg-white border rounded-lg">
+          <Clipboard className="w-4 h-4 text-slate-500" />
+          <p className="text-xs text-slate-500">SKUs</p>
+          <h2 className="text-lg font-bold">{stats.total}</h2>
+        </div>
+
+        <div className="p-4 bg-white border rounded-lg">
+          <Package className="w-4 h-4 text-blue-500" />
+          <p className="text-xs text-slate-500">Stock</p>
+          <h2 className="text-lg font-bold">{stats.stock}</h2>
+        </div>
+
+        <div className="p-4 bg-white border rounded-lg">
+          <AlertTriangle className="w-4 h-4 text-amber-500" />
+          <p className="text-xs text-slate-500">Low Stock</p>
+          <h2 className="text-lg font-bold">{stats.lowStock}</h2>
+        </div>
+
+        <div className="p-4 bg-white border rounded-lg">
+          <TrendingUp className="w-4 h-4 text-emerald-500" />
+          <p className="text-xs text-slate-500">Value</p>
+          <h2 className="text-lg font-bold">
+            ₦{stats.value.toLocaleString()}
+          </h2>
+        </div>
+      </div>
+
+      {/* FILTER BAR */}
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search inventory..."
+            className="w-full pl-9 pr-3 py-2 border rounded-lg"
+          />
+        </div>
+
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="border px-3 rounded-lg"
+        >
+          {categories.map((c) => (
+            <option key={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* TABLE */}
+      <div className="bg-white border rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-slate-50">
+            <tr>
+              <th onClick={() => toggleSort("name")} className="p-3 cursor-pointer">Name</th>
+              <th>Category</th>
+              <th onClick={() => toggleSort("basePrice")} className="cursor-pointer">Base</th>
+              <th>Commission</th>
+              <th onClick={() => toggleSort("finalPrice")} className="cursor-pointer">Final</th>
+              <th onClick={() => toggleSort("stock")} className="cursor-pointer">Stock</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <AnimatePresence>
+              {filtered.map((item) => (
+                <motion.tr
+                  key={item.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="border-t"
+                >
+                  <td className="p-3 font-medium">{item.name}</td>
+                  <td>{item.category}</td>
+                  <td>₦{item.basePrice}</td>
+                  <td>₦{item.commission}</td>
+                  <td className="font-bold text-blue-600">₦{item.finalPrice}</td>
+                  <td>{item.stock}</td>
+                </motion.tr>
+              ))}
+            </AnimatePresence>
+          </tbody>
+        </table>
+      </div>
+
+      {/* MODAL */}
+      <AddInventoryModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onAdd={handleAdd}
+        existingInventory={inventory}
+        products={products}
+      />
+    </div>
+  )
+}
