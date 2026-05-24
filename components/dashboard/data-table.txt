@@ -1,4 +1,3 @@
-// ProductCatalogueTable.tsx
 "use client"
 
 import * as React from "react"

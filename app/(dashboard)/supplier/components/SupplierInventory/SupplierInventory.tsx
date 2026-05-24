@@ -24,6 +24,7 @@ import {
   Lock,
   ArrowUpDown
 } from 'lucide-react'; import { InventoryProduct } from "@/types"
+import StockInventoryTable from "./StockInventoryTable"
 
 type InventoryStats = {
   totalSkus: number
@@ -243,25 +244,9 @@ export default function SupplierInventory() {
         </div>
       </div>
 
+      {/* STOCK INVENTORY TABLE */}
 
-
-
-
-      {/* LIST */}
-      <div className="space-y-2">
-        {filtered.map(item => (
-          <div key={item.id} className="p-4 border rounded-lg flex justify-between">
-            <div>
-              <p className="font-semibold">{item.name}</p>
-              <p className="text-sm text-gray-500">₦{item.finalPrice}</p>
-            </div>
-
-            <button onClick={() => handleOpenEdit(item)}>
-              <Edit3 className="w-4 h-4" />
-            </button>
-          </div>
-        ))}
-      </div>
+      <StockInventoryTable inventory={filtered} onEdit={handleOpenEdit} />
 
       {/* FOOTER INFORMATIONAL BLOCK OF COMPLIANCE */}
       <div className="bg-slate-50 border border-slate-200 rounded-xl p-5 flex items-start gap-4">
@@ -285,7 +270,7 @@ export default function SupplierInventory() {
         products={products}
       />
 
-  
+
       {/* ==================================== MODAL: EDIT PRODUCT (STOCK & BASE PRICE ONLY) ==================================== */}
       <AnimatePresence>
         {editingProduct && (
@@ -433,10 +418,3 @@ export default function SupplierInventory() {
     </div>
   )
 }
-
-const Stat = ({ label, value }: { label: string; value: number }) => (
-  <div className="p-4 border rounded-lg">
-    <p className="text-xs text-gray-500">{label}</p>
-    <p className="text-xl font-bold">{value}</p>
-  </div>
-)
