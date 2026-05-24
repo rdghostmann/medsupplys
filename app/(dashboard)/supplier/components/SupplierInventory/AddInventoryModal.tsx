@@ -19,18 +19,6 @@ type Product = {
   }
 }
 
-// interface InventoryProduct {
-//   id: string
-//   productId: string
-//   name: string
-//   category: string
-//   basePrice: number
-//   stock: number
-//   commission: number
-//   finalPrice: number
-//   batchInfo: string
-// }
-
 interface Props {
   isOpen: boolean
   onClose: () => void

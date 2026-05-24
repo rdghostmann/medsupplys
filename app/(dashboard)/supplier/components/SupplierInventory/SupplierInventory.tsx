@@ -3,9 +3,10 @@
 
 import React, { useEffect, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { AddInventoryModal, InventoryProduct } from "./AddInventoryModal"
+import { AddInventoryModal } from "./AddInventoryModal"
 import { getProductCatalog } from "@/services/product-catalog.service"
 import { Plus, Search, X, Edit3, Package, AlertTriangle, Info } from "lucide-react"
+import { InventoryProduct } from "@/types"
 
 type InventoryStats = {
   totalSkus: number
@@ -17,7 +18,7 @@ type InventoryStats = {
 
 export default function SupplierInventory () {
   const [inventory, setInventory] = useState<InventoryProduct[]>([])
-  const [products, setProducts] = useState<any[]>([])
+  const [products, setProducts] = useState<InventoryProduct[]>([])
 
   const [open, setOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<InventoryProduct | null>(null)
@@ -27,7 +28,7 @@ export default function SupplierInventory () {
   const [editBatchInfo, setEditBatchInfo] = useState("")
 
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
+  // const [selectedCategory, setSelectedCategory] = useState("All")
 
   useEffect(() => {
     getProductCatalog().then(setProducts)
@@ -194,7 +195,7 @@ export default function SupplierInventory () {
   )
 }
 
-const Stat = ({ label, value }: any) => (
+const Stat = ({ label, value }: { label: string; value: number }) => (
   <div className="p-4 border rounded-lg">
     <p className="text-xs text-gray-500">{label}</p>
     <p className="text-xl font-bold">{value}</p>
