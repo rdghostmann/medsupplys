@@ -8,14 +8,14 @@ export const roleNavMain = {
     { id: "order-track", title: "Track Order", icon: "🚚", url: "/buyer/orders-tracking" },
   ],
   supplier: [
-    { id: "overview", title: "Overview", icon: " ", url: "/supplier" },
-    { id: "inventory", title: "Inventory", icon: " ", url: "/supplier/inventory" },
+    { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
+    { id: "inventory", title: "Inventory", icon: "📦", url: "/supplier/inventory" },
   ],
   pharmacist: [
-    { id: "verification", title: "Verification", icon: " ", url: "/pharmacist/verification" },
+    { id: "verification", title: "Verification", icon: "✅", url: "/pharmacist/verification" },
   ],
   admin: [
-    { id: "users", title: "Users", icon: " ", url: "/admin/users" },
-    { id: "products", title: "Products", icon: " ", url: "/admin/products" },
+    { id: "users", title: "Users", icon: "👥", url: "/admin/users" },
+    { id: "products", title: "Products", icon: "📦", url: "/admin/products" },
   ],
 }
