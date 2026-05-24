@@ -1,249 +1,202 @@
 // SupplierInventory.tsx
-// Codebase AddInventoryModal.tsx
 "use client"
 
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useEffect, useState, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { X, CheckCircle2, Package } from "lucide-react"
+import { AddInventoryModal, InventoryProduct } from "./AddInventoryModal"
+import { getProductCatalog } from "@/services/product-catalog.service"
+import { Plus, Search, X, Edit3, Package, AlertTriangle, Info } from "lucide-react"
 
-type Product = {
-  _id: string
-  name: string
-  category: string
-  unit?: string
-  moq?: number
-  type?: "IMPORTER" | "DISTRIBUTOR"
-  pricing?: {
-    proposedPrice?: number
-    commissionPercent?: number
-  }
+type InventoryStats = {
+  totalSkus: number
+  totalStockElements: number
+  outOfStockCount: number
+  lowStockCount: number
+  totalValuation: number
 }
 
-interface InventoryProduct {
-  id: string
-  productId: string
-  name: string
-  category: string
-  basePrice: number
-  stock: number
-  commission: number
-  finalPrice: number
-  batchInfo: string
-}
+export default function SupplierInventory () {
+  const [inventory, setInventory] = useState<InventoryProduct[]>([])
+  const [products, setProducts] = useState<any[]>([])
 
-interface Props {
-  isOpen: boolean
-  onClose: () => void
-  onAdd: (item: InventoryProduct) => void
-  existingInventory: InventoryProduct[]
-  products: Product[]
-}
+  const [open, setOpen] = useState(false)
+  const [editingProduct, setEditingProduct] = useState<InventoryProduct | null>(null)
 
-export const AddInventoryModal: React.FC<Props> = ({
-  isOpen,
-  onClose,
-  onAdd,
-  existingInventory,
-  products,
-}) => {
-  const [productId, setProductId] = useState("")
-  const [basePrice, setBasePrice] = useState<number>(0)
-  const [stock, setStock] = useState<number>(0)
-  const [batchInfo, setBatchInfo] = useState("")
+  const [editBasePrice, setEditBasePrice] = useState(0)
+  const [editStockQuantity, setEditStockQuantity] = useState(0)
+  const [editBatchInfo, setEditBatchInfo] = useState("")
 
-  const availableProducts = useMemo(() => {
-    const used = new Set(existingInventory.map(i => i.productId))
-    return products.filter(p => !used.has(p._id))
-  }, [products, existingInventory])
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("All")
 
   useEffect(() => {
-    if (!isOpen) return
+    getProductCatalog().then(setProducts)
+  }, [])
 
-    const first = availableProducts[0]
-    if (!first) return
-
-    setProductId(first._id)
-    setBasePrice(first.pricing?.proposedPrice || 0)
-    setStock(100)
-
-    const year = new Date().getFullYear()
-    setBatchInfo(`Batch-${year}-${Math.floor(Math.random() * 9999)}`)
-  }, [isOpen, availableProducts])
-
-  const selectedProduct = useMemo(
-    () => availableProducts.find(p => p._id === productId),
-    [productId, availableProducts]
-  )
-
-  const commissionPercent =
-    selectedProduct?.pricing?.commissionPercent || 10
-
-  const commission = Math.round(basePrice * (commissionPercent / 100))
-  const finalPrice = basePrice + commission
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!selectedProduct) return
-
-    onAdd({
-      id: crypto.randomUUID(),
-      productId: selectedProduct._id,
-      name: selectedProduct.name,
-      category: selectedProduct.category,
-      basePrice,
-      stock,
-      commission,
-      finalPrice,
-      batchInfo,
-      moq: selectedProduct.moq ?? 0,
-      unit: selectedProduct.unit ?? "unit",
-      type: selectedProduct.type ?? "DISTRIBUTOR",
-    })
-
-    onClose()
+  const handleAdd = (item: InventoryProduct) => {
+    setInventory(prev => [item, ...prev])
   }
 
-  return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          />
+  const handleOpenEdit = (item: InventoryProduct) => {
+    setEditingProduct(item)
+    setEditBasePrice(item.basePrice)
+    setEditStockQuantity(item.stock)
+    setEditBatchInfo(item.batchInfo)
+  }
 
-          {/* Modal */}
-          <motion.div
-            initial={{ scale: 0.95, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ type: "spring", stiffness: 260, damping: 20 }}
-            className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden z-10"
-          >
-            {/* Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b">
-              <h2 className="font-semibold text-lg">Add Inventory Item</h2>
-              <button onClick={onClose}>
-                <X className="w-5 h-5" />
-              </button>
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingProduct) return
+
+    setInventory(prev =>
+      prev.map(p =>
+        p.id === editingProduct.id
+          ? {
+              ...p,
+              basePrice: editBasePrice,
+              stock: editStockQuantity,
+              batchInfo: editBatchInfo,
+              commission: Math.round(editBasePrice * 0.1),
+              finalPrice: Math.round(editBasePrice * 1.1),
+            }
+          : p
+      )
+    )
+
+    setEditingProduct(null)
+  }
+
+  const stats: InventoryStats = useMemo(() => {
+    return inventory.reduce(
+      (acc, item) => {
+        acc.totalSkus += 1
+        acc.totalStockElements += item.stock
+        acc.totalValuation += item.stock * item.basePrice
+
+        if (item.stock === 0) acc.outOfStockCount++
+        else if (item.stock < item.moq) acc.lowStockCount++
+
+        return acc
+      },
+      {
+        totalSkus: 0,
+        totalStockElements: 0,
+        outOfStockCount: 0,
+        lowStockCount: 0,
+        totalValuation: 0,
+      }
+    )
+  }, [inventory])
+
+  const filtered = useMemo(() => {
+    return inventory.filter(i =>
+      i.name.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [inventory, searchQuery])
+
+  return (
+    <div className="p-6 space-y-6">
+
+      {/* HEADER */}
+      <div className="flex justify-between">
+        <h1 className="text-2xl font-bold">Inventory</h1>
+
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg"
+        >
+          <Plus className="w-4 h-4" />
+          Add Product
+        </button>
+      </div>
+
+      {/* STATS */}
+      <div className="grid grid-cols-4 gap-4">
+        <Stat label="SKUs" value={stats.totalSkus} />
+        <Stat label="Stock" value={stats.totalStockElements} />
+        <Stat label="Low Stock" value={stats.lowStockCount} />
+        <Stat label="Out" value={stats.outOfStockCount} />
+      </div>
+
+      {/* SEARCH */}
+      <div className="relative">
+        <Search className="absolute left-3 top-3 w-4 h-4" />
+        <input
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="pl-10 border p-2 rounded-lg w-full"
+          placeholder="Search inventory"
+        />
+      </div>
+
+      {/* LIST */}
+      <div className="space-y-2">
+        {filtered.map(item => (
+          <div key={item.id} className="p-4 border rounded-lg flex justify-between">
+            <div>
+              <p className="font-semibold">{item.name}</p>
+              <p className="text-sm text-gray-500">₦{item.finalPrice}</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-5">
-              {/* Product Select */}
-              <div>
-                <label className="text-xs font-semibold uppercase text-slate-500">
-                  Select Product from Catalog
-                </label>
+            <button onClick={() => handleOpenEdit(item)}>
+              <Edit3 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+      </div>
 
-                <select
-                  value={productId}
-                  onChange={(e) => setProductId(e.target.value)}
-                  className="w-full mt-2 border rounded-lg p-2 text-sm"
-                >
-                  {availableProducts.map(p => (
-                    <option key={p._id} value={p._id}>
-                      {p.name} ({p.category})
-                    </option>
-                  ))}
-                </select>
-              </div>
+      {/* ADD MODAL */}
+      <AddInventoryModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        onAdd={handleAdd}
+        existingInventory={inventory}
+        products={products}
+      />
 
-              {/* Price + Stock */}
-              <div className="grid grid-cols-2 gap-4">
-                    {/* Base Price Field */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Base Price (₦)
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder="e.g. 15000"
-                      onChange={(e) => setBasePrice(e.target.value === '' ? '' : Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold"
-                      required
-                    />
-                  </div>
-                </div>
+      {/* EDIT MODAL */}
+      <AnimatePresence>
+        {editingProduct && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4">
+            <form
+              onSubmit={handleSaveEdit}
+              className="bg-white p-6 rounded-xl w-full max-w-md space-y-4"
+            >
+              <h2 className="font-bold">Edit Product</h2>
 
-               
-                {/* Stock level Quantity Field */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    Stock Quantity
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="e.g. 500"
-                    onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
-                    required
-                  />
-                </div>
+              <input
+                value={editBasePrice}
+                onChange={e => setEditBasePrice(Number(e.target.value))}
+                className="border p-2 w-full rounded"
+              />
 
-              </div>
-              
+              <input
+                value={editStockQuantity}
+                onChange={e => setEditStockQuantity(Number(e.target.value))}
+                className="border p-2 w-full rounded"
+              />
 
-               {/* Batch and Expiry Expiration metadata */}
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                  Batch / Expiry Info
-                </label>
-                <input
-                  type="text"
-                  placeholder="Batch B-2024-04, Exp: Jun 2026"
-               value="Batch B-2024-04, Exp: Jun 2026"
-                onChange={(e) => setBatchInfo(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm text-slate-800 font-medium"
-                  required
-                />
-                <p className="text-[10px] text-slate-400 mt-1.5 leading-normal">
-                  Batch number and expiration details are registered onto regulatory drug logs automatically.
-                </p>
-              </div>
+              <input
+                value={editBatchInfo}
+                onChange={e => setEditBatchInfo(e.target.value)}
+                className="border p-2 w-full rounded"
+              />
 
-              {/* Live Pricing Preview */}
-                {basePrice !== '' && Number(basePrice) > 0 && (
-                <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-4 text-xs font-medium text-blue-800 space-y-1.5 leading-snug">
-                  <div className="flex justify-between items-center text-blue-700">
-                    <span>Platform Commission Rate:</span>
-                    <span className="font-bold font-mono">10%</span>
-                  </div>
-                  <div className="flex justify-between items-center text-blue-700">
-                    <span>Calculated Commission:</span>
-                    <span className="font-bold font-mono">+₦{Math.round(Number(basePrice) * 0.1).toLocaleString()}</span>
-                  </div>
-                  <div className="h-px bg-blue-100/50 my-1" />
-                  <div className="flex justify-between items-center text-blue-900 text-sm font-bold pt-0.5">
-                    <span>Final listing buyer price:</span>
-                    <span className="font-mono text-blue-600">
-                      ₦{Math.round(Number(basePrice) * 1.1).toLocaleString()}
-                    </span>
-                  </div>
-                  
-                  <p className="text-[10px] text-blue-500 leading-normal pt-1 text-center font-normal">
-                    Platform commission: 10% — Final buyer price = Base price + ₦(Base × 10%)
-                  </p>
-                </div>
-              )}
-
-              {/* Submit */}
-              <button
-                type="submit"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm cursor-pointer hover:scale-101 active:scale-99 text-center"
-              >
-                Add Inventory
+              <button className="w-full bg-blue-600 text-white py-2 rounded">
+                Save
               </button>
             </form>
-          </motion.div>
-        </div>
-      )}
-    </AnimatePresence>
+          </div>
+        )}
+      </AnimatePresence>
+
+    </div>
   )
 }
+
+const Stat = ({ label, value }: any) => (
+  <div className="p-4 border rounded-lg">
+    <p className="text-xs text-gray-500">{label}</p>
+    <p className="text-xl font-bold">{value}</p>
+  </div>
+)

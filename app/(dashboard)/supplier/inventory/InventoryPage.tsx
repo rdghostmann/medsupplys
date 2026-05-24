@@ -8,8 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { SupplierInventory } from "../components/SupplierInventory/SupplierInventory"
-// import { SupplierInventory } from "../components/SupplierInventory/SupplierInventory"
+import SupplierInventory  from "../components/SupplierInventory/SupplierInventory"
 
 export default function InventoryPage() {
   return (
