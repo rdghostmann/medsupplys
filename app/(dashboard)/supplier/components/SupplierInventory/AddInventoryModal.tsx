@@ -191,7 +191,7 @@ export const AddInventoryModal: React.FC<Props> = ({
                 <input
                   type="text"
                   placeholder="Batch B-2024-04, Exp: Jun 2026"
-               
+               value="Batch B-2024-04, Exp: Jun 2026"
                 onChange={(e) => setBatchInfo(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm text-slate-800 font-medium"
                   required
