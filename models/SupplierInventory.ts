@@ -1,6 +1,6 @@
 // /models/SupplierInventory.ts
 
-import mongoose, { Schema, model, models } from "mongoose"
+import { Schema, model, models } from "mongoose"
 
 const SupplierInventorySchema = new Schema(
   {

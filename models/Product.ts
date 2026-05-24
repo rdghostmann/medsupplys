@@ -1,4 +1,4 @@
-// /models/Product.ts
+// /models/Product.ts - (Product Catalogue Source of truth) 
 import mongoose, { Schema, model, models } from "mongoose"
 
 const ProductSchema = new Schema(

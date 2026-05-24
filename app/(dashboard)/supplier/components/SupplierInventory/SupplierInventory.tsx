@@ -147,7 +147,7 @@ export function SupplierInventory({
             onClick={() =>
               setIsAddModalOpen(true)
             }
-            className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+            className="w-fit inline-flex items-center gap-2 rounded-md bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
           >
             <Plus className="h-4 w-4" />
             Add Product
@@ -155,7 +155,7 @@ export function SupplierInventory({
         </div>
 
         {/* STATS */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
           <div className="rounded-2xl border bg-white p-5">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold uppercase text-muted-foreground">
