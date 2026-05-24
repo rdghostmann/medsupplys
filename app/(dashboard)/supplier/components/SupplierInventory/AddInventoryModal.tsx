@@ -4,6 +4,7 @@
 import React, { useState, useEffect, useMemo } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { X, CheckCircle2, Package } from "lucide-react"
+import { InventoryProduct } from "../../../../../types"
 
 type Product = {
   _id: string
@@ -18,17 +19,17 @@ type Product = {
   }
 }
 
-interface InventoryProduct {
-  id: string
-  productId: string
-  name: string
-  category: string
-  basePrice: number
-  stock: number
-  commission: number
-  finalPrice: number
-  batchInfo: string
-}
+// interface InventoryProduct {
+//   id: string
+//   productId: string
+//   name: string
+//   category: string
+//   basePrice: number
+//   stock: number
+//   commission: number
+//   finalPrice: number
+//   batchInfo: string
+// }
 
 interface Props {
   isOpen: boolean
