@@ -2,12 +2,19 @@
 "use client"
 
 import * as React from "react"
+import Link from "next/link"
 import { useSession } from "next-auth/react"
-import { Gear, Question, MagnifyingGlass, Command } from "@phosphor-icons/react"
+import {
+  Gear,
+  Question,
+  MagnifyingGlass,
+  Command,
+} from "@phosphor-icons/react"
 
 import { NavMain } from "@/components/dashboard/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
+
 import {
   Sidebar,
   SidebarContent,
@@ -17,28 +24,45 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import Link from "next/link"
+import { roleNavMain } from "@/lib/roles_nav"
+import Image from "next/image"
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+type UserRole = keyof typeof roleNavMain
+
+export function AppSidebar({
+  ...props
+}: React.ComponentProps<typeof Sidebar>) {
   const { data: session } = useSession()
 
-  // Define data inside the component so it has access to 'session'
+  // Get current user role
+  const role = session?.user?.role as UserRole | undefined
+
+  // Dynamically get nav items based on role
+  const navMain = role ? roleNavMain[role] || [] : []
+
   const data = {
     user: {
       name: `${session?.user?.firstName || ""} ${session?.user?.lastName || ""}`.trim() || "Guest",
       email: session?.user?.email || "guest@example.com",
       avatar: "/avatars/shadcn.webp",
     },
-    navMain: [
-      { id: "overview", title: "Overview", icon: "📊", url: "/buyer" },
-      { id: "browse", title: "Browse Products", icon: "🛍️", url: "/buyer/marketplace" },
-      { id: "orders", title: "My Orders", icon: "📋", url: "/buyer/orders" },
-      { id: "order-track", title: "Track Order", icon: "🚚", url: "/buyer/orders-tracking" },
-    ],
+    navMain,
     navSecondary: [
-      { title: "Settings", url: "#", icon: <Gear /> },
-      { title: "Get Help", url: "#", icon: <Question /> },
-      { title: "Search", url: "#", icon: <MagnifyingGlass /> },
+      {
+        title: "Settings",
+        url: "#",
+        icon: <Gear />,
+      },
+      {
+        title: "Get Help",
+        url: "#",
+        icon: <Question />,
+      },
+      {
+        title: "Search",
+        url: "#",
+        icon: <MagnifyingGlass />,
+      },
     ],
   }
 
@@ -49,8 +73,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:p-1.5!">
               <Link href="/">
-                <Command className="size-5!" />
-                <span className="text-base font-semibold">MedSupply</span>
+                <Command className="hidden size-5!" />
+                <Image src="/logo.png" alt="User Avatar" width={20} height={20} />
+                <span className="text-xl sm:text-2xl font-black tracking-tight bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+                  MedSupply
+                </span>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -61,12 +88,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
-
       <SidebarFooter>
-        {/* Only render user menu if session exists, or show a loading state */}
         <NavUser user={data.user} />
       </SidebarFooter>
     </Sidebar>
   )
 }
-

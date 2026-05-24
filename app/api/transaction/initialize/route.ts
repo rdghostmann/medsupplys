@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
       totalPrice, commission, fulfillmentMode, candidateSuppliers, deliveryDetails
     } = body
 
-    const reference = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000000)}`
+    const reference = `MSORD-${Math.floor(Math.random() * 1000000)}-${Date.now()}`
 
     // Create Order
     const order = await Order.create({

@@ -1,21 +1,21 @@
-// lib/roles.ts
+// lib/roles_nav.ts - Defines the navigation structure for different user roles in the application.
 
-export const roleNav = {
+export const roleNavMain = {
     buyer: [
-    { id: "overview", title: "Overview", icon: "📊", url: "/dashboard/buyer" },
-    { id: "browse", title: "Browse Products", icon: "🛍️", url: "/dashboard/buyer/browse" },
-    { id: "orders", title: "My Orders", icon: "📋", url: "/dashboard/buyer/orders" },
-    { id: "order-track", title: "Track Order", icon: "🚚", url: "/dashboard/buyer/orders-tracking" },
+    { id: "overview", title: "Overview", icon: "📊", url: "/buyer" },
+    { id: "browse", title: "Browse Products", icon: "🛍️", url: "/buyer/browse" },
+    { id: "orders", title: "My Orders", icon: "📋", url: "/buyer/orders" },
+    { id: "order-track", title: "Track Order", icon: "🚚", url: "/buyer/orders-tracking" },
   ],
   supplier: [
-    { id: "overview", title: "Overview", icon: " ", url: "/dashboard/supplier" },
-    { id: "inventory", title: "Inventory", icon: " ", url: "/dashboard/supplier/inventory" },
+    { id: "overview", title: "Overview", icon: " ", url: "/supplier" },
+    { id: "inventory", title: "Inventory", icon: " ", url: "/supplier/inventory" },
   ],
   pharmacist: [
-    { id: "verification", title: "Verification", icon: " ", url: "/dashboard/pharmacist/verification" },
+    { id: "verification", title: "Verification", icon: " ", url: "/pharmacist/verification" },
   ],
   admin: [
-    { id: "users", title: "Users", icon: " ", url: "/dashboard/admin/users" },
-    { id: "products", title: "Products", icon: " ", url: "/dashboard/admin/products" },
+    { id: "users", title: "Users", icon: " ", url: "/admin/users" },
+    { id: "products", title: "Products", icon: " ", url: "/admin/products" },
   ],
 }
