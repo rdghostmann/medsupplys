@@ -1,4 +1,6 @@
 // types/index.ts
+import { z } from "zod"
+
 export type SupplierType = "importer" | "distributor" | "retailer"
 export type Role = "buyer" | "supplier" | "admin"
 export type OrganizationType = "manufacturer" | "distributor" | "wholesaler" | "pharmacy"
@@ -86,7 +88,6 @@ export const unitTypesBySupplier = {
 
   retailer: ["unit"],
 }
-
 
 export type SupplierDTO = {
   _id: string
@@ -187,7 +188,6 @@ export type MarketplaceSupplier = Supplier & {
 }
 
 
-
 export type DeliveryDetails = {
   contactName: string;
   phone: string;
@@ -197,21 +197,84 @@ export type DeliveryDetails = {
 };
 
 
-export type InventoryProduct = {
-  id: string
-  productId: string
+export type ProductCatalogItem = {
+  _id: string
   name: string
   category: string
+}
 
-  type?: "IMPORTER" | "DISTRIBUTOR"
-  unit?: string
-  moq?: number
+export type SupplierInventoryItem = {
+  _id: string
 
-  basePrice: number
+  product: {
+    _id: string
+    name: string
+    category: string
+  }
+
+  supplierType:
+  | "importer"
+  | "distributor"
+  | "retailer"
+
+  salesUnit:
+  | "unit"
+  | "pack"
+  | "carton"
+
   stock: number
 
-  commission: number
+  minOrderQuantity: number
+
+  reorderLevel: number
+
+  basePrice: number
+
+  commissionPercent: number
+
+  commissionAmount: number
+
   finalPrice: number
 
-  batchInfo: string
+  status:
+  | "available"
+  | "low"
+  | "out"
+  | "on-request"
+
+  warehouseLocation?: string
+
+  batchInfo: {
+    batchNumber?: string
+    nafdacNumber?: string
+    expiryDate?: string
+    manufacturingDate?: string
+  }
+
+  verificationImages: {
+    url: string
+    label: string
+  }[]
+
+  createdAt: string
 }
+
+
+
+export const inventorySchema = z.object({
+  id: z.string(),
+  productId: z.string(),
+  name: z.string(),
+  category: z.string(),
+  nafdacNumber: z.string().optional(),
+  batchInfo: z.string(),
+  type: z.enum(["IMPORTER", "DISTRIBUTOR"]),
+  unit: z.string(),
+  basePrice: z.number(),
+  commission: z.number(),
+  finalPrice: z.number(),
+  stock: z.number(),
+  moq: z.number(),
+})
+
+export type InventoryProduct = z.infer<typeof inventorySchema>

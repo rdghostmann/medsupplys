@@ -32,15 +32,10 @@ export default function InventoryPage() {
               {/* Inventory management UI goes here */}
               <div className="@container/main flex flex-1 flex-col gap-2">
                 <div className="flex flex-col gap-4 pb-4 md:gap-6 md:py-6">
-          
                   <SupplierInventory  />
-
                 </div>
-
-
               </div>
             </div>
-
           </div>
         </div>
       </div>

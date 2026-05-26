@@ -130,11 +130,14 @@ export async function createSupplierInventory(data: CreateSupplierInventoryDTO) 
   }
 }
 
-export async function getSupplierInventory(
-  supplierId: string
-) {
+export async function getSupplierInventory(supplierId?: string) {
+  
   try {
     await connectToDB()
+
+    if (!supplierId) {
+      throw new Error("supplierId is required")
+    }
 
     if (!mongoose.Types.ObjectId.isValid(supplierId)) {
       return []
@@ -147,7 +150,9 @@ export async function getSupplierInventory(
       .populate({
         path: "productId",
         select: "name category description images pricing",
-      }).sort({ createdAt: -1 }).lean()
+      })
+      .sort({ createdAt: -1 })
+      .lean()
 
     return JSON.parse(JSON.stringify(inventory))
   } catch (error) {
@@ -156,87 +161,3 @@ export async function getSupplierInventory(
   }
 }
 
-
-===================================================================
-
-// import { connectToDB } from "@/lib/connectToDB"
-// import { SupplierInventory } from "@/models/SupplierInventory"
-
-export async function getSupplierInventoryService(supplierId: string) {
-  await connectToDB()
-
-  const inventory = await SupplierInventory.find({ supplierId })
-    .populate("productId")
-    .sort({ createdAt: -1 })
-    .lean()
-
-  return JSON.parse(JSON.stringify(inventory))
-}
-
-
-import { connectToDB } from "@/lib/connectToDB"
-import { SupplierInventory } from "@/models/SupplierInventory"
-import { Product } from "@/models/Product"
-
-export async function createSupplierInventoryService(data: any) {
-  try {
-    await connectToDB()
-
-    const product = await Product.findById(data.productId)
-
-    if (!product) {
-      return {
-        success: false,
-        message: "Product not found",
-      }
-    }
-
-    const commissionPercent = product.pricing?.commissionPercent ?? 10
-
-    const commissionAmount = data.basePrice * (commissionPercent / 100)
-    const finalPrice = data.basePrice + commissionAmount
-
-    const status =
-      data.stock <= 0
-        ? "out"
-        : data.stock <= data.reorderLevel
-        ? "low"
-        : "available"
-
-    const inventory = await SupplierInventory.create({
-      supplierId: data.supplierId,
-      productId: data.productId,
-      supplierType: data.supplierType,
-      salesUnit: data.salesUnit ?? "unit",
-
-      basePrice: data.basePrice,
-      commissionPercent,
-      commissionAmount,
-      finalPrice,
-
-      stock: data.stock ?? 0,
-      reorderLevel: data.reorderLevel ?? 10,
-      minOrderQuantity: data.minOrderQuantity ?? 1,
-      maxOrderQuantity: data.maxOrderQuantity,
-
-      batchInfo: data.batchInfo,
-      warehouseLocation: data.warehouseLocation,
-
-      status,
-      isActive: true,
-      isFlagged: false,
-    })
-
-    return {
-      success: true,
-      inventory: JSON.parse(JSON.stringify(inventory)),
-    }
-  } catch (error) {
-    console.error("Inventory Create Error:", error)
-
-    return {
-      success: false,
-      message: "Failed to create inventory",
-    }
-  }
-}

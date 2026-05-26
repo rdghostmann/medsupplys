@@ -76,6 +76,10 @@ const SupplierInventorySchema = new Schema(
       default: 10,
     },
 
+    nafdacNumber: {
+      type: String,
+    },
+
     batchInfo: {
       batchNumber: String,
       expiryDate: Date,
@@ -119,4 +123,4 @@ SupplierInventorySchema.index({
   productId: 1,
 })
 
-export const SupplierInventory =  models.SupplierInventory ||  model("SupplierInventory", SupplierInventorySchema)
+export const SupplierInventory = models.SupplierInventory || model("SupplierInventory", SupplierInventorySchema)
