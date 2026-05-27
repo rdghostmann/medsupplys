@@ -267,7 +267,11 @@ export const inventorySchema = z.object({
   name: z.string(),
   category: z.string(),
   nafdacNumber: z.string().optional(),
-  batchInfo: z.string(),
+  batchInfo: z.object({
+    batchNumber: z.string().optional(),
+    expiryDate: z.date().optional(),
+    manufacturingDate: z.date().optional(),
+  }).optional(),
   type: z.enum(["IMPORTER", "DISTRIBUTOR"]),
   unit: z.string(),
   basePrice: z.number(),

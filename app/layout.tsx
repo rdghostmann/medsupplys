@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/sonner";
 import type { Metadata } from "next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SessionWrapper from "@/components/SessionWrapper/SessionWrapper";
+import ReactQueryProvider from "@/provider/ReactQueryProvider";
 
 
 const fontSansBig = Space_Grotesk({
@@ -139,7 +140,9 @@ export default function RootLayout({
         >
           <SessionWrapper>
             <TooltipProvider>
-              {children}
+              <ReactQueryProvider>
+                {children}
+              </ReactQueryProvider>
               <Toaster />
             </TooltipProvider>
           </SessionWrapper>

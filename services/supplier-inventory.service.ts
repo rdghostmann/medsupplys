@@ -5,6 +5,7 @@ import mongoose from "mongoose"
 import { connectToDB } from "@/lib/connectToDB"
 import { Product } from "@/models/Product"
 import { SupplierInventory } from "@/models/SupplierInventory"
+import { InventoryProduct } from "@/types"
 
 type CreateSupplierInventoryDTO = {
   supplierId: string
@@ -13,6 +14,7 @@ type CreateSupplierInventoryDTO = {
   salesUnit?: "unit" | "pack" | "carton"
   basePrice: number
   stock: number
+  nafdacNumber: string
   reorderLevel?: number
   minOrderQuantity?: number
   maxOrderQuantity?: number
@@ -21,6 +23,38 @@ type CreateSupplierInventoryDTO = {
     batchNumber?: string
     expiryDate?: Date
     manufacturingDate?: Date
+  }
+}
+
+type SupplierInventoryLean = {
+  _id: mongoose.Types.ObjectId
+
+  supplierType: "importer" | "distributor" | "retailer"
+
+  salesUnit?: "unit" | "pack" | "carton"
+
+  basePrice?: number
+  commissionAmount?: number
+  finalPrice?: number
+
+  stock?: number
+  minOrderQuantity?: number
+
+  nafdacNumber?: string
+
+  batchInfo?: {
+    batchNumber?: string
+    expiryDate?: Date
+    manufacturingDate?: Date
+  }
+
+  productId?: {
+    _id?: mongoose.Types.ObjectId
+    name?: string
+    category?: string
+    unit?: string
+    moq?: number
+    type?: "IMPORTER" | "DISTRIBUTOR"
   }
 }
 
@@ -95,8 +129,8 @@ export async function createSupplierInventory(data: CreateSupplierInventoryDTO) 
       stock === 0
         ? "out"
         : stock < reorderLevel
-        ? "low"
-        : "available"
+          ? "low"
+          : "available"
 
     // -----------------------------
     // 6. Create inventory record
@@ -112,8 +146,12 @@ export async function createSupplierInventory(data: CreateSupplierInventoryDTO) 
       finalPrice,
       stock,
       reorderLevel,
+      nafdacNumber: data.nafdacNumber,
+      batchInfo: data.batchInfo,
+      minOrderQuantity: data.minOrderQuantity,
+      maxOrderQuantity: data.maxOrderQuantity,
+      warehouseLocation: data.warehouseLocation,
       status,
-      ...data.batchInfo && { batchInfo: data.batchInfo },
     })
 
     return {
@@ -130,8 +168,9 @@ export async function createSupplierInventory(data: CreateSupplierInventoryDTO) 
   }
 }
 
-export async function getSupplierInventory(supplierId?: string) {
-  
+export async function getSupplierInventory(
+  supplierId?: string
+): Promise<InventoryProduct[]> {
   try {
     await connectToDB()
 
@@ -149,15 +188,88 @@ export async function getSupplierInventory(supplierId?: string) {
     })
       .populate({
         path: "productId",
-        select: "name category description images pricing",
+        select: "name category pricing unit moq type",
       })
       .sort({ createdAt: -1 })
-      .lean()
+      .lean<SupplierInventoryLean[]>()
 
-    return JSON.parse(JSON.stringify(inventory))
+    return inventory.map((item) => ({
+      id: item._id.toString(),
+
+      productId: item.productId?._id?.toString() ?? "",
+
+      name: item.productId?.name ?? "Unknown Product",
+
+      category: item.productId?.category ?? "General",
+
+      nafdacNumber: item.nafdacNumber ?? "",
+
+      batchInfo: {
+        batchNumber:
+          item.batchInfo?.batchNumber ?? undefined,
+
+        expiryDate: item.batchInfo?.expiryDate
+          ? new Date(item.batchInfo.expiryDate)
+          : undefined,
+
+        manufacturingDate:
+          item.batchInfo?.manufacturingDate
+            ? new Date(item.batchInfo.manufacturingDate)
+            : undefined,
+      },
+
+      type:
+        item.supplierType === "importer"
+          ? "IMPORTER"
+          : "DISTRIBUTOR",
+
+      unit: item.salesUnit ?? "unit",
+
+      basePrice: item.basePrice ?? 0,
+
+      commission: item.commissionAmount ?? 0,
+
+      finalPrice: item.finalPrice ?? 0,
+
+      stock: item.stock ?? 0,
+
+      moq: item.minOrderQuantity ?? 1,
+    }))
   } catch (error) {
     console.error("getSupplierInventory error:", error)
+
     return []
   }
+}
+
+export async function updateInventoryItem({
+  id,
+  basePrice,
+  stock,
+  batchInfo,
+}: {
+  id: string
+  basePrice: number
+  stock: number
+  batchInfo: {
+    batchNumber?: string
+    expiryDate?: Date
+    manufacturingDate?: Date
+  }
+}) {
+  await connectToDB()
+
+  const commission = Math.round(basePrice * 0.1)
+  const finalPrice = basePrice + commission
+
+  await SupplierInventory.findByIdAndUpdate(id, {
+    basePrice,
+    stock,
+    batchInfo,
+    commission,
+    finalPrice,
+  })
+
+  return { success: true }
 }
 

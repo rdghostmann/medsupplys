@@ -7,6 +7,9 @@ import { X } from "lucide-react"
 
 import type { InventoryProduct } from "@/types"
 
+import { useSession } from "next-auth/react"
+import { createSupplierInventory } from "@/services/supplier-inventory.service"
+
 type Product = {
   _id: string
   name: string
@@ -35,10 +38,17 @@ export const AddInventoryModal: React.FC<Props> = ({
   existingInventory,
   products,
 }) => {
+
+  const { data: session } = useSession()
+
   const [productId, setProductId] = useState("")
   const [basePrice, setBasePrice] = useState<number>(0)
   const [stock, setStock] = useState<number>(0)
-  const [batchInfo, setBatchInfo] = useState("")
+  const [nafdacNumber, setNafdacNumber] = useState("")
+
+  const [batchNumber, setBatchNumber] = useState("")
+  const [expiryDate, setExpiryDate] = useState("")
+  const [manufacturingDate, setManufacturingDate] = useState("")
 
   /* =========================
      AVAILABLE PRODUCTS
@@ -65,37 +75,68 @@ export const AddInventoryModal: React.FC<Props> = ({
   /* =========================
      SUBMIT
   ========================= */
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
     if (!selectedProduct) return
 
-    const payload: InventoryProduct = {
-      id: crypto.randomUUID(),
-      productId: selectedProduct._id,
-      name: selectedProduct.name,
-      category: selectedProduct.category,
-      basePrice,
-      stock,
-      commission,
-      finalPrice,
-      batchInfo,
-      moq: selectedProduct.moq ?? 0,
-      unit: selectedProduct.unit ?? "unit",
-      type: selectedProduct.type ?? "DISTRIBUTOR",
+    const supplierId = session?.user?.id
+
+    if (!supplierId) {
+      console.error("Supplier session not found")
+      return
     }
 
-    // IMPORTANT: delegate persistence to parent
-    onSuccess()
+    try {
+      const response = await createSupplierInventory({
+        supplierId,
+        productId: selectedProduct._id,
+        supplierType: selectedProduct.type === "IMPORTER"
+            ? "importer"
+            : "distributor",
 
-    // reset optional (keeps UX clean)
-    setProductId("")
-    setBasePrice(0)
-    setStock(0)
-    setBatchInfo("")
+        salesUnit: selectedProduct.unit === "pack" ||
+            selectedProduct.unit === "carton"
+            ? selectedProduct.unit
+            : "unit",
+        basePrice,
+        stock,
+        nafdacNumber,
+        minOrderQuantity: selectedProduct.moq ?? 1,
+        batchInfo: {
+          batchNumber,
+          expiryDate: expiryDate
+            ? new Date(expiryDate)
+            : undefined,
+          manufacturingDate: manufacturingDate
+            ? new Date(manufacturingDate)
+            : undefined,
+        },
+      })
 
-    onClose()
+      if (!response.success) {
+        console.error(response.message)
+        return
+      }
+
+      onSuccess()
+
+      // RESET FORM
+      setProductId("")
+      setBasePrice(0)
+      setStock(0)
+
+      setNafdacNumber("")
+
+      setBatchNumber("")
+      setExpiryDate("")
+      setManufacturingDate("")
+
+      onClose()
+    } catch (error) {
+      console.error("Failed to create inventory:", error)
+    }
   }
-
   return (
     <AnimatePresence>
       {isOpen && (
@@ -131,7 +172,7 @@ export const AddInventoryModal: React.FC<Props> = ({
 
             <form onSubmit={handleSubmit} className="p-6 space-y-5">
 
-              {/* PRODUCT SELECT */}
+              {/* Product Select */}
               <div>
                 <label className="text-xs font-semibold uppercase text-slate-500">
                   Select Product from Catalog
@@ -142,7 +183,6 @@ export const AddInventoryModal: React.FC<Props> = ({
                   onChange={(e) => setProductId(e.target.value)}
                   className="w-full mt-2 border rounded-lg p-2 text-sm"
                 >
-                  <option value="">Select product</option>
                   {availableProducts.map(p => (
                     <option key={p._id} value={p._id}>
                       {p.name} ({p.category})
@@ -154,79 +194,125 @@ export const AddInventoryModal: React.FC<Props> = ({
               {/* PRICE + STOCK */}
               <div className="grid grid-cols-2 gap-4">
 
-                {/* BASE PRICE */}
+                {/* Base Price Field */}
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Base Price (₦)
                   </label>
-
-                  <input
-                    type="number"
-                    min="0"
-                    value={basePrice}
-                    onChange={(e) => setBasePrice(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 border rounded-lg text-sm font-mono font-bold"
-                    required
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 15000"
+                      onChange={(e) => setBasePrice(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold"
+                      required
+                    />
+                  </div>
                 </div>
 
-                {/* STOCK */}
+                {/* Stock level Quantity Field */}
                 <div>
-                  <label className="block text-xs font-bold uppercase text-slate-500 mb-2">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Stock Quantity
                   </label>
-
                   <input
                     type="number"
                     min="0"
-                    value={stock}
+                    placeholder="e.g. 500"
                     onChange={(e) => setStock(Number(e.target.value))}
-                    className="w-full px-3.5 py-2.5 border rounded-lg text-sm font-mono font-bold"
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
+                    required
+                  />
+                </div>
+
+              </div>
+
+
+              <div className="grid grid-cols-2 gap-4">
+                {/* NAFDAC */}
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    NAFDAC No.
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="NAFDAC Number"
+                    value={nafdacNumber}
+                    onChange={(e) => setNafdacNumber(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    Batch Number
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Batch Number"
+                    value={batchNumber}
+                    onChange={(e) => setBatchNumber(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
+                    required
+                  />
+                </div>
+
+              </div>
+
+
+              {/* BATCH INFO */}
+              <div className="grid grid-cols-2 gap-3">
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    Manufacturing Date
+                  </label>
+                  <input
+                    type="date"
+                    value={manufacturingDate}
+                    onChange={(e) => setManufacturingDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    Expiry Date
+                  </label>
+                  <input
+                    type="date"
+                    value={expiryDate}
+                    onChange={(e) => setExpiryDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm transition-all font-mono font-bold animate-none"
                     required
                   />
                 </div>
               </div>
 
-              {/* BATCH INFO */}
-              <div>
-                <label className="block text-xs font-bold uppercase text-slate-500 mb-2">
-                  Batch / Expiry Info
-                </label>
-
-                <input
-                  type="text"
-                  value={batchInfo}
-                  onChange={(e) => setBatchInfo(e.target.value)}
-                  className="w-full px-3.5 py-2.5 border rounded-lg text-sm font-medium"
-                  required
-                />
-              </div>
-
-              {/* LIVE PREVIEW */}
+              {/* PREVIEW */}
               {basePrice > 0 && (
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-xs space-y-2">
-
-                  <div className="flex justify-between">
-                    <span>Commission ({commissionPercent}%)</span>
-                    <span className="font-mono">
-                      ₦{commission.toLocaleString()}
-                    </span>
+                <div className="bg-blue-50 border rounded-xl p-4 text-xs space-y-2">
+                  <div className="flex justify-between items-center text-blue-700">
+                    <span>Commission Rate:</span>
+                    <span className="font-bold font-mono">₦{commission.toLocaleString()}</span>
                   </div>
+
+                  <div className="h-px bg-blue-100/50 my-1" />
 
                   <div className="flex justify-between font-bold text-blue-700">
                     <span>Final Price</span>
-                    <span className="font-mono">
-                      ₦{finalPrice.toLocaleString()}
-                    </span>
+                    <span>₦{finalPrice.toLocaleString()}</span>
                   </div>
-
                 </div>
               )}
 
               {/* SUBMIT */}
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg"
+                className="w-full py-3 bg-emerald-600 text-white rounded-lg"
               >
                 Add Inventory
               </button>

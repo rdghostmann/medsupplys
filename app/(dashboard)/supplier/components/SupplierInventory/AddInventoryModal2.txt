@@ -153,7 +153,8 @@ export const AddInventoryModal: React.FC<Props> = ({
 
               {/* Price + Stock */}
               <div className="grid grid-cols-2 gap-4">
-                    {/* Base Price Field */}
+              
+                {/* Base Price Field */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                     Base Price (₦)
@@ -170,7 +171,7 @@ export const AddInventoryModal: React.FC<Props> = ({
                   </div>
                 </div>
 
-               
+
                 {/* Stock level Quantity Field */}
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
@@ -187,9 +188,9 @@ export const AddInventoryModal: React.FC<Props> = ({
                 </div>
 
               </div>
-              
 
-               {/* Batch and Expiry Expiration metadata */}
+
+              {/* Batch and Expiry Expiration metadata */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                   Batch / Expiry Info
@@ -197,8 +198,8 @@ export const AddInventoryModal: React.FC<Props> = ({
                 <input
                   type="text"
                   placeholder="Batch B-2024-04, Exp: Jun 2026"
-               value="Batch B-2024-04, Exp: Jun 2026"
-                onChange={(e) => setBatchInfo(e.target.value)}
+                  value="Batch B-2024-04, Exp: Jun 2026"
+                  onChange={(e) => setBatchInfo(e.target.value)}
                   className="w-full px-3.5 py-2.5 border border-slate-250 focus:outline-none focus:ring-2 focus:ring-blue-500/10 focus:border-blue-500 rounded-lg text-sm text-slate-800 font-medium"
                   required
                 />
@@ -208,7 +209,7 @@ export const AddInventoryModal: React.FC<Props> = ({
               </div>
 
               {/* Live Pricing Preview */}
-                {basePrice !== '' && Number(basePrice) > 0 && (
+              {basePrice !== '' && Number(basePrice) > 0 && (
                 <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-4 text-xs font-medium text-blue-800 space-y-1.5 leading-snug">
                   <div className="flex justify-between items-center text-blue-700">
                     <span>Platform Commission Rate:</span>
@@ -225,7 +226,7 @@ export const AddInventoryModal: React.FC<Props> = ({
                       ₦{Math.round(Number(basePrice) * 1.1).toLocaleString()}
                     </span>
                   </div>
-                  
+
                   <p className="text-[10px] text-blue-500 leading-normal pt-1 text-center font-normal">
                     Platform commission: 10% — Final buyer price = Base price + ₦(Base × 10%)
                   </p>
@@ -235,7 +236,7 @@ export const AddInventoryModal: React.FC<Props> = ({
               {/* Submit */}
               <button
                 type="submit"
-                  className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm cursor-pointer hover:scale-101 active:scale-99 text-center"
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-sm hover:shadow-md transition-all duration-200 text-sm cursor-pointer hover:scale-101 active:scale-99 text-center"
               >
                 Add Inventory
               </button>
