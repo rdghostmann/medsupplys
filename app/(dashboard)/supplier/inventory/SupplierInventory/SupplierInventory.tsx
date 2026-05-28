@@ -139,7 +139,7 @@ export default function SupplierInventory() {
 
         <button
           onClick={() => setOpen(true)}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-2 py-1 text-xs md:text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md"
+          className="self-end w-fit inline-flex items-center justify-center gap-2 rounded-md bg-blue-600 px-2 py-2 text-xs md:text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 hover:shadow-md"
         >
           <Plus className="h-4 w-4" />
           Add Product
