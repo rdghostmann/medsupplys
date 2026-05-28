@@ -18,7 +18,7 @@ export default function OrderRequestsPage() {
 const orders: OrderRequest[] = [
   {
     id: "1",
-    orderId: "ORD-1001",
+    orderId: "MSORD-19001",
     productName: "Paracetamol 500mg",
     buyerName: "St. Mary's Pharmacy",
     quantity: 120,
@@ -28,7 +28,7 @@ const orders: OrderRequest[] = [
 
   {
     id: "2",
-    orderId: "ORD-1002",
+    orderId: "MSORD-19002",
     productName: "Amoxicillin Capsules",
     buyerName: "LifeCare Hospital",
     quantity: 60,
@@ -38,7 +38,7 @@ const orders: OrderRequest[] = [
 
   {
     id: "3",
-    orderId: "ORD-1003",
+    orderId: "MSORD-19003",
     productName: "Vitamin C Tablets",
     buyerName: "MediPlus Store",
     quantity: 200,
