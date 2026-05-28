@@ -1,32 +1,121 @@
 // /models/Order.ts
-import { Schema, model, models } from "mongoose"
+import mongoose, {
+  Schema,
+  model,
+  models,
+  type InferSchemaType,
+  type HydratedDocument,
+  type Types,
+} from "mongoose"
+
+/* =========================================================
+   CANDIDATE SUPPLIER SUBSCHEMA
+========================================================= */
+
+const CandidateSupplierSchema = new Schema(
+  {
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "pending",
+        "accepted",
+        "rejected",
+        "unresponsive",
+      ],
+      default: "pending",
+    },
+
+    position: {
+      type: Number,
+      required: true,
+    },
+
+    notifiedAt: {
+      type: Date,
+    },
+  },
+  { _id: false }
+)
+
+/* =========================================================
+   DELIVERY DETAILS SUBSCHEMA
+========================================================= */
+
+const DeliveryDetailsSchema = new Schema(
+  {
+    contactName: String,
+
+    phone: String,
+
+    address: String,
+
+    deliveryDate: String,
+
+    notes: String,
+  },
+  { _id: false }
+)
+
+/* =========================================================
+   MAIN ORDER SCHEMA
+========================================================= */
 
 const OrderSchema = new Schema(
   {
-    
-    buyerId: { type: Schema.Types.ObjectId, ref: "User" },
-    productId: { type: Schema.Types.ObjectId, ref: "Product" },
+    buyerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
 
-    supplierId: { type: Schema.Types.ObjectId, ref: "User" },
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+      index: true,
+    },
 
-    quantity: Number,
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
 
-    supplierPrice: Number,
-    commission: Number,
-    totalPrice: Number,
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
 
-    candidateSuppliers: [
-      {
-        supplierId: { type: Schema.Types.ObjectId, ref: "User" },
-        status: {
-          type: String,
-          enum: ["pending", "accepted", "rejected", "unresponsive"],
-          default: "pending",
-        },
-        position: Number, // 🧠 ranking order
-        notifiedAt: Date,
-      },
-    ],
+    supplierPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    commission: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    candidateSuppliers: {
+      type: [CandidateSupplierSchema],
+      default: [],
+    },
 
     fulfillmentMode: {
       type: String,
@@ -36,12 +125,19 @@ const OrderSchema = new Schema(
 
     paymentStatus: {
       type: String,
-      enum: ["pending", "paid", "failed", "refunded"],
+      enum: [
+        "pending",
+        "paid",
+        "failed",
+        "refunded",
+      ],
       default: "pending",
+      index: true,
     },
 
     paystackReference: {
       type: String,
+      trim: true,
     },
 
     paymentMethod: {
@@ -50,21 +146,45 @@ const OrderSchema = new Schema(
     },
 
     deliveryDetails: {
-      contactName: String,
-      phone: String,
-      address: String,
-      deliveryDate: String,
-      notes: String,
+      type: DeliveryDetailsSchema,
+      default: {},
     },
 
     status: {
       type: String,
-      enum: ["pending", "supplier_contacted", "supplier_confirmed", "in_transit", "under_verification", "verified", "delivered", "cancelled",
+      enum: [
+        "pending",
+        "supplier_contacted",
+        "supplier_confirmed",
+        "in_transit",
+        "under_verification",
+        "verified",
+        "delivered",
+        "cancelled",
       ],
       default: "pending",
+      index: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 )
 
-export const Order = models.Order || model("Order", OrderSchema)
+/* =========================================================
+   TYPES
+========================================================= */
+
+export type OrderDocument =
+  HydratedDocument<InferSchemaType<typeof OrderSchema>>
+
+export type OrderType =
+  InferSchemaType<typeof OrderSchema>
+
+/* =========================================================
+   MODEL
+========================================================= */
+
+export const Order =
+  models.Order ||
+  model("Order", OrderSchema)
