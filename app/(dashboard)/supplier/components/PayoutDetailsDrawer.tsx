@@ -1,11 +1,12 @@
-import { motion, AnimatePresence } from 'motion/react';
-import { PayoutRecord } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
+// import { PayoutRecord } from '../types';
 import { 
   X, Download, Printer, ShieldCheck, 
   ArrowUpRight, Building2, User, Landmark, 
   HelpCircle, CheckCircle2, BadgePercent, Clock
 } from 'lucide-react';
 import { useState } from 'react';
+import { PayoutRecord } from '../earnings/components/data';
 
 interface PayoutDetailsDrawerProps {
   isOpen: boolean;

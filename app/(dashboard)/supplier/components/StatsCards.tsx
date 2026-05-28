@@ -1,5 +1,5 @@
-import { motion } from 'motion/react';
-import { TrendingUp, Clock, Calendar, Eye, EyeOff, ShieldCheck } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { TrendingUp, Clock, Calendar, Eye, EyeOff } from 'lucide-react';
 
 interface StatsCardsProps {
   totalEarned: number;

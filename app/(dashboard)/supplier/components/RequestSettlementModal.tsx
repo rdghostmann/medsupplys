@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { BankAccountDetails } from '../types';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, Landmark, Coins, ArrowRight, Loader2, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { BankAccountDetails } from '../earnings/components/data';
 
 interface RequestSettlementModalProps {
   isOpen: boolean;

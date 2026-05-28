@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { PayoutRecord, PayoutStatus } from '../types';
 import { Search, Filter, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { PayoutRecord, PayoutStatus } from '../earnings/components/data';
 
 interface PayoutTableProps {
   payouts: PayoutRecord[];
@@ -12,7 +12,7 @@ type SortOrder = 'asc' | 'desc';
 
 export default function PayoutTable({ payouts, onRowClick }: PayoutTableProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<PayoutStatus | 'All'>('All');
+  const [statusFilter, setStatusFilter] = useState<'All' | PayoutStatus>('All');
   const [sortBy, setSortBy] = useState<SortField>('date');
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 

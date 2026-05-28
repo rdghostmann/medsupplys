@@ -1,8 +1,10 @@
+"use client"
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { BankAccountDetails } from '../types';
-import { NIGERIAN_BANKS } from '../data';
+import { motion, AnimatePresence } from 'framer-motion';
+// import { BankAccountDetails } from '../types';
+// import { NIGERIAN_BANKS } from '../data';
 import { X, Landmark, User, Hash, HelpCircle, ArrowRight, Loader2, Check } from 'lucide-react';
+import { BankAccountDetails, NIGERIAN_BANKS } from '../earnings/components/data';
 
 interface BankSettingsModalProps {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, RefreshCw, ChevronUp, ChevronDown, CheckCheck, Landmark } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface QuickSimulatorProps {
   onSimulateSale: (customer: string, amount: number) => void;
