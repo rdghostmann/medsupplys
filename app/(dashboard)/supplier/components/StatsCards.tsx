@@ -88,7 +88,7 @@ export default function StatsCards({
       >
         {/* Total Earned Card */}
         <motion.div
-          variants={itemCard}
+          // variants={itemCard}
           className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group"
           id="card-total-earned"
         >
@@ -114,7 +114,7 @@ export default function StatsCards({
 
         {/* Pending Payout Card */}
         <motion.div
-          variants={itemCard}
+          // variants={itemCard}
           onClick={onViewPendingDetail}
           className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden group cursor-pointer"
           id="card-pending-payout"
@@ -144,7 +144,7 @@ export default function StatsCards({
 
         {/* Last Payout Card */}
         <motion.div
-          variants={itemCard}
+          // variants={itemCard}
           onClick={onViewLastDetail}
           className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative overflow-hidden group cursor-pointer"
           id="card-last-payout"
