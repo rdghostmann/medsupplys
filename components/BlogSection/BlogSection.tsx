@@ -99,14 +99,7 @@ export function BlogSection() {
       id="blog-section"
     >
       <div
-        className="
-          mx-auto
-          max-w-7xl
-          px-4
-          sm:px-6
-          lg:px-8
-        "
-      >
+        className="mx-auto     max-w-7xl      px-4       sm:px-6    lg:px-8 " >
         {/* ==================================================
             HEADER
         ================================================== */}
@@ -165,6 +158,8 @@ export function BlogSection() {
               transition-all
               hover:border-slate-300
               hover:bg-slate-100
+              w-fit
+              self-end
             "
           >
             See all blogs

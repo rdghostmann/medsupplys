@@ -14,7 +14,7 @@ import Link from "next/link";
 import { motion } from "framer-motion"
 import { Star } from "@phosphor-icons/react";
 import ComplianceSection from "@/components/ComplianceBlock/ComplianceBlock";
-import Testimonial from "@/components/Testimonial/Testimonial";
+import Image from "next/image";
 
 
 
@@ -62,12 +62,15 @@ export default function HomePage() {
                   <div className="flex items-center gap-3 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-slate-100">
                      <div className="flex -space-x-2">
                         {[1, 2, 3].map((i) => (
-                           <img
+                           <Image
                               key={i}
                               src={`https://i.pravatar.cc/100?img=${i + 10}`}
                               alt="User"
+                              width={20}
+                              height={20}
                               className="w-8 h-8 rounded-full border-2 border-white object-cover"
                               referrerPolicy="no-referrer"
+                              priority
                            />
                         ))}
                      </div>

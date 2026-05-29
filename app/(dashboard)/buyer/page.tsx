@@ -10,7 +10,6 @@ import {
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 import { BuyerStatsCard } from "./components/BuyerStatsCard/BuyerStatsCard"
 
-import data from "../data.json"
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col">
