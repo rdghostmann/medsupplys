@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedSupply — Pharmaceutical B2B Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue: #2563EB; --blue-light: #EFF6FF; --blue-mid: #BFDBFE; --blue-dark: #1E40AF;
+    --green: #16A34A; --green-light: #F0FDF4; --green-mid: #BBF7D0;
+    --accent: #38BDF8; --accent-light: #F0F9FF;
+    --amber: #F59E0B; --amber-light: #FFFBEB;
+    --red: #DC2626; --red-light: #FEF2F2;
+    --bg: #F8FAFC; --surface: #FFFFFF;
+    --border: #E2E8F0; --border-strong: #CBD5E1;
+    --text: #0F172A; --text-2: #475569; --text-3: #94A3B8;
+    --sidebar-w: 240px; --header-h: 64px;
+    --radius: 12px; --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(15,23,42,0.08),0 1px 2px rgba(15,23,42,0.04);
+    --shadow-md: 0 4px 16px rgba(15,23,42,0.10);
+  }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  h1,h2,h3,h4{font-family:'Sora',sans-serif;}
+
+  /* SCREENS */
+  .screen{display:none;min-height:100vh;}
+  .screen.active{display:flex;}
+
+  /* LANDING */
+  #screen-landing{flex-direction:column;background:linear-gradient(145deg,#0F172A 0%,#1E3A5F 40%,#0F172A 100%);}
+  .landing-nav{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;border-bottom:1px solid rgba(255,255,255,0.08);}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:36px;height:36px;background:var(--blue);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+  .logo-icon svg{width:20px;height:20px;fill:white;}
+  .logo-text{font-family:'Sora',sans-serif;font-size:20px;font-weight:700;color:white;}
+  .logo-text span{color:var(--accent);}
+  .nav-actions{display:flex;gap:12px;}
+  .landing-hero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;}
+  .hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(56,189,248,0.12);border:1px solid rgba(56,189,248,0.25);border-radius:100px;padding:6px 16px;margin-bottom:28px;}
+  .hero-badge span{font-size:13px;color:var(--accent);font-weight:500;}
+  .hero-badge .dot{width:6px;height:6px;background:var(--accent);border-radius:50%;}
+  .hero-title{font-size:clamp(32px,5vw,60px);font-weight:700;color:white;line-height:1.15;max-width:800px;margin-bottom:20px;}
+  .hero-title em{font-style:normal;color:var(--accent);}
+  .hero-sub{font-size:18px;color:rgba(255,255,255,0.6);max-width:560px;margin-bottom:40px;}
+  .hero-actions{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;}
+  .hero-stats{display:flex;gap:48px;margin-top:60px;padding-top:40px;border-top:1px solid rgba(255,255,255,0.08);flex-wrap:wrap;justify-content:center;}
+  .stat-num{font-family:'Sora',sans-serif;font-size:28px;font-weight:700;color:white;}
+  .stat-label{font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;}
+  .hero-role-cards{display:flex;gap:16px;margin-top:40px;flex-wrap:wrap;justify-content:center;}
+  .role-card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:var(--radius);padding:20px 24px;cursor:pointer;transition:all 0.2s;min-width:150px;text-align:center;}
+  .role-card:hover{background:rgba(255,255,255,0.12);transform:translateY(-3px);border-color:rgba(56,189,248,0.4);}
+  .role-card .icon{font-size:28px;margin-bottom:10px;}
+  .role-card .name{font-size:14px;font-weight:600;color:white;}
+  .role-card .desc{font-size:12px;color:rgba(255,255,255,0.5);margin-top:4px;}
+
+  /* BUTTONS */
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;cursor:pointer;border:none;transition:all 0.18s;text-decoration:none;font-family:'DM Sans',sans-serif;}
+  .btn-primary{background:var(--blue);color:white;}
+  .btn-primary:hover{background:var(--blue-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+  .btn-secondary{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2);}
+  .btn-secondary:hover{background:rgba(255,255,255,0.18);}
+  .btn-outline{background:transparent;color:var(--blue);border:1.5px solid var(--blue);}
+  .btn-outline:hover{background:var(--blue-light);}
+  .btn-ghost{background:transparent;color:var(--text-2);}
+  .btn-ghost:hover{background:var(--bg);}
+  .btn-sm{padding:7px 14px;font-size:13px;}
+  .btn-danger{background:var(--red);color:white;}
+  .btn-danger:hover{background:#B91C1C;}
+  .btn-success{background:var(--green);color:white;}
+  .btn-success:hover{background:#15803D;}
+
+  /* AUTH */
+  #screen-auth{align-items:center;justify-content:center;background:var(--bg);min-height:100vh;}
+  .auth-card{background:white;border-radius:20px;padding:40px;width:100%;max-width:420px;box-shadow:var(--shadow-md);}
+  .auth-title{font-size:22px;font-weight:700;margin-bottom:4px;}
+  .auth-sub{font-size:14px;color:var(--text-2);margin-bottom:28px;}
+  .form-group{margin-bottom:16px;}
+  .form-group label{display:block;font-size:13px;font-weight:500;color:var(--text-2);margin-bottom:6px;}
+  .form-group input,.form-group select{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;transition:border-color 0.15s;}
+  .form-group input:focus,.form-group select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,0.12);}
+  .auth-toggle{text-align:center;margin-top:20px;font-size:14px;color:var(--text-2);}
+  .auth-toggle a{color:var(--blue);cursor:pointer;font-weight:500;}
+
+  /* DASHBOARD */
+  #screen-dashboard{flex-direction:row;}
+  .sidebar{width:var(--sidebar-w);min-height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;flex-shrink:0;}
+  .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid var(--border);}
+  .sidebar-role-badge{margin:12px 12px;background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius-sm);padding:8px 12px;display:flex;align-items:center;gap:8px;}
+  .sidebar-role-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+  .sidebar-role-badge .role-label{font-size:11px;font-weight:700;color:var(--blue-dark);letter-spacing:0.5px;}
+  .sidebar-role-badge .role-name{font-size:11px;color:var(--text-3);}
+  .sidebar-nav{flex:1;padding:8px 0;}
+  .nav-section{padding:8px 16px 4px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--text-3);margin-top:8px;}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 14px;margin:1px 8px;border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;font-size:13.5px;color:var(--text-2);font-weight:400;}
+  .nav-item:hover{background:var(--bg);color:var(--text);}
+  .nav-item.active{background:var(--blue-light);color:var(--blue);font-weight:500;}
+  .nav-item .nav-icon{font-size:16px;width:20px;flex-shrink:0;}
+  .nav-item .badge{margin-left:auto;background:var(--red);color:white;font-size:10px;font-weight:700;padding:2px 6px;border-radius:100px;}
+  .sidebar-footer{padding:14px;border-top:1px solid var(--border);}
+  .user-info{display:flex;align-items:center;gap:10px;}
+  .avatar{width:34px;height:34px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;flex-shrink:0;}
+  .user-name{font-size:13px;font-weight:500;}
+  .user-role{font-size:11px;color:var(--text-3);}
+  .logout-btn{margin-left:auto;width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.15s;color:var(--text-3);font-size:16px;}
+  .logout-btn:hover{background:var(--bg);color:var(--red);}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;min-height:100vh;overflow:hidden;}
+  .topbar{height:var(--header-h);background:white;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 28px;gap:16px;position:sticky;top:0;z-index:10;}
+  .page-title{font-family:'Sora',sans-serif;font-size:18px;font-weight:600;flex:1;}
+  .notif-btn{position:relative;width:38px;height:38px;border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;cursor:pointer;background:var(--bg);font-size:18px;transition:background 0.15s;}
+  .notif-btn:hover{background:var(--border);}
+  .notif-dot{position:absolute;top:8px;right:8px;width:7px;height:7px;background:var(--red);border-radius:50%;border:1.5px solid white;}
+  .content{flex:1;padding:28px;overflow-y:auto;}
+
+  /* CARDS */
+  .card{background:white;border-radius:var(--radius);border:1px solid var(--border);}
+  .card-header{padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;}
+  .card-title{font-size:15px;font-weight:600;}
+  .card-body{padding:20px 24px;}
+
+  /* METRICS */
+  .metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px;}
+  .metric-card{background:white;border-radius:var(--radius);border:1px solid var(--border);padding:20px 24px;position:relative;overflow:hidden;}
+  .metric-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--c,var(--blue));}
+  .metric-label{font-size:13px;color:var(--text-3);font-weight:500;margin-bottom:8px;}
+  .metric-value{font-family:'Sora',sans-serif;font-size:28px;font-weight:700;}
+  .metric-change{font-size:12px;margin-top:6px;}
+  .metric-change.up{color:var(--green);}
+  .metric-change.down{color:var(--red);}
+  .metric-icon{position:absolute;right:20px;top:18px;font-size:26px;opacity:0.12;}
+
+  /* TABLES */
+  .table-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);background:white;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px;background:var(--bg);border-bottom:1px solid var(--border);}
+  tbody td{padding:14px 16px;font-size:14px;color:var(--text);border-bottom:1px solid var(--border);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FAFBFC;}
+
+  /* BADGES */
+  .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:500;white-space:nowrap;}
+  .badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor;opacity:0.7;flex-shrink:0;}
+  .badge-blue{background:var(--blue-light);color:var(--blue-dark);}
+  .badge-green{background:var(--green-light);color:var(--green);}
+  .badge-amber{background:var(--amber-light);color:#92400E;}
+  .badge-red{background:var(--red-light);color:var(--red);}
+  .badge-gray{background:#F1F5F9;color:#64748B;}
+  .badge-accent{background:var(--accent-light);color:#075985;}
+  .badge-purple{background:#F5F3FF;color:#6D28D9;}
+
+  /* SECTION */
+  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .section-title{font-size:15px;font-weight:600;}
+
+  /* PRODUCTS */
+  .product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;}
+  .product-card{background:white;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden;transition:box-shadow 0.2s,transform 0.2s;cursor:pointer;}
+  .product-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);}
+  .product-img{height:130px;background:linear-gradient(135deg,var(--blue-light),var(--accent-light));display:flex;align-items:center;justify-content:center;font-size:48px;}
+  .product-info{padding:16px;}
+  .product-name{font-weight:600;font-size:14px;margin-bottom:4px;}
+  .product-cat{font-size:12px;color:var(--text-3);margin-bottom:10px;}
+  .product-price{font-family:'Sora',sans-serif;font-size:18px;font-weight:700;color:var(--blue);}
+  .product-price-sub{font-size:11px;color:var(--text-3);margin-bottom:10px;}
+  .product-foot{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);}
+
+  /* STATUS FLOW */
+  .status-flow{display:flex;align-items:flex-start;gap:0;overflow-x:auto;padding:8px 0 16px;}
+  .status-step{display:flex;flex-direction:column;align-items:center;position:relative;flex:1;min-width:80px;}
+  .status-dot{width:28px;height:28px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:11px;position:relative;z-index:1;transition:all 0.3s;font-weight:600;}
+  .status-dot.done{background:var(--green);border-color:var(--green);color:white;}
+  .status-dot.active{background:var(--blue);border-color:var(--blue);color:white;animation:pulse 2s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,0.3)}50%{box-shadow:0 0 0 8px rgba(37,99,235,0)}}
+  .status-label{font-size:10px;color:var(--text-3);margin-top:6px;text-align:center;max-width:80px;line-height:1.3;}
+  .status-label.active-label{color:var(--blue);font-weight:600;}
+  .status-line{position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--border);z-index:0;}
+  .status-line.done{background:var(--green);}
+  .status-step:last-child .status-line{display:none;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:100;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+  .modal-overlay.open{display:flex;}
+  .modal{background:white;border-radius:20px;padding:32px;width:90%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(15,23,42,0.2);}
+  .modal-title{font-size:18px;font-weight:700;margin-bottom:4px;}
+  .modal-sub{font-size:14px;color:var(--text-2);margin-bottom:24px;}
+  .modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+
+  /* VERIFY CARD */
+  .verify-card{border:1px solid var(--border);border-radius:var(--radius);padding:0;overflow:hidden;}
+  .verify-field{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .verify-field:last-child{border-bottom:none;}
+  .verify-label{font-size:12px;color:var(--text-3);font-weight:500;}
+  .verify-value{font-size:14px;font-weight:500;}
+
+  /* NOTIFICATIONS */
+  .notif-item{display:flex;align-items:flex-start;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.15s;}
+  .notif-item:hover{background:var(--bg);}
+  .notif-item.unread{background:var(--blue-light);}
+  .notif-icon-box{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+
+  /* GRID */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+
+  /* TABS */
+  .tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:24px;}
+  .tab{padding:11px 18px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all 0.15s;white-space:nowrap;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+  /* SEARCH */
+  .search-bar{display:flex;align-items:center;gap:8px;background:white;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 12px;flex:1;max-width:300px;transition:border-color 0.15s;}
+  .search-bar:focus-within{border-color:var(--blue);}
+  .search-bar input{border:none;outline:none;font-size:14px;width:100%;font-family:'DM Sans',sans-serif;color:var(--text);}
+
+  /* CHART */
+  .chart-bars{display:flex;align-items:flex-end;gap:8px;height:110px;}
+  .chart-label{font-size:10px;color:var(--text-3);text-align:center;margin-top:6px;}
+
+  /* TIMELINE */
+  .timeline{display:flex;flex-direction:column;}
+  .timeline-item{display:flex;gap:14px;position:relative;padding-bottom:20px;}
+  .timeline-item:last-child{padding-bottom:0;}
+  .timeline-item::before{content:'';position:absolute;left:15px;top:32px;bottom:0;width:1.5px;background:var(--border);}
+  .timeline-item:last-child::before{display:none;}
+  .tl-dot{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .tl-content{flex:1;padding-top:5px;}
+  .tl-title{font-size:14px;font-weight:500;margin-bottom:2px;}
+  .tl-time{font-size:12px;color:var(--text-3);}
+
+  /* STOCK */
+  .stock-pill{padding:3px 10px;border-radius:100px;font-size:11px;font-weight:600;}
+  .stock-avail{background:var(--green-light);color:var(--green);}
+  .stock-low{background:var(--amber-light);color:#B45309;}
+  .stock-out{background:var(--red-light);color:var(--red);}
+
+  /* MISC */
+  .workflow-select{padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;color:var(--text);background:white;cursor:pointer;transition:border-color 0.15s;}
+  .workflow-select:focus{outline:none;border-color:var(--blue);}
+
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  .fade-in{animation:fadeIn 0.25s ease;}
+
+  .empty{text-align:center;padding:60px 24px;}
+  .empty-icon{font-size:48px;margin-bottom:16px;}
+  .empty-title{font-size:16px;font-weight:600;margin-bottom:8px;}
+  .empty-sub{font-size:14px;color:var(--text-3);}
+
+  ::-webkit-scrollbar{width:4px;height:4px;}
+  ::-webkit-scrollbar-track{background:transparent;}
+  ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:100px;}
+
+  /* WORKFLOW BOARD */
+  .workflow-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;}
+  .wf-col{min-width:200px;flex-shrink:0;}
+  .wf-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;}
+  .wf-card{background:white;border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:8px;font-size:13px;}
+  .wf-card-title{font-weight:500;margin-bottom:4px;}
+  .wf-card-sub{font-size:11px;color:var(--text-3);}
+
+  @media(max-width:900px){
+    .sidebar{position:fixed;left:-100%;z-index:50;transition:left 0.3s;box-shadow:var(--shadow-md);}
+    .sidebar.open{left:0;}
+    .grid-2,.grid-3{grid-template-columns:1fr;}
+    .product-grid{grid-template-columns:1fr 1fr;}
+    .metrics-grid{grid-template-columns:1fr 1fr;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ LANDING ══════════════════════════════ -->
+<div id="screen-landing" class="screen active">
+  <nav class="landing-nav">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg>
+      </div>
+      <span class="logo-text">Med<span>Supply</span></span>
+    </div>
+    <div class="nav-actions">
+      <button class="btn btn-secondary btn-sm" onclick="showScreen('screen-auth')">Log In</button>
+      <button class="btn btn-primary btn-sm" onclick="showScreen('screen-auth')">Get Started →</button>
+    </div>
+  </nav>
+
+  <div class="landing-hero">
+    <div class="hero-badge"><span class="dot"></span><span>Nigeria's #1 Verified Pharma B2B Marketplace</span></div>
+    <h1 class="hero-title">The Trusted Platform for<br><em>Pharmaceutical Supply Chains</em></h1>
+    <p class="hero-sub">Connect buyers, verified suppliers, and licensed pharmacists in one secure, compliance-first marketplace built for pharmaceutical-grade trust.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" style="padding:13px 28px;font-size:15px;" onclick="loginAs('buyer')">Start as Buyer →</button>
+      <button class="btn btn-secondary" style="padding:13px 28px;font-size:15px;" onclick="loginAs('supplier')">Become a Supplier</button>
+    </div>
+
+    <div style="margin-top:40px;margin-bottom:16px;">
+      <div style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">Quick Demo Access</div>
+      <div class="hero-role-cards">
+        <div class="role-card" onclick="loginAs('buyer')">
+          <div class="icon">🏥</div>
+          <div class="name">Buyer</div>
+          <div class="desc">Browse & order products</div>
+        </div>
+        <div class="role-card" onclick="loginAs('supplier')">
+          <div class="icon">🏭</div>
+          <div class="name">Supplier</div>
+          <div class="desc">Manage inventory & orders</div>
+        </div>
+        <div class="role-card" onclick="loginAs('pharmacist')">
+          <div class="icon">💊</div>
+          <div class="name">Pharmacist</div>
+          <div class="desc">Verify incoming products</div>
+        </div>
+        <div class="role-card" onclick="loginAs('admin')">
+          <div class="icon">⚙️</div>
+          <div class="name">Admin</div>
+          <div class="desc">Monitor & control all</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat"><div class="stat-num">1,400+</div><div class="stat-label">Verified Suppliers</div></div>
+      <div class="stat"><div class="stat-num">₦2.8B</div><div class="stat-label">Transactions Processed</div></div>
+      <div class="stat"><div class="stat-num">99.2%</div><div class="stat-label">Verification Accuracy</div></div>
+      <div class="stat"><div class="stat-num">48h</div><div class="stat-label">Avg. Delivery Time</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ AUTH ══════════════════════════════ -->
+<div id="screen-auth" class="screen">
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;background:var(--bg);padding:24px;">
+    <div class="auth-card fade-in" style="width:100%;max-width:420px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:24px;">
+        <div class="logo-icon" style="width:32px;height:32px;"><svg viewBox="0 0 24 24" style="width:16px;height:16px;fill:white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+        <span style="font-family:'Sora',sans-serif;font-weight:700;font-size:17px;color:var(--text);">Med<span style="color:var(--accent)">Supply</span></span>
+      </div>
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to continue to MedSupply</div>
+
+      <div class="form-group"><label>Email address</label><input type="email" placeholder="you@hospital.ng" value="admin@medsupply.ng"></div>
+      <div class="form-group"><label>Password</label><input type="password" value="••••••••" placeholder="Enter password"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="loginAs(currentRole||'admin')">Sign In →</button>
+
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--border);">
+        <div style="font-size:12px;color:var(--text-3);margin-bottom:10px;text-align:center;">Quick Demo — Login as:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+          <button class="btn btn-outline btn-sm" onclick="loginAs('buyer')">🏥 Buyer</button>
+          <button class="btn btn-outline btn-sm" onclick="loginAs('supplier')">🏭 Supplier</button>
+          <button class="btn btn-outline btn-sm" onclick="loginAs('pharmacist')">💊 Pharmacist</button>
+          <button class="btn btn-outline btn-sm" onclick="loginAs('admin')">⚙️ Admin</button>
+        </div>
+      </div>
+      <div class="auth-toggle">Don't have an account? <a onclick="showScreen('screen-auth')">Register</a></div>
+      <div style="margin-top:12px;text-align:center;"><a style="font-size:13px;color:var(--text-3);cursor:pointer;" onclick="showScreen('screen-landing')">← Back to home</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════ DASHBOARD ══════════════════════════════ -->
+<div id="screen-dashboard" class="screen">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo">
+        <div class="logo-icon" style="width:28px;height:28px;"><svg viewBox="0 0 24 24" style="width:14px;height:14px;fill:white"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/></svg></div>
+        <span class="logo-text" style="font-size:16px;">Med<span>Supply</span></span>
+      </div>
+    </div>
+    <div class="sidebar-role-badge">
+      <div class="dot"></div>
+      <div>
+        <div class="role-label" id="sb-role-label">ADMIN</div>
+        <div class="role-name" id="sb-role-name">Control Panel</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav" id="sidebar-nav"></nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="avatar" id="sb-avatar">AD</div>
+        <div>
+          <div class="user-name" id="sb-username">Admin User</div>
+          <div class="user-role" id="sb-userrole">Super Admin</div>
+        </div>
+        <div class="logout-btn" onclick="showScreen('screen-landing')" title="Logout">⏻</div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="page-title" id="page-title">Dashboard</div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="search-bar"><span style="color:var(--text-3);font-size:14px;">🔍</span><input placeholder="Search products, orders..."></div>
+        <div class="notif-btn" onclick="openModal('modal-notif')">🔔<div class="notif-dot"></div></div>
+        <div class="avatar" id="topbar-avatar" style="cursor:pointer;">AD</div>
+      </div>
+    </header>
+    <div class="content fade-in" id="page-content"></div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════ MODALS ══════════════════════════════ -->
+<div class="modal-overlay" id="modal-order" onclick="if(event.target===this)closeModal('modal-order')">
+  <div class="modal">
+    <h2 class="modal-title">Place Order</h2>
+    <p class="modal-sub">Review your order details below</p>
+    <div id="order-product-info"></div>
+    <div class="form-group" style="margin-top:16px;">
+      <label>Quantity (units)</label>
+      <input type="number" id="order-qty" value="10" min="1" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;font-family:inherit;font-size:14px;" oninput="updateOrderTotal()">
+    </div>
+    <div class="form-group">
+      <label>Delivery Address</label>
+      <input type="text" placeholder="Enter full delivery address" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;font-family:inherit;font-size:14px;">
+    </div>
+    <div style="background:var(--blue-light);border:1px solid var(--blue-mid);border-radius:var(--radius-sm);padding:14px;margin:16px 0;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-2);">
+        <span>Base Price</span><span id="order-base">₦0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;color:var(--text-2);">
+        <span>Platform Commission (10%)</span><span id="order-comm">₦0</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:700;color:var(--blue);border-top:1px solid var(--blue-mid);padding-top:8px;margin-top:8px;">
+        <span>Total</span><span id="order-total">₦0</span>
+      </div>
+    </div>
+    <div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:10px 14px;font-size:13px;color:#92400E;">
+      ℹ️ After placing, admin will contact the supplier. Your order will be verified before delivery.
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-order')">Cancel</button>
+      <button class="btn btn-primary" onclick="placeOrder()">Confirm Order →</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-notif" onclick="if(event.target===this)closeModal('modal-notif')">
+  <div class="modal" style="max-width:420px;padding:0;border-radius:16px;">
+    <div style="padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <div style="font-weight:600;font-size:15px;">Notifications</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('modal-notif')">✕</button>
+    </div>
+    <div id="notif-list"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-supplier" onclick="if(event.target===this)closeModal('modal-supplier')">
+  <div class="modal">
+    <h2 class="modal-title" id="modal-sup-name">Supplier Review</h2>
+    <p class="modal-sub">Review the supplier application details</p>
+    <div id="modal-sup-body"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('modal-supplier')">Close</button>
+      <button class="btn btn-danger btn-sm" onclick="handleSupplier('rejected')">✕ Reject</button>
+      <button class="btn btn-success btn-sm" onclick="handleSupplier('approved')">✓ Approve</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// MOCK DATA
+// ══════════════════════════════════════════════════════════════
+const PRODUCTS = [
+  {id:1,name:'Amoxicillin 500mg',cat:'Antibiotics',emoji:'💊',basePrice:2800,stock:480,low:100,supplier:'PharmaCo Ltd',nafdac:'A4-0141'},
+  {id:2,name:'Metformin 500mg',cat:'Diabetes Care',emoji:'🔵',basePrice:1200,stock:85,low:100,supplier:'MediSource NG',nafdac:'A4-1829'},
+  {id:3,name:'Lisinopril 10mg',cat:'Cardiovascular',emoji:'❤️',basePrice:3400,stock:220,low:50,supplier:'HealthBridge',nafdac:'A4-3341'},
+  {id:4,name:'Paracetamol 500mg',cat:'Analgesics',emoji:'⚪',basePrice:450,stock:0,low:200,supplier:'PharmaCo Ltd',nafdac:'A4-0088'},
+  {id:5,name:'Omeprazole 20mg',cat:'Gastrointestinal',emoji:'🟡',basePrice:1800,stock:310,low:80,supplier:'MediSource NG',nafdac:'A4-2211'},
+  {id:6,name:'Amlodipine 5mg',cat:'Cardiovascular',emoji:'🔴',basePrice:2100,stock:44,low:60,supplier:'HealthBridge',nafdac:'A4-3890'},
+  {id:7,name:'Ciprofloxacin 500mg',cat:'Antibiotics',emoji:'💉',basePrice:3200,stock:190,low:60,supplier:'PharmaCo Ltd',nafdac:'A4-1672'},
+  {id:8,name:'Atorvastatin 10mg',cat:'Cardiovascular',emoji:'💜',basePrice:4500,stock:130,low:70,supplier:'MediSource NG',nafdac:'A4-4021'},
+];
+
+let ORDERS = [
+  {id:'ORD-2024',product:'Amoxicillin 500mg',buyer:'Lagos General Hospital',qty:200,basePrice:2800,status:'Under Verification',date:'2024-01-15',supplier:'PharmaCo Ltd'},
+  {id:'ORD-2023',product:'Metformin 500mg',buyer:'Federal Medical Centre',qty:500,basePrice:1200,status:'In Transit to Office',date:'2024-01-14',supplier:'MediSource NG'},
+  {id:'ORD-2022',product:'Lisinopril 10mg',buyer:'Unity Clinic',qty:100,basePrice:3400,status:'Verified',date:'2024-01-13',supplier:'HealthBridge'},
+  {id:'ORD-2021',product:'Paracetamol 500mg',buyer:'City Pharmacy',qty:1000,basePrice:450,status:'Delivered',date:'2024-01-12',supplier:'PharmaCo Ltd'},
+  {id:'ORD-2020',product:'Omeprazole 20mg',buyer:'Lagos General Hospital',qty:150,basePrice:1800,status:'Supplier Contacted',date:'2024-01-11',supplier:'MediSource NG'},
+  {id:'ORD-2019',product:'Amlodipine 5mg',buyer:'Federal Medical Centre',qty:80,basePrice:2100,status:'Pending',date:'2024-01-10',supplier:'HealthBridge'},
+  {id:'ORD-2018',product:'Ciprofloxacin 500mg',buyer:'Community Health Clinic',qty:300,basePrice:3200,status:'Supplier Confirmed',date:'2024-01-09',supplier:'PharmaCo Ltd'},
+];
+
+let SUPPLIERS = [
+  {id:1,name:'PharmaCo Ltd',type:'Company',phone:'+234 812 345 6789',address:'Victoria Island, Lagos',status:'approved',products:3,joined:'2024-01-05',license:'PCL-NG-2024-001'},
+  {id:2,name:'MediSource NG',type:'Company',phone:'+234 803 456 7890',address:'Ikeja, Lagos',status:'approved',products:3,joined:'2024-01-08',license:'MSN-NG-2024-002'},
+  {id:3,name:'HealthBridge',type:'Company',phone:'+234 706 789 0123',address:'Abuja FCT',status:'pending',products:0,joined:'2024-01-14',license:'HBR-NG-2024-003'},
+  {id:4,name:'DrugLine Co.',type:'Individual',phone:'+234 815 234 5678',address:'Kano State',status:'pending',products:0,joined:'2024-01-15',license:'DLC-NG-2024-004'},
+  {id:5,name:'QuickMed Supplies',type:'Company',phone:'+234 902 345 6789',address:'Port Harcourt',status:'rejected',products:0,joined:'2024-01-03',license:'QMS-NG-2024-005'},
+];
+
+const STATUS_FLOW = ['Pending','Supplier Contacted','Supplier Confirmed','In Transit to Office','Under Verification','Verified','Delivered'];
+const ALL_STATUSES = ['Pending','Supplier Contacted','Supplier Confirmed','Supplier Unresponsive','In Transit to Office','Under Verification','Verified','Rejected','Delivered','Cancelled'];
+
+let currentRole = 'admin';
+let selectedProductId = null;
+let reviewingSupplierId = null;
+
+const NOTIFS = [
+  {icon:'📦',type:'order',text:'New Order <strong>#ORD-2025</strong> placed for Amoxicillin 500mg',time:'2 min ago',unread:true},
+  {icon:'✅',type:'verify',text:'Product batch <strong>#B-4421</strong> verified successfully',time:'15 min ago',unread:true},
+  {icon:'⚠️',type:'stock',text:'<strong>Metformin 500mg</strong> is running low on stock (85 units)',time:'1 hour ago',unread:false},
+  {icon:'🏭',type:'supplier',text:'<strong>HealthBridge</strong> supplier application awaiting review',time:'3 hours ago',unread:false},
+  {icon:'🚚',type:'transit',text:'Order <strong>#ORD-2023</strong> is now In Transit to verification office',time:'5 hours ago',unread:false},
+];
+
+// ══════════════════════════════════════════════════════════════
+// ROLE CONFIGS
+// ══════════════════════════════════════════════════════════════
+const ROLES = {
+  admin:{label:'ADMIN',roleName:'Control Panel',username:'System Admin',avatar:'AD',
+    nav:[
+      {section:'Main',items:[
+        {id:'overview',icon:'📊',text:'Overview'},
+        {id:'orders',icon:'📦',text:'All Orders',badge:3},
+        {id:'products',icon:'💊',text:'Product Catalog'},
+        {id:'suppliers',icon:'🏭',text:'Suppliers',badge:2},
+        {id:'users',icon:'👥',text:'Users'},
+        {id:'analytics',icon:'📈',text:'Analytics'},
+      ]},
+      {section:'System',items:[
+        {id:'settings',icon:'⚙️',text:'Settings'},
+      ]}
+    ]
+  },
+  buyer:{label:'BUYER',roleName:'Buyer Portal',username:'Lagos General Hospital',avatar:'LG',
+    nav:[
+      {section:'Marketplace',items:[
+        {id:'catalog',icon:'🛍️',text:'Browse Products'},
+        {id:'my-orders',icon:'📋',text:'My Orders'},
+        {id:'order-track',icon:'🚚',text:'Track Order'},
+      ]},
+      {section:'Account',items:[
+        {id:'profile',icon:'👤',text:'My Profile'},
+      ]}
+    ]
+  },
+  supplier:{label:'SUPPLIER',roleName:'Supplier Hub',username:'PharmaCo Ltd',avatar:'PC',
+    nav:[
+      {section:'Business',items:[
+        {id:'sup-overview',icon:'📊',text:'Overview'},
+        {id:'sup-orders',icon:'📦',text:'Incoming Orders',badge:2},
+        {id:'sup-inventory',icon:'📋',text:'My Inventory'},
+        {id:'sup-add',icon:'➕',text:'Add to Inventory'},
+      ]},
+      {section:'Account',items:[
+        {id:'sup-profile',icon:'🏭',text:'Business Profile'},
+      ]}
+    ]
+  },
+  pharmacist:{label:'PHARMACIST',roleName:'Verification Office',username:'Dr. Amaka Obi',avatar:'AO',
+    nav:[
+      {section:'Verification',items:[
+        {id:'pha-queue',icon:'📋',text:'Verification Queue',badge:4},
+        {id:'pha-verify',icon:'🔬',text:'Verify Product'},
+        {id:'pha-history',icon:'🗂️',text:'History'},
+      ]},
+      {section:'Account',items:[
+        {id:'profile',icon:'👤',text:'Profile'},
+      ]}
+    ]
+  }
+};
+
+const PAGE_TITLES = {
+  overview:'Dashboard Overview',orders:'All Orders',products:'Product Catalog',suppliers:'Suppliers',
+  users:'User Management',analytics:'Analytics',settings:'Settings',
+  catalog:'Browse Products','my-orders':'My Orders','order-track':'Order Tracking',
+  'sup-overview':'Supplier Overview','sup-orders':'Incoming Orders','sup-inventory':'My Inventory',
+  'sup-add':'Add Products to Inventory','sup-profile':'Business Profile',
+  'pha-queue':'Verification Queue','pha-verify':'Verify Product','pha-history':'Verification History',
+  profile:'My Profile'
+};
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION CORE
+// ══════════════════════════════════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function loginAs(role) {
+  currentRole = role;
+  showScreen('screen-dashboard');
+  setupSidebar(role);
+  const defaultPage = {admin:'overview',buyer:'catalog',supplier:'sup-overview',pharmacist:'pha-queue'};
+  navigateTo(defaultPage[role]);
+}
+
+function setupSidebar(role) {
+  const cfg = ROLES[role];
+  document.getElementById('sb-role-label').textContent = cfg.label;
+  document.getElementById('sb-role-name').textContent = cfg.roleName;
+  document.getElementById('sb-username').textContent = cfg.username;
+  document.getElementById('sb-userrole').textContent = cfg.label;
+  document.getElementById('sb-avatar').textContent = cfg.avatar;
+  document.getElementById('topbar-avatar').textContent = cfg.avatar;
+
+  const nav = document.getElementById('sidebar-nav');
+  nav.innerHTML = '';
+  cfg.nav.forEach(section => {
+    nav.innerHTML += `<div class="nav-section">${section.section}</div>`;
+    section.items.forEach(item => {
+      nav.innerHTML += `<div class="nav-item" id="nav-${item.id}" onclick="navigateTo('${item.id}')">
+        <span class="nav-icon">${item.icon}</span>${item.text}
+        ${item.badge ? `<span class="badge" style="background:var(--red);color:white;font-size:10px;">${item.badge}</span>` : ''}
+      </div>`;
+    });
+  });
+
+  // Populate notifications
+  document.getElementById('notif-list').innerHTML = NOTIFS.map(n=>`
+    <div class="notif-item ${n.unread?'unread':''}">
+      <div class="notif-icon-box" style="background:var(--bg);">${n.icon}</div>
+      <div style="flex:1;"><p style="font-size:14px;">${n.text}</p><span style="font-size:12px;color:var(--text-3);">${n.time}</span></div>
+    </div>`).join('');
+}
+
+function navigateTo(page) {
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navEl = document.getElementById(`nav-${page}`);
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[page] || page;
+  const content = document.getElementById('page-content');
+  content.innerHTML = '';
+  content.className = 'content fade-in';
+  const renderers = {
+    overview:renderAdminOverview, orders:renderAdminOrders, products:renderAdminProducts,
+    suppliers:renderAdminSuppliers, analytics:renderAnalytics,
+    catalog:renderBuyerCatalog, 'my-orders':renderBuyerOrders, 'order-track':renderOrderTrack,
+    'sup-overview':renderSupOverview, 'sup-orders':renderSupOrders,
+    'sup-inventory':renderSupInventory, 'sup-add':renderSupAdd, 'sup-profile':renderSupProfile,
+    'pha-queue':renderPhaQueue, 'pha-verify':renderPhaVerify, 'pha-history':renderPhaHistory,
+  };
+  if(renderers[page]) renderers[page](content);
+  else content.innerHTML = `<div class="empty"><div class="empty-icon">🚧</div><div class="empty-title">Coming Soon</div><div class="empty-sub">This section is under active development</div></div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN — OVERVIEW
+// ══════════════════════════════════════════════════════════════
+function renderAdminOverview(el) {
+  const totalRevenue = ORDERS.reduce((s,o)=>s+Math.round(o.basePrice*o.qty*1.1),0);
+  el.innerHTML = `
+  <div class="metrics-grid">
+    <div class="metric-card" style="--c:var(--blue)">
+      <div class="metric-icon">📦</div><div class="metric-label">Total Orders</div>
+      <div class="metric-value">${ORDERS.length}</div><div class="metric-change up">↑ 18% this month</div>
+    </div>
+    <div class="metric-card" style="--c:var(--green)">
+      <div class="metric-icon">₦</div><div class="metric-label">Platform Revenue</div>
+      <div class="metric-value">₦${(totalRevenue/1000000).toFixed(1)}M</div><div class="metric-change up">↑ 24% vs last month</div>
+    </div>
+    <div class="metric-card" style="--c:var(--amber)">
+      <div class="metric-icon">🏭</div><div class="metric-label">Active Suppliers</div>
+      <div class="metric-value">${SUPPLIERS.filter(s=>s.status==='approved').length}</div>
+      <div class="metric-change" style="color:var(--amber);">${SUPPLIERS.filter(s=>s.status==='pending').length} pending approval</div>
+    </div>
+    <div class="metric-card" style="--c:var(--accent)">
+      <div class="metric-icon">✅</div><div class="metric-label">Verification Rate</div>
+      <div class="metric-value">98.7%</div><div class="metric-change up">↑ NAFDAC compliance</div>
+    </div>
+  </div>
+
+  <div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Order Status Overview</div>
+        <button class="btn btn-ghost btn-sm" onclick="navigateTo('orders')">View all →</button>
+      </div>
+      <div class="card-body" style="padding-top:12px;">
+        ${ALL_STATUSES.map(s=>{
+          const cnt = ORDERS.filter(o=>o.status===s).length;
+          const cols = {'Pending':'var(--text-3)','Delivered':'var(--green)','Verified':'var(--green)','Under Verification':'var(--blue)','In Transit to Office':'var(--amber)','Rejected':'var(--red)','Supplier Contacted':'var(--accent)'};
+          const c = cols[s]||'var(--blue)';
+          return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+            <span style="font-size:13px;">${s}</span>
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:${Math.max(cnt*24,4)}px;max-width:80px;height:5px;background:${c};border-radius:100px;opacity:0.8;"></div>
+              <span style="font-size:13px;font-weight:600;min-width:18px;text-align:right;">${cnt}</span>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Recent Orders</div>
+        <span class="badge badge-blue">${ORDERS.filter(o=>o.status==='Pending').length} new</span>
+      </div>
+      <div class="card-body" style="padding-top:10px;">
+        ${ORDERS.slice(0,5).map(o=>`
+          <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+            <div style="flex:1;">
+              <div style="font-size:13px;font-weight:500;">${o.product}</div>
+              <div style="font-size:11px;color:var(--text-3);">${o.id} · ${o.buyer}</div>
+            </div>
+            ${statusBadge(o.status)}
+          </div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">Pending Supplier Approvals</div>
+      <span class="badge badge-amber">${SUPPLIERS.filter(s=>s.status==='pending').length} Pending</span>
+    </div>
+    <div class="card-body" style="padding-top:12px;">
+      ${SUPPLIERS.filter(s=>s.status==='pending').length === 0
+        ? `<div class="empty" style="padding:30px"><div class="empty-icon">✅</div><div class="empty-title">All clear</div><div class="empty-sub">No pending approvals</div></div>`
+        : `<div class="table-wrap" style="border:none;">
+          <table><thead><tr><th>Company</th><th>Type</th><th>Location</th><th>Applied</th><th>Action</th></tr></thead>
+          <tbody>${SUPPLIERS.filter(s=>s.status==='pending').map(s=>`<tr>
+            <td><strong>${s.name}</strong></td><td>${s.type}</td>
+            <td>${s.address}</td><td>${s.joined}</td>
+            <td><button class="btn btn-outline btn-sm" onclick="openSupplierModal(${s.id})">Review →</button></td>
+          </tr>`).join('')}</tbody></table></div>`
+      }
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN — ORDERS
+// ══════════════════════════════════════════════════════════════
+function renderAdminOrders(el) {
+  el.innerHTML = `
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+    <div class="search-bar"><span style="color:var(--text-3);">🔍</span><input placeholder="Search by ID, product, buyer..." oninput="filterAdminOrders(this.value)"></div>
+    <select class="workflow-select" onchange="filterAdminOrdersByStatus(this.value)">
+      <option value="">All Statuses</option>
+      ${ALL_STATUSES.map(s=>`<option>${s}</option>`).join('')}
+    </select>
+    <div style="margin-left:auto;font-size:13px;color:var(--text-3);">${ORDERS.length} orders total</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Order ID</th><th>Product</th><th>Buyer</th><th>Qty</th><th>Value</th><th>Status</th><th>Date</th><th>Update Status</th></tr></thead>
+      <tbody id="orders-tbody">${renderOrderRows(ORDERS)}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderOrderRows(data) {
+  return data.map(o=>{
+    const total = Math.round(o.basePrice * o.qty * 1.1);
+    return `<tr>
+      <td><strong>${o.id}</strong></td>
+      <td>${o.product}</td>
+      <td style="font-size:13px;">${o.buyer}</td>
+      <td>${o.qty.toLocaleString()}</td>
+      <td style="font-weight:600;color:var(--blue);">₦${total.toLocaleString()}</td>
+      <td>${statusBadge(o.status)}</td>
+      <td style="font-size:12px;color:var(--text-3);">${o.date}</td>
+      <td>
+        <select class="workflow-select" onchange="adminUpdateOrder('${o.id}',this.value)" style="font-size:12px;">
+          ${ALL_STATUSES.map(s=>`<option${s===o.status?' selected':''}>${s}</option>`).join('')}
+        </select>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function adminUpdateOrder(id, status) {
+  const o = ORDERS.find(x=>x.id===id);
+  if(o) { o.status = status; showToast(`✅ ${id} → ${status}`); }
+}
+function filterAdminOrders(v) {
+  const f = ORDERS.filter(o=>o.id.toLowerCase().includes(v.toLowerCase())||o.product.toLowerCase().includes(v.toLowerCase())||o.buyer.toLowerCase().includes(v.toLowerCase()));
+  const tb = document.getElementById('orders-tbody');
+  if(tb) tb.innerHTML = renderOrderRows(f);
+}
+function filterAdminOrdersByStatus(s) {
+  const f = s ? ORDERS.filter(o=>o.status===s) : ORDERS;
+  const tb = document.getElementById('orders-tbody');
+  if(tb) tb.innerHTML = renderOrderRows(f);
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN — PRODUCTS
+// ══════════════════════════════════════════════════════════════
+function renderAdminProducts(el) {
+  el.innerHTML = `
+  <div class="section-head">
+    <div>
+      <div class="section-title">Product Catalog</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px;">Suppliers select from this catalog. Prices include 10% platform commission.</div>
+    </div>
+    <button class="btn btn-primary btn-sm">+ Add Product</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th>NAFDAC No.</th><th>Base Price</th><th>Final Price (+ 10%)</th><th>Total Stock</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${PRODUCTS.map(p=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:10px;">${p.emoji} <strong>${p.name}</strong></div></td>
+        <td><span class="badge badge-accent">${p.cat}</span></td>
+        <td style="font-size:12px;font-family:monospace;color:var(--text-3);">${p.nafdac}</td>
+        <td>₦${p.basePrice.toLocaleString()}</td>
+        <td style="color:var(--green);font-weight:600;">₦${Math.round(p.basePrice*1.1).toLocaleString()}</td>
+        <td>${p.stock.toLocaleString()}</td>
+        <td>${stockBadge(p.stock,p.low)}</td>
+        <td><button class="btn btn-ghost btn-sm">Edit</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN — SUPPLIERS
+// ══════════════════════════════════════════════════════════════
+function renderAdminSuppliers(el) {
+  el.innerHTML = `
+  <div class="tabs">
+    <div class="tab active" onclick="filterSupplierTab('all',this)">All (${SUPPLIERS.length})</div>
+    <div class="tab" onclick="filterSupplierTab('approved',this)">Approved (${SUPPLIERS.filter(s=>s.status==='approved').length})</div>
+    <div class="tab" onclick="filterSupplierTab('pending',this)">Pending (${SUPPLIERS.filter(s=>s.status==='pending').length})</div>
+    <div class="tab" onclick="filterSupplierTab('rejected',this)">Rejected (${SUPPLIERS.filter(s=>s.status==='rejected').length})</div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Company</th><th>Type</th><th>Contact</th><th>Location</th><th>Products</th><th>Status</th><th>Joined</th><th>Action</th></tr></thead>
+      <tbody id="supplier-tbody">${renderSupplierRows(SUPPLIERS)}</tbody>
+    </table>
+  </div>`;
+}
+function renderSupplierRows(data) {
+  return data.map(s=>`<tr>
+    <td><strong>${s.name}</strong></td>
+    <td>${s.type}</td>
+    <td style="font-size:12px;">${s.phone}</td>
+    <td style="font-size:13px;">${s.address}</td>
+    <td style="font-weight:600;">${s.products}</td>
+    <td><span class="badge ${s.status==='approved'?'badge-green':s.status==='pending'?'badge-amber':'badge-red'}">${s.status}</span></td>
+    <td style="font-size:12px;color:var(--text-3);">${s.joined}</td>
+    <td><button class="btn btn-outline btn-sm" onclick="openSupplierModal(${s.id})">Review</button></td>
+  </tr>`).join('');
+}
+function filterSupplierTab(filter, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const data = filter==='all' ? SUPPLIERS : SUPPLIERS.filter(s=>s.status===filter);
+  document.getElementById('supplier-tbody').innerHTML = renderSupplierRows(data);
+}
+function openSupplierModal(id) {
+  const s = SUPPLIERS.find(x=>x.id===id);
+  if(!s) return;
+  reviewingSupplierId = id;
+  document.getElementById('modal-sup-name').textContent = s.name;
+  document.getElementById('modal-sup-body').innerHTML = `
+    <div class="verify-card">
+      <div class="verify-field"><span class="verify-label">Business Name</span><span class="verify-value">${s.name}</span></div>
+      <div class="verify-field"><span class="verify-label">Supplier Type</span><span class="verify-value">${s.type}</span></div>
+      <div class="verify-field"><span class="verify-label">Phone</span><span class="verify-value">${s.phone}</span></div>
+      <div class="verify-field"><span class="verify-label">Address</span><span class="verify-value">${s.address}</span></div>
+      <div class="verify-field"><span class="verify-label">License No.</span><span class="verify-value" style="font-family:monospace;font-size:13px;">${s.license}</span></div>
+      <div class="verify-field"><span class="verify-label">Applied</span><span class="verify-value">${s.joined}</span></div>
+      <div class="verify-field"><span class="verify-label">Status</span><span class="verify-value"><span class="badge ${s.status==='approved'?'badge-green':s.status==='pending'?'badge-amber':'badge-red'}">${s.status}</span></span></div>
+      <div class="verify-field"><span class="verify-label">License Document</span><span class="verify-value"><button class="btn btn-outline btn-sm">📄 View License</button></span></div>
+    </div>
+  `;
+  openModal('modal-supplier');
+}
+function handleSupplier(status) {
+  const s = SUPPLIERS.find(x=>x.id===reviewingSupplierId);
+  if(s) { s.status=status; showToast(`${s.name} — ${status}`); closeModal('modal-supplier'); if(document.getElementById('supplier-tbody')) renderAdminSuppliers(document.getElementById('page-content')); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════════════════════════
+function renderAnalytics(el) {
+  const months = ['Aug','Sep','Oct','Nov','Dec','Jan'];
+  const vals = [58,71,65,89,94,112];
+  const max = Math.max(...vals);
+  el.innerHTML = `
+  <div class="metrics-grid">
+    <div class="metric-card" style="--c:var(--blue)"><div class="metric-label">Orders This Month</div><div class="metric-value">112</div><div class="metric-change up">↑ 19% vs last</div></div>
+    <div class="metric-card" style="--c:var(--green)"><div class="metric-label">Verified Products</div><div class="metric-value">847</div><div class="metric-change up">↑ 11% success rate</div></div>
+    <div class="metric-card" style="--c:var(--amber)"><div class="metric-label">Avg. Fulfillment</div><div class="metric-value">3.2d</div><div class="metric-change up">↑ faster than avg</div></div>
+    <div class="metric-card" style="--c:var(--red)"><div class="metric-label">Rejection Rate</div><div class="metric-value">1.3%</div><div class="metric-change up">↓ improving</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Orders per Month</div></div>
+      <div class="card-body">
+        <div class="chart-bars">
+          ${months.map((m,i)=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+            <div style="font-size:11px;color:${i===5?'var(--blue)':'var(--text-3)'};font-weight:${i===5?700:400};margin-bottom:4px;">${vals[i]}</div>
+            <div style="flex:1;width:100%;background:${i===5?'var(--blue)':'var(--blue-mid)'};border-radius:6px 6px 0 0;height:${(vals[i]/max*100)}%;min-height:4px;"></div>
+            <div class="chart-label">${m}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Top Products by Volume</div></div>
+      <div class="card-body">
+        ${PRODUCTS.slice(0,6).map((p,i)=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:11px;font-weight:700;color:var(--text-3);min-width:16px;">#${i+1}</span>
+          <span style="font-size:16px;">${p.emoji}</span>
+          <div style="flex:1;">
+            <div style="font-size:13px;font-weight:500;">${p.name}</div>
+            <div style="font-size:11px;color:var(--text-3);">${p.cat}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:13px;font-weight:600;color:var(--blue);">₦${Math.round(p.basePrice*1.1).toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--text-3);">${p.stock} units</div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BUYER — CATALOG
+// ══════════════════════════════════════════════════════════════
+function renderBuyerCatalog(el) {
+  el.innerHTML = `
+  <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;align-items:center;">
+    <div class="search-bar"><span style="color:var(--text-3);">🔍</span><input placeholder="Search medicines..."></div>
+    <select class="workflow-select">
+      <option>All Categories</option>
+      ${[...new Set(PRODUCTS.map(p=>p.cat))].map(c=>`<option>${c}</option>`).join('')}
+    </select>
+    <div style="margin-left:auto;font-size:13px;color:var(--text-3);">${PRODUCTS.length} products · Prices include 10% platform fee</div>
+  </div>
+  <div class="product-grid">
+    ${PRODUCTS.map(p=>{
+      const final = Math.round(p.basePrice*1.1);
+      const commission = Math.round(p.basePrice*0.1);
+      const sClass = p.stock===0?'stock-out':p.stock<p.low?'stock-low':'stock-avail';
+      const sText = p.stock===0?'Out of Stock':p.stock<p.low?`Low Stock (${p.stock})`:`In Stock (${p.stock})`;
+      return `<div class="product-card">
+        <div class="product-img">${p.emoji}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-cat">${p.cat} · ${p.supplier}</div>
+          <div class="product-price">₦${final.toLocaleString()}</div>
+          <div class="product-price-sub">Base ₦${p.basePrice.toLocaleString()} + ₦${commission.toLocaleString()} fee</div>
+          <div class="product-foot">
+            <span class="stock-pill ${sClass}">${sText}</span>
+            ${p.stock>0
+              ? `<button class="btn btn-primary btn-sm" onclick="openOrderModal(${p.id})">Order →</button>`
+              : `<button class="btn btn-ghost btn-sm" disabled style="opacity:0.5;cursor:not-allowed;">Unavailable</button>`
+            }
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function openOrderModal(pid) {
+  const p = PRODUCTS.find(x=>x.id===pid);
+  if(!p||p.stock===0) return;
+  selectedProductId = pid;
+  document.getElementById('order-product-info').innerHTML = `
+    <div style="display:flex;align-items:center;gap:14px;padding:14px;background:var(--bg);border-radius:var(--radius-sm);">
+      <span style="font-size:36px;">${p.emoji}</span>
+      <div>
+        <div style="font-weight:600;font-size:15px;">${p.name}</div>
+        <div style="font-size:13px;color:var(--text-3);">${p.cat} · Supplied by ${p.supplier}</div>
+        <div style="font-size:12px;color:var(--text-3);margin-top:2px;">NAFDAC: ${p.nafdac}</div>
+      </div>
+    </div>`;
+  updateOrderTotal();
+  openModal('modal-order');
+}
+
+function updateOrderTotal() {
+  const p = PRODUCTS.find(x=>x.id===selectedProductId);
+  if(!p) return;
+  const qty = parseInt(document.getElementById('order-qty')?.value||1);
+  const base = p.basePrice * qty;
+  const comm = Math.round(base * 0.1);
+  const total = base + comm;
+  const el = (id) => document.getElementById(id);
+  if(el('order-base')) el('order-base').textContent = `₦${base.toLocaleString()}`;
+  if(el('order-comm')) el('order-comm').textContent = `₦${comm.toLocaleString()}`;
+  if(el('order-total')) el('order-total').textContent = `₦${total.toLocaleString()}`;
+}
+
+function placeOrder() {
+  const p = PRODUCTS.find(x=>x.id===selectedProductId);
+  if(!p) return;
+  const qty = parseInt(document.getElementById('order-qty').value||10);
+  const newOrder = {
+    id:`ORD-${2025+ORDERS.length}`,
+    product:p.name, buyer:'Lagos General Hospital',
+    qty, basePrice:p.basePrice, status:'Pending',
+    date:new Date().toISOString().split('T')[0], supplier:p.supplier
+  };
+  ORDERS.unshift(newOrder);
+  closeModal('modal-order');
+  showToast('✅ Order placed! Supplier will be contacted shortly.');
+  navigateTo('my-orders');
+}
+
+// BUYER ORDERS
+function renderBuyerOrders(el) {
+  el.innerHTML = `
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Order ID</th><th>Product</th><th>Qty</th><th>Total</th><th>Status</th><th>Date</th><th></th></tr></thead>
+      <tbody>${ORDERS.map(o=>`<tr>
+        <td><strong>${o.id}</strong></td>
+        <td>${o.product}</td>
+        <td>${o.qty.toLocaleString()}</td>
+        <td style="font-weight:600;">₦${Math.round(o.basePrice*o.qty*1.1).toLocaleString()}</td>
+        <td>${statusBadge(o.status)}</td>
+        <td style="font-size:12px;color:var(--text-3);">${o.date}</td>
+        <td><button class="btn btn-ghost btn-sm" onclick="navigateTo('order-track')">Track →</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+// ORDER TRACKING
+function renderOrderTrack(el) {
+  const o = ORDERS[0];
+  const stepIdx = Math.max(0, STATUS_FLOW.indexOf(o.status));
+  el.innerHTML = `
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="font-size:20px;font-weight:700;">${o.id}</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px;">${o.product} · ${o.buyer}</div>
+        </div>
+        ${statusBadge(o.status)}
+      </div>
+      <div class="status-flow">
+        ${STATUS_FLOW.map((s,i)=>`<div class="status-step">
+          <div class="status-dot ${i<stepIdx?'done':i===stepIdx?'active':''}">${i<stepIdx?'✓':i+1}</div>
+          <div class="status-line ${i<stepIdx?'done':''}"></div>
+          <div class="status-label ${i===stepIdx?'active-label':''}">${s}</div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Order Details</div></div>
+      <div class="card-body">
+        <div class="verify-card">
+          <div class="verify-field"><span class="verify-label">Order ID</span><span class="verify-value" style="font-family:monospace;">${o.id}</span></div>
+          <div class="verify-field"><span class="verify-label">Product</span><span class="verify-value">${o.product}</span></div>
+          <div class="verify-field"><span class="verify-label">Quantity</span><span class="verify-value">${o.qty.toLocaleString()} units</span></div>
+          <div class="verify-field"><span class="verify-label">Total Value</span><span class="verify-value" style="color:var(--blue);font-weight:700;">₦${Math.round(o.basePrice*o.qty*1.1).toLocaleString()}</span></div>
+          <div class="verify-field"><span class="verify-label">Supplier</span><span class="verify-value">${o.supplier}</span></div>
+          <div class="verify-field"><span class="verify-label">Order Date</span><span class="verify-value">${o.date}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Activity Timeline</div></div>
+      <div class="card-body">
+        <div class="timeline">
+          ${STATUS_FLOW.slice(0,stepIdx+1).reverse().map((s,i)=>`
+          <div class="timeline-item">
+            <div class="tl-dot" style="background:${i===0?'var(--blue-light)':'var(--green-light)'};">${i===0?'⏳':'✅'}</div>
+            <div class="tl-content">
+              <div class="tl-title">${s}</div>
+              <div class="tl-time">${i===0?'Currently in progress':'Completed · '+o.date}</div>
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// SUPPLIER
+// ══════════════════════════════════════════════════════════════
+function renderSupOverview(el) {
+  const myProducts = PRODUCTS.filter(p=>p.supplier==='PharmaCo Ltd');
+  const myOrders = ORDERS.filter(o=>o.supplier==='PharmaCo Ltd');
+  el.innerHTML = `
+  <div class="metrics-grid">
+    <div class="metric-card" style="--c:var(--blue)"><div class="metric-label">Incoming Orders</div><div class="metric-value">${myOrders.filter(o=>o.status==='Pending'||o.status==='Supplier Contacted').length}</div><div class="metric-change up">Action required</div></div>
+    <div class="metric-card" style="--c:var(--green)"><div class="metric-label">Revenue (All time)</div><div class="metric-value">₦${(myOrders.reduce((s,o)=>s+o.basePrice*o.qty,0)/1000000).toFixed(1)}M</div><div class="metric-change up">↑ before commission</div></div>
+    <div class="metric-card" style="--c:var(--amber)"><div class="metric-label">Products Listed</div><div class="metric-value">${myProducts.length}</div><div class="metric-change">from admin catalog</div></div>
+    <div class="metric-card" style="--c:var(--red)"><div class="metric-label">Low Stock</div><div class="metric-value">${myProducts.filter(p=>p.stock<p.low&&p.stock>0).length}</div><div class="metric-change down">Needs restocking</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">New Order Requests</div><button class="btn btn-ghost btn-sm" onclick="navigateTo('sup-orders')">See all →</button></div>
+      <div class="card-body">
+        ${myOrders.filter(o=>o.status==='Pending'||o.status==='Supplier Contacted').slice(0,4).map(o=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <div style="flex:1;">
+            <div style="font-size:14px;font-weight:500;">${o.product}</div>
+            <div style="font-size:11px;color:var(--text-3);">${o.id} · ${o.qty} units · ${o.buyer}</div>
+          </div>
+          ${statusBadge(o.status)}
+          <button class="btn btn-success btn-sm" onclick="supplierConfirmOrder('${o.id}')">Confirm</button>
+        </div>`).join('')}
+        ${myOrders.filter(o=>o.status==='Pending'||o.status==='Supplier Contacted').length===0?'<div style="text-align:center;padding:20px;color:var(--text-3);font-size:14px;">No pending requests</div>':''}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Inventory Status</div></div>
+      <div class="card-body">
+        ${myProducts.map(p=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);">
+          <span style="font-size:20px;">${p.emoji}</span>
+          <div style="flex:1;"><div style="font-size:14px;font-weight:500;">${p.name}</div><div style="font-size:11px;color:var(--text-3);">${p.stock} units</div></div>
+          <span class="stock-pill ${p.stock===0?'stock-out':p.stock<p.low?'stock-low':'stock-avail'}">${p.stock===0?'Out':p.stock<p.low?'Low':'OK'}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSupOrders(el) {
+  const myOrders = ORDERS.filter(o=>o.supplier==='PharmaCo Ltd');
+  el.innerHTML = `
+  <div class="tabs">
+    <div class="tab active">Pending (${myOrders.filter(o=>o.status==='Pending'||o.status==='Supplier Contacted').length})</div>
+    <div class="tab">Active (${myOrders.filter(o=>o.status==='Supplier Confirmed'||o.status==='In Transit to Office').length})</div>
+    <div class="tab">Completed (${myOrders.filter(o=>o.status==='Delivered').length})</div>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    ${myOrders.map(o=>`
+    <div class="card">
+      <div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:200px;">
+          <div style="font-size:16px;font-weight:700;">${o.product}</div>
+          <div style="font-size:13px;color:var(--text-3);margin-top:2px;">${o.id} · ${o.buyer}</div>
+        </div>
+        <div><div style="font-size:11px;color:var(--text-3);">Qty</div><div style="font-weight:700;">${o.qty.toLocaleString()}</div></div>
+        <div><div style="font-size:11px;color:var(--text-3);">Your Revenue</div><div style="font-weight:700;color:var(--green);">₦${(o.basePrice*o.qty).toLocaleString()}</div></div>
+        ${statusBadge(o.status)}
+        <div style="display:flex;gap:8px;">
+          ${(o.status==='Pending'||o.status==='Supplier Contacted')?`
+            <button class="btn btn-success btn-sm" onclick="supplierConfirmOrder('${o.id}')">✓ Confirm</button>
+            <button class="btn btn-danger btn-sm" onclick="showToast('Order declined')">✕</button>
+          `:`<span style="font-size:13px;color:var(--text-3);">No actions needed</span>`}
+        </div>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function supplierConfirmOrder(id) {
+  const o = ORDERS.find(x=>x.id===id);
+  if(o) { o.status='Supplier Confirmed'; showToast(`✅ Order ${id} confirmed. Admin notified.`); navigateTo('sup-orders'); }
+}
+
+function renderSupInventory(el) {
+  const myProducts = PRODUCTS.filter(p=>p.supplier==='PharmaCo Ltd');
+  el.innerHTML = `
+  <div class="section-head">
+    <div class="section-title">My Inventory</div>
+    <button class="btn btn-primary btn-sm" onclick="navigateTo('sup-add')">+ Add from Catalog</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th>NAFDAC No.</th><th>My Price (₦)</th><th>Final Price (+10%)</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+      <tbody>${myProducts.map(p=>`<tr>
+        <td><div style="display:flex;align-items:center;gap:10px;">${p.emoji} <strong>${p.name}</strong></div></td>
+        <td style="font-size:12px;font-family:monospace;color:var(--text-3);">${p.nafdac}</td>
+        <td><input type="number" value="${p.basePrice}" style="width:100px;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-family:inherit;"></td>
+        <td style="color:var(--green);font-weight:600;">₦${Math.round(p.basePrice*1.1).toLocaleString()}</td>
+        <td><input type="number" value="${p.stock}" style="width:80px;border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-size:13px;font-family:inherit;"></td>
+        <td>${stockBadge(p.stock,p.low)}</td>
+        <td><button class="btn btn-outline btn-sm" onclick="showToast('Inventory updated!')">Save</button></td>
+      </tr>`).join('')}</tbody>
+    </table>
+  </div>`;
+}
+
+function renderSupAdd(el) {
+  const mySupplier = 'PharmaCo Ltd';
+  el.innerHTML = `
+  <div style="font-size:14px;color:var(--text-2);margin-bottom:20px;">Select products from the admin-managed catalog and set your own pricing to list in your inventory.</div>
+  <div class="product-grid">
+    ${PRODUCTS.map(p=>{
+      const inInv = p.supplier===mySupplier;
+      return `<div class="product-card" style="cursor:default;">
+        <div class="product-img">${p.emoji}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-cat">${p.cat}</div>
+          ${inInv?
+            `<div style="background:var(--green-light);border-radius:6px;padding:10px;margin-top:8px;text-align:center;font-size:13px;color:var(--green);font-weight:500;">✓ Already in inventory</div>`
+            :`<div style="margin-top:10px;">
+              <input type="number" placeholder="Set your price (₦)" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:13px;font-family:inherit;margin-bottom:8px;">
+              <input type="number" placeholder="Stock quantity" style="width:100%;border:1.5px solid var(--border);border-radius:6px;padding:8px;font-size:13px;font-family:inherit;margin-bottom:8px;">
+              <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showToast('${p.name} added to inventory!')">Add to Inventory</button>
+            </div>`
+          }
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderSupProfile(el) {
+  el.innerHTML = `
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header"><div class="card-title">Business Profile</div></div>
+      <div class="card-body">
+        <div class="form-group"><label>Business Name</label><input type="text" value="PharmaCo Ltd" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;font-family:inherit;font-size:14px;"></div>
+        <div class="form-group"><label>Supplier Type</label><select style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;background:white;"><option selected>Company</option><option>Individual</option></select></div>
+        <div class="form-group"><label>Phone Number</label><input type="text" value="+234 812 345 6789" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;font-family:inherit;font-size:14px;"></div>
+        <div class="form-group"><label>Business Address</label><input type="text" value="Victoria Island, Lagos" style="border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;width:100%;font-family:inherit;font-size:14px;"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="showToast('Profile updated!')">Save Changes</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">Account Status</div></div>
+      <div class="card-body">
+        <div class="verify-card">
+          <div class="verify-field"><span class="verify-label">Account Status</span><span class="verify-value"><span class="badge badge-green">Approved</span></span></div>
+          <div class="verify-field"><span class="verify-label">License No.</span><span class="verify-value" style="font-family:monospace;font-size:12px;">PCL-NG-2024-001</span></div>
+          <div class="verify-field"><span class="verify-label">Member Since</span><span class="verify-value">January 5, 2024</span></div>
+          <div class="verify-field"><span class="verify-label">Products Listed</span><span class="verify-value">3 products</span></div>
+          <div class="verify-field"><span class="verify-label">License Document</span><span class="verify-value"><button class="btn btn-outline btn-sm">📄 View</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// PHARMACIST
+// ══════════════════════════════════════════════════════════════
+function renderPhaQueue(el) {
+  const queue = ORDERS.filter(o=>o.status==='Under Verification'||o.status==='In Transit to Office');
+  el.innerHTML = `
+  <div class="metrics-grid">
+    <div class="metric-card" style="--c:var(--blue)"><div class="metric-label">Awaiting Verification</div><div class="metric-value">${queue.length}</div></div>
+    <div class="metric-card" style="--c:var(--green)"><div class="metric-label">Verified Today</div><div class="metric-value">12</div></div>
+    <div class="metric-card" style="--c:var(--red)"><div class="metric-label">Rejected Today</div><div class="metric-value">1</div></div>
+  </div>
+  <div class="section-head"><div class="section-title">Incoming Products</div></div>
+  ${queue.length===0
+    ?`<div class="empty"><div class="empty-icon">✅</div><div class="empty-title">Queue is clear</div><div class="empty-sub">All products have been processed</div></div>`
+    :`<div style="display:flex;flex-direction:column;gap:12px;">
+      ${queue.map(o=>`
+      <div class="card">
+        <div class="card-body" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <div style="font-size:15px;font-weight:700;">${o.product}</div>
+            <div style="font-size:13px;color:var(--text-3);margin-top:2px;">${o.id} · Qty: ${o.qty.toLocaleString()} · ${o.buyer}</div>
+          </div>
+          ${statusBadge(o.status)}
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="navigateTo('pha-verify')">🔬 Verify Now</button>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>`
+  }`;
+}
+
+function renderPhaVerify(el) {
+  const o = ORDERS.find(x=>x.status==='Under Verification')||ORDERS[0];
+  el.innerHTML = `
+  <div class="grid-2">
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">Product Scan</div></div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Barcode / Scan Code</label>
+            <div style="display:flex;gap:8px;">
+              <input type="text" placeholder="Enter or scan barcode" value="NG-AMX-2024-4421" id="barcode-input"
+                style="flex:1;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:monospace;">
+              <button class="btn btn-primary" onclick="lookupBarcode()">Lookup</button>
+            </div>
+          </div>
+          <div id="barcode-result"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Verification Form</div></div>
+        <div class="card-body">
+          <div class="form-group"><label>Batch Number</label><input type="text" value="BATCH-NG-2024-4421" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;"></div>
+          <div class="grid-2" style="gap:12px;">
+            <div class="form-group"><label>Manufacturing Date</label><input type="date" value="2024-01-01" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;"></div>
+            <div class="form-group"><label>Expiry Date</label><input type="date" value="2026-01-01" style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;"></div>
+          </div>
+          <div class="form-group"><label>Physical Condition</label>
+            <select style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;background:white;">
+              <option>✅ Excellent — All seals intact</option>
+              <option>⚠️ Acceptable — Minor packaging issue</option>
+              <option>❌ Poor — Damaged or tampered</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Pharmacist Notes</label>
+            <textarea style="width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:10px 14px;font-size:14px;font-family:inherit;height:80px;resize:none;">Visually inspected. All seals intact. Batch number confirmed. NAFDAC approval visible.</textarea>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:8px;">
+            <button class="btn btn-danger" style="flex:1;justify-content:center;" onclick="verifyProduct('rejected')">❌ Reject Product</button>
+            <button class="btn btn-success" style="flex:1;justify-content:center;" onclick="verifyProduct('verified')">✅ Verify & Release</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header"><div class="card-title">Order Information</div></div>
+        <div class="card-body">
+          <div class="verify-card">
+            <div class="verify-field"><span class="verify-label">Order ID</span><span class="verify-value" style="font-family:monospace;">${o.id}</span></div>
+            <div class="verify-field"><span class="verify-label">Product</span><span class="verify-value">${o.product}</span></div>
+            <div class="verify-field"><span class="verify-label">Buyer</span><span class="verify-value">${o.buyer}</span></div>
+            <div class="verify-field"><span class="verify-label">Quantity</span><span class="verify-value">${o.qty.toLocaleString()} units</span></div>
+            <div class="verify-field"><span class="verify-label">Total Value</span><span class="verify-value" style="color:var(--blue);font-weight:700;">₦${Math.round(o.basePrice*o.qty*1.1).toLocaleString()}</span></div>
+            <div class="verify-field"><span class="verify-label">Supplier</span><span class="verify-value">${o.supplier}</span></div>
+            <div class="verify-field"><span class="verify-label">Status</span><span class="verify-value">${statusBadge(o.status)}</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Verification Checklist</div></div>
+        <div class="card-body">
+          ${['Package seal intact','Batch number matches documentation','Expiry date valid (> 6 months remaining)','Storage requirements met on delivery','Quantity matches order exactly','NAFDAC approval label visible','No signs of tampering or counterfeiting','Temperature-sensitive items within range'].map(item=>`
+          <label style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;">
+            <input type="checkbox" checked style="width:15px;height:15px;accent-color:var(--green);flex-shrink:0;">${item}
+          </label>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function lookupBarcode() {
+  document.getElementById('barcode-result').innerHTML = `
+    <div style="background:var(--green-light);border:1px solid var(--green-mid);border-radius:var(--radius-sm);padding:12px;margin-top:8px;">
+      <div style="font-weight:600;color:var(--green);margin-bottom:6px;">✅ Product Verified in Registry</div>
+      <div style="font-size:13px;color:var(--text-2);">Amoxicillin 500mg · NAFDAC Reg: A4-0141<br>Manufacturer: Sterling Pharma · Nigeria</div>
+    </div>`;
+}
+
+function verifyProduct(result) {
+  const o = ORDERS.find(x=>x.status==='Under Verification');
+  if(o) o.status = result==='verified'?'Verified':'Rejected';
+  showToast(result==='verified'?'✅ Product verified! Ready for delivery & payment release.':'❌ Product rejected. Admin & supplier have been notified.');
+  navigateTo('pha-queue');
+}
+
+function renderPhaHistory(el) {
+  el.innerHTML = `
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Order ID</th><th>Product</th><th>Batch No.</th><th>Result</th><th>Pharmacist</th><th>Date</th></tr></thead>
+      <tbody>
+        <tr><td><strong>ORD-2021</strong></td><td>Paracetamol 500mg</td><td style="font-family:monospace;font-size:12px;">BATCH-4420</td><td><span class="badge badge-green">Verified</span></td><td>Dr. Amaka Obi</td><td>2024-01-12</td></tr>
+        <tr><td><strong>ORD-2018</strong></td><td>Ciprofloxacin 500mg</td><td style="font-family:monospace;font-size:12px;">BATCH-4419</td><td><span class="badge badge-green">Verified</span></td><td>Dr. Amaka Obi</td><td>2024-01-10</td></tr>
+        <tr><td><strong>ORD-2017</strong></td><td>Metformin 500mg</td><td style="font-family:monospace;font-size:12px;">BATCH-4418</td><td><span class="badge badge-green">Verified</span></td><td>Dr. Amaka Obi</td><td>2024-01-09</td></tr>
+        <tr><td><strong>ORD-2016</strong></td><td>Ciprofloxacin 500mg</td><td style="font-family:monospace;font-size:12px;">BATCH-4416</td><td><span class="badge badge-red">Rejected</span></td><td>Dr. Amaka Obi</td><td>2024-01-08</td></tr>
+        <tr><td><strong>ORD-2015</strong></td><td>Lisinopril 10mg</td><td style="font-family:monospace;font-size:12px;">BATCH-4415</td><td><span class="badge badge-green">Verified</span></td><td>Dr. Amaka Obi</td><td>2024-01-07</td></tr>
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+function statusBadge(status) {
+  const map = {
+    'Pending':'badge-gray','Supplier Contacted':'badge-accent','Supplier Confirmed':'badge-blue',
+    'Supplier Unresponsive':'badge-red','In Transit to Office':'badge-amber',
+    'Under Verification':'badge-purple','Verified':'badge-green','Rejected':'badge-red',
+    'Delivered':'badge-green','Cancelled':'badge-gray'
+  };
+  return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
+}
+
+function stockBadge(stock, low) {
+  if(stock===0) return `<span class="badge badge-red">Out of Stock</span>`;
+  if(stock<low) return `<span class="badge badge-amber">Low Stock</span>`;
+  return `<span class="badge badge-green">Available</span>`;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+let toastTimer;
+function showToast(msg) {
+  let t = document.getElementById('__toast');
+  if(!t) {
+    t = document.createElement('div');
+    t.id='__toast';
+    Object.assign(t.style, {
+      position:'fixed',bottom:'24px',right:'24px',
+      background:'#0F172A',color:'white',padding:'12px 20px',
+      borderRadius:'10px',fontSize:'14px',fontFamily:'DM Sans,sans-serif',
+      zIndex:'999',boxShadow:'0 8px 32px rgba(0,0,0,0.25)',
+      transition:'all 0.3s cubic-bezier(0.34,1.56,0.64,1)',
+      transform:'translateY(100px)',opacity:'0',maxWidth:'360px',
+      lineHeight:'1.5'
+    });
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.transform='translateY(0)';t.style.opacity='1';
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{t.style.transform='translateY(100px)';t.style.opacity='0';},3000);
+}
+
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') document.querySelectorAll('.modal-overlay.open').forEach(m=>m.classList.remove('open'));
+});
+</script>
+</body>
+</html>

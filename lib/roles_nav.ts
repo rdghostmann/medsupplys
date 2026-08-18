@@ -3,7 +3,7 @@
 export const roleNavMain = {
   buyer: [
     { id: "overview", title: "Overview", icon: "📊", url: "/buyer" },
-    { id: "browse", title: "Browse Products", icon: "🛍️", url: "/buyer/browse" },
+    { id: "browse", title: "Browse Products", icon: "🛍️", url: "/buyer/marketplace" },
     { id: "orders", title: "My Orders", icon: "📋", url: "/buyer/orders" },
     { id: "order-track", title: "Track Order", icon: "🚚", url: "/buyer/orders-tracking" },
   ],
@@ -11,7 +11,7 @@ export const roleNavMain = {
     { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
     { id: "inventory", title: "Inventory", icon: "📦", url: "/supplier/inventory" },
     { id: "order-requests", title: "Order Requests", icon: "📃", url: "/supplier/order-requests" },
-    { id: "earnings", title: "Earnings", icon: "💰", url: "/supplier/earnings" },
+    { id: "earnings", title: "Earnings", icon:  "💰", url: "/supplier/earnings" },
   ],
   pharmacist: [
     { id: "overview", title: "Overview", icon: "📊", url: "/pharmacist" },

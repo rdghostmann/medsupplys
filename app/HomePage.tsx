@@ -34,9 +34,11 @@ const RoleCard = ({ emoji, title, desc, bg, color, linkUrl }: { emoji: string, t
 export default function HomePage() {
    return (
       <div className="bg-slate-50 min-h-screen text-slate-900 font-dm-sans">
+
          <Navbar />
 
          <Hero />
+         
          <section className="hidden  pt-36 pb-20 px-6 max-w-7xl mx-auto  md:grid-cols-2 gap-16 items-center">
             <div>
                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 px-4 py-1.5 rounded-full text-xs font-medium mb-5">
