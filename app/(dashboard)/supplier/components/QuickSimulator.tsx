@@ -46,7 +46,8 @@ export default function QuickSimulator({
 
   return (
     <div 
-      className="fixed bottom-6 left-6 z-40 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-900/40 border border-slate-800 w-72 overflow-hidden transition-all duration-300" 
+      className="hidden bottom-6 left-6 z-40 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-900/40 border border-slate-800 w-72 overflow-hidden transition-all duration-300" 
+      // className="fixed bottom-6 left-6 z-40 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-900/40 border border-slate-800 w-72 overflow-hidden transition-all duration-300" 
       id="quick-simulator-widget"
     >
       {/* Header Bar */}

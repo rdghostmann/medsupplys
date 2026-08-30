@@ -26,6 +26,7 @@ const ROLE_ROUTES: Record<Role, string> = {
   admin: "/admin",
   supplier: "/supplier",
   buyer: "/buyer",
+  pharmacist: "/pharmacist",
 }
 
 /* =========================================================

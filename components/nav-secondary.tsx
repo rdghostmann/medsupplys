@@ -24,6 +24,9 @@ export function NavSecondary({
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
+           <span className="text-xs font-medium text-muted-foreground">
+            System
+          </span>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild>

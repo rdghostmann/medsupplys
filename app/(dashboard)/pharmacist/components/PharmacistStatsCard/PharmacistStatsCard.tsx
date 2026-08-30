@@ -22,7 +22,7 @@ type StatCard = {
 
 const stats: StatCard[] = [
   {
-    title: "Awating Orders",
+    title: "Awating Verification",
     value: 4,
     description: "📦",
     badgeText: "+4 this month",
@@ -30,7 +30,7 @@ const stats: StatCard[] = [
   },
   {
     title: "Verified Today",
-    value: 7,
+    value: 12,
     description: "🚚",
     badgeText: "3 under verification",
     trend: "neutral",
@@ -42,13 +42,7 @@ const stats: StatCard[] = [
     badgeText: "+12% vs last month",
     trend: "neutral",
   },
-  {
-    title: "Avg. Verify Time",
-    value: "14mins",
-    description: "❤️",
-    badgeText: "2 price drops",
-    trend: "neutral",
-  },
+ 
 ]
 
 // 🎨 Border color system (scalable)
@@ -73,7 +67,9 @@ export function PharmacistStatsCard() {
           key={item.title}
           className={`@container/card border-t-4 ${borderTopColors[index]}`}
         >
-          <CardHeader>
+          <CardHeader 
+          className="mb-4"
+          >
             <CardDescription className="flex items-center justify-between">
               <span>{item.title}</span>
               <span className="hidden text-2xl">{item.description}</span>
@@ -84,7 +80,7 @@ export function PharmacistStatsCard() {
             </CardTitle>
           </CardHeader>
 
-          <CardFooter className="flex items-center justify-between text-sm text-muted-foreground">
+          <CardFooter className="hidden items-center justify-between text-sm text-muted-foreground">
             {item.badgeText && (
               <Badge variant="outline" className="flex items-center gap-1">
                 <TrendIcon trend={item.trend} />

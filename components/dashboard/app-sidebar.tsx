@@ -53,16 +53,16 @@ export function AppSidebar({
         url: "#",
         icon: <Gear />,
       },
-      {
-        title: "Get Help",
-        url: "#",
-        icon: <Question />,
-      },
-      {
-        title: "Search",
-        url: "#",
-        icon: <MagnifyingGlass />,
-      },
+      // {
+      //   title: "Get Help",
+      //   url: "#",
+      //   icon: <Question />,
+      // },
+      // {
+      //   title: "Search",
+      //   url: "#",
+      //   icon: <MagnifyingGlass />,
+      // },
     ],
   }
 

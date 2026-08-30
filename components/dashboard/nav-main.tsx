@@ -43,6 +43,9 @@ export function NavMain({
           </SidebarMenuItem>
         </SidebarMenu> */}
         <SidebarMenu>
+          <span className="text-xs font-medium text-muted-foreground">
+            Main
+          </span>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild tooltip={item.title}>

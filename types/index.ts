@@ -2,7 +2,7 @@
 import { z } from "zod"
 
 export type SupplierType = "importer" | "distributor" | "retailer"
-export type Role = "buyer" | "supplier" | "admin"
+export type Role = "buyer" | "supplier" | "admin" | "pharmacist"
 export type OrganizationType = "manufacturer" | "distributor" | "wholesaler" | "pharmacy"
 export type UnitType = "unit" | "pack" | "carton"
 
