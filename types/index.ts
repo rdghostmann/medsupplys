@@ -331,3 +331,53 @@ export const inventorySchema = z.object({
 })
 
 export type InventoryProduct = z.infer<typeof inventorySchema>
+
+export interface NotificationPreferences {
+  emailOrders: boolean;
+  smsAlerts: boolean;
+  coldChainExcursions: boolean;
+  walletUpdates: boolean;
+  weeklyDigest: boolean;
+}
+
+export interface ProfileFormData {
+  name: string;
+  email: string;
+  phone: string;
+  emergencyContact: string;
+  designation: string;
+  organization: string;
+  address: string;
+  state: string;
+  lga: string;
+  facilityType: string;
+
+  // Buyer fields
+  bedCapacity: number;
+  receivingHours: string;
+  backupPowerSpec: string;
+  coldChainCapacityM3: number;
+  licenseNumber: string;
+
+  // Supplier fields
+  nafdacGdpLicense: string;
+  pcnPremisesLicense: string;
+  taxIdentificationNumber: string;
+  settlementBankName: string;
+  settlementAccountNumber: string;
+  settlementAccountName: string;
+
+  // Pharmacist fields
+  pharmacistLicense: string;
+  annualPracticingLicenseNo: string;
+  pharmacistCadre: string;
+
+  // Admin fields
+  adminClearanceTier: string;
+
+  // Security
+  twoFactorEnabled: boolean;
+
+  // Alerts
+  notificationPreferences: NotificationPreferences;
+}

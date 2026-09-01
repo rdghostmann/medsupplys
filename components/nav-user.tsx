@@ -83,11 +83,11 @@ export function NavUser({
                 />
                 Account
               </DropdownMenuItem>
-              <DropdownMenuItem>
+              {/* <DropdownMenuItem>
                 <CreditCardIcon
                 />
                 Billing
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuItem>
                 <BellIcon
                 />
@@ -96,9 +96,7 @@ export function NavUser({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              {/* <SignOutIcon
-              />
-              Log out */}
+    
               <LogoutButton />
             </DropdownMenuItem>
           </DropdownMenuContent>

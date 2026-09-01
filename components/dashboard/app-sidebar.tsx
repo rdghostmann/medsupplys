@@ -45,12 +45,13 @@ export function AppSidebar({
       name: `${session?.user?.firstName || ""} ${session?.user?.lastName || ""}`.trim() || "Guest",
       email: session?.user?.email || "guest@example.com",
       avatar: "/avatars/shadcn.webp",
+      role: session?.user?.role || "guest",
     },
     navMain,
     navSecondary: [
       {
-        title: "Settings",
-        url: "#",
+        title: "Account Settings",
+        url: `/${role}/profile-settings`,
         icon: <Gear />,
       },
       // {

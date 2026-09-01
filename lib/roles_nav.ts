@@ -15,14 +15,11 @@ export const roleNavMain = {
   ],
   pharmacist: [
     { id: "overview", title: "Overview", icon: "📊", url: "/pharmacist" },
-    // { id: "verification", title: "Verification", icon: "📄", url: "/pharmacist/verification" },
-    // { id: "verify-product", title: "Verify Product", icon: "✅", url: "/pharmacist/verify-product" },
     { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verification-history" },
   ],
   admin: [
     { id: "overview", title: "Overview", icon: "📊", url: "/admin" },
-    { id: "users", title: "Users", icon: "👥", url: "/admin/users" },
-    { id: "suppliers", title: "Suppliers", icon: "🏦", url: "/admin/suppliers" },
+    { id: "suppliers", title: "Suppliers & KYC Approval", icon: "🏦", url: "/admin/suppliers" },
     { id: "products-catalog", title: "Product Catalog", icon: "📦", url: "/admin/products" },
     { id: "all-orders", title: "All Orders", icon: "📦", url: "/admin/all-orders" },
   ],

@@ -1,14 +1,30 @@
 // SiteHeader.tsx
+"use client"
+
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Input } from "@/components/ui/input"
 import { NotificationBell } from "../NotificationBell/NotificationBell"
-import { User } from "lucide-react"
+import { useSession } from "next-auth/react"
 
 export function SiteHeader() {
+  const { data: session, status } = useSession()
+
+  const user = session?.user
+
+  // Safely extract first and last name from the session
+  const firstName = user?.firstName?.trim() || ""
+  const lastName = user?.lastName?.trim() || ""
+
+  const fullName =
+    `${firstName} ${lastName}`.trim() ||
+    user?.name?.trim() ||
+    "MedSupply User"
+
+  const email = user?.email || "user@medsupply.com"
+
   return (
     <header className="flex h-16 shrink-0 items-center border-b px-4 lg:px-6 bg-background">
-
       {/* LEFT SECTION */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
@@ -22,7 +38,6 @@ export function SiteHeader() {
 
       {/* RIGHT SECTION */}
       <div className="ml-auto flex items-center gap-3">
-
         {/* SEARCH */}
         <div className="relative hidden">
           <Input
@@ -45,26 +60,37 @@ export function SiteHeader() {
 
         {/* USER SECTION */}
         <div className="flex items-center gap-3">
-
           <NotificationBell />
 
           <div className="h-4 w-px bg-slate-200" />
 
           <div className="flex items-center gap-2">
-
-            {/* TEXT */}
+            {/* USER TEXT */}
             <div className="hidden sm:flex flex-col text-right">
-              <span className="text-xs font-bold text-slate-800 leading-tight">
-                MedSupply User
-              </span>
-              <span className="text-[10px] font-medium text-slate-400 font-mono">
-                user@medsupply.com
-              </span>
-            </div>
+              {status === "loading" ? (
+                <>
+                  <span className="text-xs font-bold text-slate-400 leading-tight animate-pulse">
+                    Loading...
+                  </span>
 
+                  <span className="text-[10px] font-medium text-slate-300 font-mono animate-pulse">
+                    loading...
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-xs font-bold text-slate-800 leading-tight">
+                    {fullName}
+                  </span>
+
+                  <span className="text-[10px] font-medium text-slate-400 font-mono">
+                    {email}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
         </div>
-
       </div>
     </header>
   )

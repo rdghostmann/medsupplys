@@ -19,6 +19,9 @@ declare module "next-auth" {
       lastName?: string
       role: UserRole
       verified?: boolean
+      organization?: string
+      supplierType?: string
+      createdAt?: string
     } & DefaultSession["user"]
   }
 
@@ -29,6 +32,9 @@ declare module "next-auth" {
     email: string
     role: UserRole
     verified?: boolean
+    organization?: string
+    supplierType?: string
+    createdAt?: string
   }
 }
 
@@ -40,5 +46,8 @@ declare module "next-auth/jwt" {
     lastName?: string
     role: UserRole
     verified?: boolean
+    organization?: string
+    supplierType?: string
+    createdAt?: string
   }
 }

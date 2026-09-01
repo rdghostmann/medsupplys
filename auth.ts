@@ -35,6 +35,9 @@ export const authOptions: NextAuthOptions = {
           lastName: user.lastName,
           role: user.role,
           verified: user.verified,
+          organization: user.organizationName,
+          supplierType: user.supplierProfile?.supplierType,
+          createdAt: user.createdAt?.toISOString(),
         };
       },
     }),
@@ -50,6 +53,9 @@ export const authOptions: NextAuthOptions = {
         token.firstName = user.firstName;
         token.lastName = user.lastName;
         token.verified = user.verified;
+        token.organization = user.organization;
+        token.supplierType = user.supplierType;
+        token.createdAt = user.createdAt;
       }
       return token;
     },
@@ -60,6 +66,9 @@ export const authOptions: NextAuthOptions = {
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
         session.user.verified = token.verified as boolean;
+        session.user.organization = token.organization as string | undefined;
+        session.user.supplierType = token.supplierType as string | undefined;
+        session.user.createdAt = token.createdAt as string | undefined;
       }
       return session;
     },

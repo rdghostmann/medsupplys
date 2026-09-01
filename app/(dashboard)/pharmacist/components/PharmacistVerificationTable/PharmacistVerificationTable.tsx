@@ -465,8 +465,8 @@ export function PharmacistVerificationTable({
     <div className={cn("space-y-4", className)}>
       {/* Top Controls Bar */}
       {showCardHeader && (
-        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs gap-4">
+          <div className="mb-4 flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
               <ShieldCheck className="w-5 h-5 text-blue-600" />
             </div>
@@ -478,9 +478,10 @@ export function PharmacistVerificationTable({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="gap-2 space-y-3.5">
+            {/* <div className="flex flex-wrap items-center gap-2"> */}
             {/* Search Input */}
-            <div className="relative flex-1 sm:w-64">
+            <div className="relative flex-1  ">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               <input
                 type="text"
@@ -499,63 +500,66 @@ export function PharmacistVerificationTable({
               )}
             </div>
 
-            {/* Status Filter Buttons */}
-            <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 text-xs font-semibold">
+            <div className="flex flex-wrap items-center gap-2">
+
+              {/* Status Filter Buttons */}
+              <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 text-xs font-semibold">
+                <button
+                  onClick={() => handleStatusFilterChange("ALL")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg transition-all",
+                    statusFilter === "ALL"
+                      ? "bg-white text-slate-900 shadow-xs font-bold"
+                      : "text-slate-600 hover:text-slate-900"
+                  )}
+                >
+                  All ({totalVerifications})
+                </button>
+                <button
+                  onClick={() => handleStatusFilterChange("Verified")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1",
+                    statusFilter === "Verified"
+                      ? "bg-emerald-500 text-white shadow-xs font-bold"
+                      : "text-slate-600 hover:text-emerald-700"
+                  )}
+                >
+                  <span className={cn("w-1.5 h-1.5 rounded-full", statusFilter === "Verified" ? "bg-white" : "bg-emerald-500")} />
+                  Verified ({verifiedCount})
+                </button>
+                <button
+                  onClick={() => handleStatusFilterChange("Rejected")}
+                  className={cn(
+                    "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1",
+                    statusFilter === "Rejected"
+                      ? "bg-rose-500 text-white shadow-xs font-bold"
+                      : "text-slate-600 hover:text-rose-700"
+                  )}
+                >
+                  <span className={cn("w-1.5 h-1.5 rounded-full", statusFilter === "Rejected" ? "bg-white" : "bg-rose-500")} />
+                  Rejected ({rejectedCount})
+                </button>
+              </div>
+
+              {/* Export CSV */}
               <button
-                onClick={() => handleStatusFilterChange("ALL")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all",
-                  statusFilter === "ALL"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                )}
+                onClick={handleExportCSV}
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors shadow-xs"
+                title="Export Log as CSV"
               >
-                All ({totalVerifications})
+                <Download className="w-3.5 h-3.5 text-slate-500" />
+                <span className="hidden sm:inline">Export</span>
               </button>
+
+              {/* New Verification Simulation */}
               <button
-                onClick={() => handleStatusFilterChange("Verified")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1",
-                  statusFilter === "Verified"
-                    ? "bg-emerald-500 text-white shadow-xs font-bold"
-                    : "text-slate-600 hover:text-emerald-700"
-                )}
+                onClick={() => setShowAddModal(true)}
+                className="hidden items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/20 active:scale-95"
               >
-                <span className={cn("w-1.5 h-1.5 rounded-full", statusFilter === "Verified" ? "bg-white" : "bg-emerald-500")} />
-                Verified ({verifiedCount})
-              </button>
-              <button
-                onClick={() => handleStatusFilterChange("Rejected")}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg transition-all flex items-center gap-1",
-                  statusFilter === "Rejected"
-                    ? "bg-rose-500 text-white shadow-xs font-bold"
-                    : "text-slate-600 hover:text-rose-700"
-                )}
-              >
-                <span className={cn("w-1.5 h-1.5 rounded-full", statusFilter === "Rejected" ? "bg-white" : "bg-rose-500")} />
-                Rejected ({rejectedCount})
+                <Plus className="w-3.5 h-3.5" />
+                <span>Verify Batch</span>
               </button>
             </div>
-
-            {/* Export CSV */}
-            <button
-              onClick={handleExportCSV}
-              className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-xl transition-colors shadow-xs"
-              title="Export Log as CSV"
-            >
-              <Download className="w-3.5 h-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Export</span>
-            </button>
-
-            {/* New Verification Simulation */}
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shadow-blue-500/20 active:scale-95"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Verify Batch</span>
-            </button>
           </div>
         </div>
       )}

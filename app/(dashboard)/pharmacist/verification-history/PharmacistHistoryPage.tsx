@@ -2,13 +2,11 @@ import PharmacistVerificationTable, { INITIAL_VERIFICATION_HISTORY } from '../co
 
 const PharmacistHistoryPage = () => {
     return (
-        <div>
+        <div className="min-h-screen text-slate-900 p-4 pb-24 font-sans">
             {/* =========================================================
                   SECTION: PHARMACIST VERIFICATION HISTORY TABLE
               ========================================================= */}
-            <section id="verification-history-section" className="space-y-4 pt-4">
-                <PharmacistVerificationTable data={INITIAL_VERIFICATION_HISTORY} />
-            </section>
+            <PharmacistVerificationTable data={INITIAL_VERIFICATION_HISTORY} />
         </div>
     )
 }

@@ -144,7 +144,7 @@ export default function RootLayout({
               <ReactQueryProvider>
                 {children}
               </ReactQueryProvider>
-              <Toaster />
+                <Toaster richColors position="top-right" />
             </TooltipProvider>
           </SessionWrapper>
         </ThemeProvider>

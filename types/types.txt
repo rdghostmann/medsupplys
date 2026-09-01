@@ -37,3 +37,15 @@ export interface InventoryStats {
   lowStockCount: number; // stock < moq
   totalValuation: number; // sum of stock * basePrice
 }
+
+
+export interface InventoryProduct {
+  id: string;
+  name: string;
+  category: string;
+  nafdacNumber?: string;
+  basePrice: number;
+  finalPrice: number;
+  stock: number;
+  moq: number;
+}
