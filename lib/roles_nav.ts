@@ -11,13 +11,13 @@ export const roleNavMain = {
     { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
     { id: "inventory", title: "Inventory", icon: "📦", url: "/supplier/inventory" },
     { id: "order-requests", title: "Order Requests", icon: "📃", url: "/supplier/order-requests" },
-    { id: "earnings", title: "Earnings", icon:  "💰", url: "/supplier/earnings" },
+    { id: "earnings", title: "Earnings", icon: "💰", url: "/supplier/earnings" },
   ],
   pharmacist: [
     { id: "overview", title: "Overview", icon: "📊", url: "/pharmacist" },
-    { id: "verification", title: "Verification", icon: "📄", url: "/pharmacist/verification" },
-    { id: "verify-product", title: "Verify Product", icon: "✅", url: "/pharmacist/verify-product" },
-    { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verify-history" },
+    // { id: "verification", title: "Verification", icon: "📄", url: "/pharmacist/verification" },
+    // { id: "verify-product", title: "Verify Product", icon: "✅", url: "/pharmacist/verify-product" },
+    { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verification-history" },
   ],
   admin: [
     { id: "overview", title: "Overview", icon: "📊", url: "/admin" },

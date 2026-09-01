@@ -11,6 +11,55 @@ export type UnitConfig = {
   unitsPerBase: number
 }
 
+
+export type VerificationStatus = "Verified" | "Rejected" | "Pending";
+
+export type OrderStatus =
+  | "Under Verification"
+  | "In Transit to Office"
+  | "Verified"
+  | "Delivered"
+  | "Supplier Contacted"
+  | "Pending"
+  | "Supplier Confirmed"
+  | "Rejected";
+
+export interface Order {
+  id: string;
+  product: string;
+  buyer: string;
+  qty: number;
+  basePrice: number;
+  status: OrderStatus;
+  date: string;
+  supplier: string;
+  batchNo?: string;
+  barcode?: string;
+  mfgDate?: string;
+  expiryDate?: string;
+  condition?: string;
+  notes?: string;
+}
+
+export interface PharmacistVerificationRecord {
+  id: string;
+  orderId: string;
+  product: string;
+  category?: string;
+  dosage?: string;
+  batchNo: string;
+  result: VerificationStatus;
+  pharmacist: string;
+  pharmacistLicense?: string;
+  date: string;
+  notes?: string;
+  nafdacNumber?: string;
+  manufacturer?: string;
+  expiryDate?: string;
+  quantity?: number;
+  facility?: string;
+}
+
 export type MatchResult = {
   supplierId: string
   supplierName: string
