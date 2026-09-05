@@ -7,12 +7,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
+import PharmacistDashboard from "./PharmacistDashboard";
 
-import data from "../data.json"
-import { PharmacistStatsCard } from "./components/PharmacistStatsCard/PharmacistStatsCard";
-import { PharmacistDashboard } from "./PharmacistDashboard";
-import PharmacistStatCard from "./components/PharmacistStatsCard/PharmacistStatCard";
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col">

@@ -32,7 +32,6 @@ import {
 import { Order, PharmacistVerificationRecord } from "@/types";
 import { INITIAL_VERIFICATION_HISTORY } from "./components/PharmacistVerificationTable/PharmacistVerificationTable";
 import PharmacistVerifyModal, { OrderStatusBadge } from "./components/PharmacistVerifyModal/PharmacistVerifyModal";
-import PharmacistStatCard from "./components/PharmacistStatsCard/PharmacistStatCard";
 
 
 
@@ -123,7 +122,7 @@ export const INITIAL_ORDERS: Order[] = [
   },
 ];
 
-export function PharmacistDashboard() {
+const PharmacistDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [verificationHistory, setVerificationHistory] = useState<PharmacistVerificationRecord[]>(
     INITIAL_VERIFICATION_HISTORY
@@ -333,9 +332,9 @@ export function PharmacistDashboard() {
 
         {/* 4 Stat Metric Cards */}
         <div className="hidden space-y-6">
-          <PharmacistStatCard
+          {/* <PharmacistStatsCard
             verificationHistory={verificationHistory}
-          />
+          /> */}
         </div>
 
         {/* =========================================================
