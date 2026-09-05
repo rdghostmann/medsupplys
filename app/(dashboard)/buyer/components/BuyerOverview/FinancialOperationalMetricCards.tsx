@@ -5,7 +5,6 @@
 import React from "react";
 import {
   CreditCard,
-  PackageCheck,
   ShoppingBag,
   Sparkles,
   Wallet as WalletIcon,
@@ -20,8 +19,11 @@ interface FinancialOperationalMetricCardsProps {
   availableCredit: number;
   totalPurchasingPower: number;
 
-  activeProcurements: number;
+  totalOrders: number;
+  pendingOrders: number;
   activeOrders: number;
+  deliveredOrders: number;
+  rejectedOrders: number;
 
   loading?: boolean;
 
@@ -72,8 +74,11 @@ export const FinancialOperationalMetricCards: React.FC<
   creditLimit,
   availableCredit,
   totalPurchasingPower,
-  activeProcurements,
+  totalOrders,
+  pendingOrders,
   activeOrders,
+  deliveredOrders,
+  rejectedOrders,
   loading = false,
   onTopUp,
   onViewProcurementQueue,
@@ -186,11 +191,11 @@ export const FinancialOperationalMetricCards: React.FC<
         </div>
 
         <div className="font-mono text-xl font-bold text-slate-900">
-          {activeProcurements}
+            {pendingOrders}
         </div>
 
         <div className="flex items-center justify-between text-[11px] mt-3 pt-3 border-t border-slate-100">
-          <span className="text-slate-400">
+          <span className="hidden text-slate-400">
             Matching Engine Active
           </span>
 
@@ -222,8 +227,12 @@ export const FinancialOperationalMetricCards: React.FC<
         </div>
 
         <div className="flex items-center justify-between text-[11px] mt-3 pt-3 border-t border-slate-100">
-          <span className="text-slate-400">
-            Under QA / In Transit
+          <span className="hidden text-slate-400">
+            {deliveredOrders} delivered / {rejectedOrders} rejected
+          </span>
+
+          <span className="hidden text-slate-400">
+            {activeOrders} active of {totalOrders}
           </span>
 
           <button

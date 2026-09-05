@@ -4,8 +4,9 @@ export const roleNavMain = {
   buyer: [
     { id: "overview", title: "Overview", icon: "📊", url: "/buyer" },
     { id: "browse", title: "Products Catalogue", icon: "🛍️", url: "/buyer/marketplace" },
-    { id: "orders", title: "My Orders", icon: "📋", url: "/buyer/orders" },
-    { id: "buyer-wallet", title: "Wallet", icon: "💰", url: "/buyer/buyerwallet" },
+    { id: "orders", title: "My Orders & Tracking", icon: "📋", url: "/buyer/orders" },
+    { id: "buyer-wallet", title: "Procurement Wallet", icon: "💰", url: "/buyer/buyerwallet" },
+    { id: "revolving-credit", title: "Revolving Credit", icon: "💰", url: "/buyer/revolving-credit" },
   ],
   supplier: [
     { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
