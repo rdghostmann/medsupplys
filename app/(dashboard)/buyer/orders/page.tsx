@@ -8,24 +8,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { BuyerStatsCard } from "./components/BuyerStatsCard/BuyerStatsCard"
-import BuyerOverview from "./components/BuyerOverview/BuyerOverview";
-import { useSession } from "next-auth/react";
+import { BuyerOrders } from "./BuyerOrder";
 
 export default function Page() {
 
-    const { data: session, status } = useSession();
-  const isLoading = status === "loading";
-   const user = session?.user
-    ? {
-        id: session.user.id,
-        firstName: session.user.firstName,
-        lastName: session.user.lastName,
-        organization: session.user.organization,
-        email: session.user.email ?? undefined,
-      }
-    : undefined;
+   
 
   return (
     <div className="flex flex-1 flex-col">
@@ -36,7 +23,7 @@ export default function Page() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Buyer Overview</BreadcrumbPage>
+            <BreadcrumbPage>Buyer Orders</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -45,11 +32,7 @@ export default function Page() {
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
 
           <div className="px-4 lg:px-6">
-          <BuyerOverview
-            user={user}
-            loading={isLoading}
-          />
-            {/* <ChartAreaInteractive /> */}
+          <BuyerOrders />
 
           </div>
         </div>

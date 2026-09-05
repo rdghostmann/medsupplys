@@ -147,9 +147,10 @@ export function ProductCatalogue({
                   font-black
                   tracking-tight
                   text-blue-600
+                  font-sans
                 "
               >
-                Product Catalog
+               Regulated Master Pharmaceutical Catalog
               </h1>
 
               <p
@@ -159,8 +160,7 @@ export function ProductCatalogue({
                 "
               >
                 Browse verified healthcare
-                products from trusted
-                suppliers.
+                products from across Importers, Manufacturers and Tier-1 Distributors.
               </p>
             </div>
 
