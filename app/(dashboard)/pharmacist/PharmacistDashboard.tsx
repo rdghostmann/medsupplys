@@ -258,8 +258,8 @@ export function PharmacistDashboard() {
           >
             <div
               className={`p-4 rounded-2xl shadow-xl border flex items-start gap-3 backdrop-blur-md ${toastMessage.type === "success"
-                  ? "bg-emerald-900/90 text-white border-emerald-700/60"
-                  : "bg-rose-900/90 text-white border-rose-700/60"
+                ? "bg-emerald-900/90 text-white border-emerald-700/60"
+                : "bg-rose-900/90 text-white border-rose-700/60"
                 }`}
             >
               <div
@@ -288,50 +288,24 @@ export function PharmacistDashboard() {
       </AnimatePresence>
 
       {/* Top Header */}
-      <header className="hidden bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-xs">
+      <header className="bg-white mb-4 border-b border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            {/* {onBackToHome && (
-              <button
-                onClick={onBackToHome}
-                className="px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-colors mr-1"
-              >
-                ← Back to Landing
-              </button>
-            )} */}
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-500 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div className="">
-              <div className="flex items-center gap-2">
-                <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                  MedSupply Pharmacist Portal
-                </h1>
-                <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[10px] font-bold">
-                  LIVE NAFDAC LINK
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Clinical Verification & Quality Release Dashboard</p>
-            </div>
+          <div className="">
+              <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
+                Licensed Pharmacist Quality Assurance Station
+              </h1>
+            
+            <p className="text-xs text-slate-400">Physical batch inspection, NAFDAC chemical seal verification, and cold-chain compliance clearance</p>
           </div>
 
-          {/* Pharmacist Profile info */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:block text-right">
-              <p className="text-xs font-bold text-slate-800">Dr. Amaka Obi, PharmD</p>
-              <p className="text-[10px] text-slate-400 font-mono">Lic: PCN/2018/88421 • Chief QA Inspector</p>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs ring-2 ring-blue-100">
-              AO
-            </div>
-          </div>
+
         </div>
       </header>
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto space-y-8">
         {/* Banner / Welcome */}
-        <div className="hidden lg:block rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div className=" lg:block rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -341,7 +315,7 @@ export function PharmacistDashboard() {
                 Verified Supply Chain Audit Ledger
               </div>
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                Batch Verification & Clinical Audit History
+                Batch Verification & Audit History
               </h2>
               <p className="text-slate-300 text-sm leading-relaxed">
                 Review incoming consignments, perform barcode & spectral verification against the NAFDAC database, and sign digital batch release certificates.
@@ -367,7 +341,7 @@ export function PharmacistDashboard() {
             verificationHistory={verificationHistory}
           />
         </div>
-    
+
         {/* =========================================================
             SECTION: INCOMING PRODUCTS (Requested by user)
         ========================================================= */}
@@ -390,8 +364,8 @@ export function PharmacistDashboard() {
                 <button
                   onClick={() => setQueueFilter("pending")}
                   className={`px-3 py-1.5 rounded-lg transition-all ${queueFilter === "pending"
-                      ? "bg-white text-slate-900 shadow-xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white text-slate-900 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
                   Pending Queue ({orders.filter((o) => o.status !== "Verified" && o.status !== "Delivered" && o.status !== "Rejected").length})
@@ -399,8 +373,8 @@ export function PharmacistDashboard() {
                 <button
                   onClick={() => setQueueFilter("all")}
                   className={`px-3 py-1.5 rounded-lg transition-all ${queueFilter === "all"
-                      ? "bg-white text-slate-900 shadow-xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
+                    ? "bg-white text-slate-900 shadow-xs font-bold"
+                    : "text-slate-600 hover:text-slate-900"
                     }`}
                 >
                   All Orders ({orders.length})
@@ -479,7 +453,7 @@ export function PharmacistDashboard() {
           )}
         </section>
 
-  
+
       </main>
 
       {/* =========================================================

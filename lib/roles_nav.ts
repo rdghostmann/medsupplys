@@ -11,12 +11,15 @@ export const roleNavMain = {
   supplier: [
     { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
     { id: "inventory", title: "Inventory", icon: "📦", url: "/supplier/inventory" },
-    { id: "order-requests", title: "Order Requests", icon: "📃", url: "/supplier/order-requests" },
-    { id: "earnings", title: "Earnings", icon: "💰", url: "/supplier/earnings" },
+    { id: "order-requests", title: "Incoming Requests", icon: "📃", url: "/supplier/order-requests" },
+    { id: "order-tracking", title: "Commited Order & Dispatch", icon: "🚛", url: "/supplier/order-tracking" },
+    { id: "earnings", title: "Revenue & Earnings", icon: "💰", url: "/supplier/earnings" },
   ],
   pharmacist: [
-    { id: "overview", title: "Overview", icon: "📊", url: "/pharmacist" },
-    { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verification-history" },
+    { id: "overview", title: "Compliance Overview", icon: "📊", url: "/pharmacist" },
+    { id: "verification-history", title: "Inspection Queue", icon: "🕥", url: "/pharmacist/verification-history" },
+    { id: "verify-order-registry", title: "Verified Order Registry", icon: "🕥", url: "/pharmacist/verify-order-registry" },
+    { id: "audit-log", title: "Audit Log", icon: "📝", url: "/pharmacist/pharmaceutical-audit-log" },
   ],
   admin: [
     { id: "overview", title: "Overview", icon: "📊", url: "/admin" },

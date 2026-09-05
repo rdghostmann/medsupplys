@@ -8,9 +8,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { BuyerWallet } from "./BuyerWallet/BuyerWallet";
+import { BuyerOrders } from "./BuyerOrder";
 
 export default function Page() {
+
+   
 
   return (
     <div className="flex flex-1 flex-col">
@@ -21,7 +23,7 @@ export default function Page() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Buyer Overview</BreadcrumbPage>
+            <BreadcrumbPage>Buyer Orders</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -30,8 +32,7 @@ export default function Page() {
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
 
           <div className="px-4 lg:px-6">
-          <BuyerWallet/>
-            {/* <ChartAreaInteractive /> */}
+          <BuyerOrders />
 
           </div>
         </div>

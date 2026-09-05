@@ -8,7 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import IncomingRequests from "./IncomingRequest";
+import AuditLog from "./AuditLog";
 
 export default function Page() {
   return (
@@ -16,11 +16,11 @@ export default function Page() {
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink href="/pharmacist">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Supplier Overview</BreadcrumbPage>
+            <BreadcrumbPage>Pharmacist Audit Trail</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -28,7 +28,7 @@ export default function Page() {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <div className="px-4 lg:px-6">
-            <IncomingRequests />
+<AuditLog />
 
           </div>
         </div>
