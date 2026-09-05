@@ -2,8 +2,8 @@
 "use client"
 
 import React, { useMemo } from "react"
-import WelcomeBanner from "./WelcomeBanner"
-import FinancialOperationalMetricCards from "./FinancialOperationalMetricCards"
+import WelcomeBanner from "./BuyerOverview/WelcomeBanner"
+import FinancialOperationalMetricCards from "./BuyerOverview/FinancialOperationalMetricCards"
 import FallBackQueueMonitor from "./FallBackQueueMonitor"
 
 import type {
@@ -12,7 +12,7 @@ import type {
   Supplier,
   ProcurementOrder,
 } from "@/types"
-import { ProductCatalogue } from "../../marketplace/components/ProductCatalogue"
+import { ProductCatalogue } from "./ProductCatalogue"
 
 
 

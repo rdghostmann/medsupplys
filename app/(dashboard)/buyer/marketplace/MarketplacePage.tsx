@@ -10,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ProductCatalogue } from "./components/ProductCatalogue"
+import { ProductCatalogue } from "../components/ProductCatalogue"
 import type { Supplier } from "@/types"
 export type MarketplaceProduct = {
   _id: string

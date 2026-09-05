@@ -9,8 +9,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { BuyerStatsCard } from "./components/BuyerStatsCard/BuyerStatsCard"
-import BuyerOverview from "./components/BuyerOverview/BuyerOverview";
+import { BuyerStatsCard } from "./components/BuyerStatsCard"
+import BuyerOverview from "./components/BuyerOverview";
 import { useSession } from "next-auth/react";
 
 export default function Page() {

@@ -1,4 +1,4 @@
-// app/(dashboard)/buyer/marketplace/components/ProductCard.tsx
+// app/(dashboard)/buyer/components/ProductCard.tsx
 "use client"
 
 import Image from "next/image"
@@ -8,7 +8,6 @@ import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 
 import {
-  ChevronRight,
   Package2,
   Warehouse,
 } from "lucide-react"
