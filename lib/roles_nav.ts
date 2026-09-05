@@ -17,7 +17,8 @@ export const roleNavMain = {
   ],
   pharmacist: [
     { id: "overview", title: "Compliance Overview", icon: "📊", url: "/pharmacist" },
-    { id: "verification-history", title: "Inspection Queue", icon: "🕥", url: "/pharmacist/verification-history" },
+    { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verification-history" },
+    // { id: "inspection-queue", title: "Inspection Queue", icon: "🕥", url: "/pharmacist/inspection-queue" },
     { id: "verify-order-registry", title: "Verified Order Registry", icon: "🕥", url: "/pharmacist/verify-order-registry" },
     { id: "audit-log", title: "Audit Log", icon: "📝", url: "/pharmacist/pharmaceutical-audit-log" },
   ],

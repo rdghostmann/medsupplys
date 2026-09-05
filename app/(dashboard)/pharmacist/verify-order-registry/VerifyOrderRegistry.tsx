@@ -429,7 +429,7 @@ const VerifyOrderRegistry: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-xl font-bold text-slate-900">
-            Committed Orders & Cold-Chain Tracking
+            Orders & Cold-Chain Tracking
           </h1>
 
           <p className="text-xs text-slate-500 mt-0.5">

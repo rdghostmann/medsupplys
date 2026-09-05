@@ -6,6 +6,7 @@ import {
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
+import { useMemo } from "react";
 
 type AuditLogEntry = {
   id: string;
