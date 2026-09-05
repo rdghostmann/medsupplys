@@ -456,6 +456,7 @@ const UserSchema = new Schema<IUser>(
         "buyer",
         "supplier",
         "admin",
+        "pharmacist",
       ],
       required: true,
       default: "buyer",
