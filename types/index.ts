@@ -51,15 +51,99 @@ export type TransactionStatus = "PENDING" | "SUCCESS" | "FAILED" | "REVERSED"
 export type CreditStatus = "PENDING" | "APPROVED" | "ACTIVE" | "SUSPENDED" | "DEFAULTED" | "CLOSED"
 export type VerificationResult = "APPROVED" | "FLAGGED" | "REJECTED"
 export type ProductCategory =
-    | "ANTIBIOTICS"
-    | "ANTIMALARIALS"
-    | "ANALGESICS"
-    | "CARDIOVASCULAR"
-    | "DIABETES"
-    | "IV_FLUIDS"
-    | "CRITICAL_CARE"
-    | "VACCINES"
-    | "OTHER"
+  // Anti-infectives
+  | 'ANTIBIOTICS'
+  | 'ANTIMICROBIALS'
+  | 'ANTIFUNGALS'
+  | 'ANTIVIRALS'
+  | 'ANTIPARASITICS'
+  | 'ANTIMALARIALS'
+  | 'ANTITUBERCULARS'
+
+  // Pain & nervous system
+  | 'ANALGESICS'
+  | 'ANTI_INFLAMMATORIES'
+  | 'ANESTHETICS'
+  | 'ANTICONVULSANTS'
+  | 'ANTIDEPRESSANTS'
+  | 'ANTIPSYCHOTICS'
+  | 'SEDATIVES'
+
+  // Cardiovascular
+  | 'CARDIOVASCULAR'
+  | 'ANTIHYPERTENSIVES'
+  | 'ANTICOAGULANTS'
+  | 'ANTIPLATELETS'
+  | 'LIPID_LOWERING'
+
+  // Endocrine & metabolic
+  | 'DIABETES'
+  | 'HORMONES'
+  | 'THYROID'
+  | 'CORTICOSTEROIDS'
+  | 'VITAMINS_MINERALS'
+  | 'NUTRITIONAL_SUPPLEMENTS'
+
+  // Gastrointestinal
+  | 'GASTROINTESTINAL'
+  | 'ANTIEMETICS'
+  | 'ANTACIDS'
+  | 'LAXATIVES'
+  | 'ANTIDIARRHEALS'
+
+  // Respiratory
+  | 'RESPIRATORY'
+  | 'ANTIHISTAMINES'
+  | 'BRONCHODILATORS'
+  | 'COUGH_COLD'
+  | 'MUCOLYTICS'
+
+  // Hospital / critical care
+  | 'CRITICAL_CARE'
+  | 'IV_FLUIDS'
+  | 'ELECTROLYTES'
+  | 'BLOOD_PRODUCTS'
+  | 'EMERGENCY_MEDICINES'
+
+  // Immunology
+  | 'VACCINES'
+  | 'IMMUNOLOGICALS'
+  | 'IMMUNOSUPPRESSANTS'
+
+  // Maternal / reproductive
+  | 'OBSTETRICS'
+  | 'GYNECOLOGY'
+  | 'CONTRACEPTIVES'
+  | 'FERTILITY_MEDICINES'
+
+  // Renal / urology
+  | 'RENAL'
+  | 'UROLOGY'
+
+  // Dermatology
+  | 'DERMATOLOGY'
+  | 'TOPICAL_MEDICATIONS'
+
+  // Ophthalmic / ENT
+  | 'OPHTHALMIC'
+  | 'OTIC'
+  | 'NASAL_MEDICATIONS'
+
+  // Oncology
+  | 'ONCOLOGY'
+  | 'CHEMOTHERAPY'
+
+  // Other pharmaceutical / healthcare
+  | 'PEDIATRIC_MEDICINES'
+  | 'GERIATRIC_MEDICINES'
+  | 'HEMATOLOGY'
+  | 'HEMATOPOIETIC_AGENTS'
+  | 'DISINFECTANTS_ANTISEPTICS'
+  | 'WOUND_CARE'
+  | 'MEDICAL_DEVICES'
+  | 'SURGICAL_SUPPLIES'
+  | 'DIAGNOSTICS';
+
 export type Role = "buyer" | "supplier" | "admin" | "pharmacist"
 export type OrganizationType = "manufacturer" | "distributor" | "wholesaler" | "pharmacy"
 
@@ -316,7 +400,54 @@ export type Supplier = {
         badges: string[]
     }
 }
+export type MarketplaceProduct = {
+  product: {
+    _id: string;
+    name: string;
+    genericName?: string;
+    brandName?: string;
+    activeIngredient: string;
+    strength: string;
+    dosageForm: string;
+    category: string;
+    unit: string;
+    packSize?: string;
+    description?: string;
+    image?: string;
+  };
 
+  supplierOffers: {
+    _id: string;
+    supplierId: string;
+    supplierType: "importer" | "distributor" | "retailer";
+
+    nafdacRegNumber: string;
+
+    basePrice: number;
+    commission: number;
+    commissionPercent: number;
+    finalPrice: number;
+
+    stock: number;
+    minOrderQuantity: number;
+    maxOrderQuantity: number;
+
+    unit: string;
+    batchNumber: string;
+    expiryDate: Date;
+
+    rating: number;
+    fulfillmentRate: number;
+    estimatedDeliveryDays: number;
+
+    status:
+      | "AVAILABLE"
+      | "LOW_STOCK"
+      | "OUT_OF_STOCK"
+      | "ON_REQUEST"
+      | "SUSPENDED";
+  }[];
+};
 
 export type MarketplaceSupplier = Supplier & {
     supplierProductId: string
