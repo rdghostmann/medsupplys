@@ -10,6 +10,7 @@ export type UserRole =
   | "buyer"
   | "supplier"
   | "admin"
+  | "pharmacist"
 
 declare module "next-auth" {
   interface Session {
