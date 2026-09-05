@@ -7,7 +7,7 @@ export default async function Page() {
 
   return (
     <>
-    Marketplac Page
+    Marketplace Page
     {/* <MarketplacePage products={products} /> */}
     </>
   )
