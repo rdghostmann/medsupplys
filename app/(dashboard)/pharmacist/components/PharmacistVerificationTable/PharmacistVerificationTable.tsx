@@ -21,24 +21,17 @@ import {
   ArrowUp,
   ArrowDown,
   ShieldCheck,
-  XCircle,
   FileText,
   Download,
-  Filter,
-  Eye,
-  CheckCircle2,
-  AlertTriangle,
-  Calendar,
-  UserCheck,
-  Building2,
-  Sparkles,
   RefreshCw,
-  Clock,
-  Plus
+  Eye,
+  Building2,
+Plus, UserCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PharmacistVerificationRecord, VerificationStatus } from "@/types";
 import { AnimatePresence, motion } from "framer-motion";
+// import { Plus, UserCheck } from "@hugeicons/core-free-icons";
 // import type { PharmacistVerificationRecord, VerificationStatus } from "../types";
 
 export interface PharmacistVerificationTableProps {
