@@ -1,6 +1,5 @@
 import { Geist, Geist_Mono, Outfit, Space_Grotesk } from "next/font/google"
 
-// @ts-expect-error: global CSS import type declarations are missing in this project setup
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { cn } from "@/lib/utils";
