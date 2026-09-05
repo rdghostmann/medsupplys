@@ -8,8 +8,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { ChartAreaInteractive } from "@/components/chart-area-interactive"
-import { BuyerStatsCard } from "./components/BuyerStatsCard"
 import BuyerOverview from "./components/BuyerOverview";
 import { useSession } from "next-auth/react";
 
