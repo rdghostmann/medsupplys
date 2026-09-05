@@ -62,6 +62,7 @@ export type ProductCategory =
     | "OTHER"
 export type Role = "buyer" | "supplier" | "admin" | "pharmacist"
 export type OrganizationType = "manufacturer" | "distributor" | "wholesaler" | "pharmacy"
+
 export type UnitType = "unit" | "pack" | "carton"
 
 export type UnitConfig = {
@@ -591,7 +592,7 @@ export interface WalletTransaction {
     reference: string;
     description: string;
     status: TransactionStatus;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     createdAt: string;
 }
 
@@ -642,31 +643,58 @@ export interface AuditLog {
     ipAddress: string;
     timestamp: string;
 }
-
 export interface Notification {
-    id: string;
-    recipientId: string;
-    recipientRole: UserRole | "ALL";
-    title: string;
-    message: string;
-    type: "ORDER" | "WALLET" | "CREDIT" | "VERIFICATION" | "SUPPLIER" | "SYSTEM";
-    isRead: boolean;
-    link?: string;
-    createdAt: string;
+  id: string;
+  recipientId: string;
+  recipientRole: UserRole | 'ALL';
+  title: string;
+  message: string;
+  type: 'ORDER' | 'WALLET' | 'CREDIT' | 'VERIFICATION' | 'SUPPLIER' | 'SYSTEM';
+  isRead: boolean;
+  link?: string;
+  createdAt: string;
+}
+
+export interface SupplierPayout {
+  id: string;
+  supplierId: string;
+  supplierName: string;
+  amount: number;
+  transferFee: number;
+  netAmount: number;
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  reference: string;
+  status: 'PENDING' | 'PROCESSING' | 'SETTLED' | 'FAILED';
+  settlementDate?: string;
+  notes?: string;
+  createdAt: string;
+}
+
+export interface SupplierRevenueMetrics {
+  totalGrossRevenue: number;
+  totalPlatformCommission: number;
+  netEarnings: number;
+  availableForPayout: number;
+  inEscrow: number;
+  totalPaidOut: number;
+  settledOrdersCount: number;
+  activeOrdersCount: number;
 }
 
 export interface MatchingWeights {
-    availabilityWeight: number;
-    priceWeight: number;
-    supplierTypeWeight: number;
-    fulfillmentWeight: number;
-    reliabilityWeight: number;
+  availabilityWeight: number; // 25
+  priceWeight: number;        // 35
+  supplierTypeWeight: number; // 20 (Importer > Distributor > Retailer)
+  fulfillmentWeight: number;  // 10
+  reliabilityWeight: number;  // 10
 }
 
 export interface PlatformConfig {
-    defaultCommissionPercent: number;
-    matchingWeights: MatchingWeights;
-    minCreditApprovalLimit: number;
-    maxCreditApprovalLimit: number;
-    autoAdvanceSupplierTimeoutSeconds: number;
+  defaultCommissionPercent: number;
+  matchingWeights: MatchingWeights;
+  minCreditApprovalLimit: number;
+  maxCreditApprovalLimit: number;
+  autoAdvanceSupplierTimeoutSeconds: number;
 }
