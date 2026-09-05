@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/breadcrumb"
 
 import SupplierListing from './SupplierListing';
+import SupplierKYCManagement from "./SupplierKYCManagement";
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col">
@@ -19,7 +20,7 @@ export default function Page() {
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
-            <BreadcrumbPage>Admin Overview</BreadcrumbPage>
+            <BreadcrumbPage>Supplier & KYC Approval</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -30,7 +31,8 @@ export default function Page() {
 
 
           <div className="px-4 lg:px-6">
-                <SupplierListing />
+                {/* <SupplierListing /> */}
+                <SupplierKYCManagement />
           </div>
         </div>
       </div>

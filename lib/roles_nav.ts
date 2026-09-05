@@ -24,8 +24,11 @@ export const roleNavMain = {
   ],
   admin: [
     { id: "overview", title: "Overview", icon: "📊", url: "/admin" },
-    { id: "suppliers", title: "Suppliers & KYC Approval", icon: "🏦", url: "/admin/suppliers" },
-    { id: "products-catalog", title: "Product Catalog", icon: "📦", url: "/admin/products" },
-    { id: "all-orders", title: "All Orders", icon: "📦", url: "/admin/all-orders" },
+    { id: "suppliers", title: "Suppliers & KYC Approval", icon: "👩‍👩‍👦‍👦", url: "/admin/suppliers" },
+    { id: "master-product-catalog", title: "Master Product Catalog", icon: "📦", url: "/admin/master-product-catalog" },
+    { id: "revolving-credit-facilities", title: "Revolving Credit Facilities", icon: "💳", url: "/admin/revolving-credit-facilities" },
+    { id: "global-sourcing-monitor", title: "Global Sourcing Monitor", icon: "💹", url: "/admin/global-sourcing-monitor" },
+    { id: "global-order-logistics", title: "Global Order & Logistics", icon: "✈", url: "/admin/global-order-logistics  " },
+    { id: "master-system-audit", title: "Master System Audit Logs", icon: "🕥", url: "/admin/master-system-audit" },
   ],
 }

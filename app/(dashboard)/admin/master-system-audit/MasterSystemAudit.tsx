@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useMemo } from "react";
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
 } from "@tanstack/react-table";
+import { useMemo } from "react";
 
-type AuditLogEntry = {
+type MasterSystemAuditEntry = {
   id: string;
   actorId: string;
   actorName: string;
@@ -22,9 +22,122 @@ type AuditLogEntry = {
   timestamp: string;
 };
 
-const auditLogs: AuditLogEntry[] = [
+const MasterSystemAudits: MasterSystemAuditEntry[] = [
   {
     id: "aud-001",
+    actorId: "usr-admin-2",
+    actorName: "MediSupply Fallback Engine",
+    actorRole: "ADMIN",
+    action: "PROCUREMENT_FALLBACK_ADVANCED",
+    entity: "Procurement",
+    entityId: "proc-fallback-003",
+    newValue: "Automated fallback sequence advanced",
+    details: "Buyer manually initiated automated fallback sequence.",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T18:05:14.000Z",
+  },
+  {
+    id: "aud-002",
+    actorId: "usr-admin-2",
+    actorName: "MediSupply Fallback Engine",
+    actorRole: "ADMIN",
+    action: "PROCUREMENT_FALLBACK_ADVANCED",
+    entity: "Procurement",
+    entityId: "proc-fallback-002",
+    newValue: "Automated fallback sequence advanced",
+    details: "Buyer manually initiated automated fallback sequence.",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T18:02:25.000Z",
+  },
+  {
+    id: "aud-003",
+    actorId: "usr-admin-2",
+    actorName: "MediSupply Fallback Engine",
+    actorRole: "ADMIN",
+    action: "PROCUREMENT_FALLBACK_ADVANCED",
+    entity: "Procurement",
+    entityId: "proc-fallback-001",
+    newValue: "Automated fallback sequence advanced",
+    details: "Buyer manually initiated automated fallback sequence.",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T18:02:18.000Z",
+  },
+  {
+    id: "aud-004",
+    actorId: "usr-admin-1",
+    actorName: "Admin",
+    actorRole: "ADMIN",
+    action: "MATCHING_ALGORITHM_WEIGHTS_UPDATED",
+    entity: "PlatformConfig",
+    entityId: "platform-config-1",
+    newValue: "Availability, Price, Tier & Fulfillment weights updated",
+    details:
+      "Adjusted matching engine weights across availability, price, tier, and fulfillment",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T17:33:12.000Z",
+  },
+  {
+    id: "aud-005",
+    actorId: "usr-admin-1",
+    actorName: "Platform Administrator",
+    actorRole: "ADMIN",
+    action: "PRODUCT_CATALOG_UPDATED",
+    entity: "Product",
+    entityId: "prod-paracetamol-500",
+    newValue:
+      "Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: ACTIVE)",
+    details:
+      "Updated Master Product: Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: ACTIVE)",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T16:42:27.000Z",
+  },
+  {
+    id: "aud-006",
+    actorId: "usr-admin-1",
+    actorName: "Platform Administrator",
+    actorRole: "ADMIN",
+    action: "PRODUCT_CATALOG_UPDATED",
+    entity: "Product",
+    entityId: "prod-paracetamol-500",
+    newValue:
+      "Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: INACTIVE)",
+    details:
+      "Updated Master Product: Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: INACTIVE)",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T16:42:26.000Z",
+  },
+  {
+    id: "aud-007",
+    actorId: "usr-admin-1",
+    actorName: "Platform Administrator",
+    actorRole: "ADMIN",
+    action: "PRODUCT_CATALOG_UPDATED",
+    entity: "Product",
+    entityId: "prod-paracetamol-500",
+    newValue:
+      "Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: ACTIVE)",
+    details:
+      "Updated Master Product: Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: ACTIVE)",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T16:42:20.000Z",
+  },
+  {
+    id: "aud-008",
+    actorId: "usr-admin-1",
+    actorName: "Platform Administrator",
+    actorRole: "ADMIN",
+    action: "PRODUCT_CATALOG_UPDATED",
+    entity: "Product",
+    entityId: "prod-paracetamol-500",
+    newValue:
+      "Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: INACTIVE)",
+    details:
+      "Updated Master Product: Paracetamol 500mg Tablets (Ref Price: ₦1000, Commission: 10%, Status: INACTIVE)",
+    ipAddress: "197.210.226.41",
+    timestamp: "2025-01-10T16:42:18.000Z",
+  },
+  {
+    id: "aud-009",
     actorId: "usr-admin-1",
     actorName: "Engr. Randal Wilson",
     actorRole: "ADMIN",
@@ -35,25 +148,24 @@ const auditLogs: AuditLogEntry[] = [
     details:
       "Approved revolving institutional credit line for LUTH",
     ipAddress: "197.210.226.41",
-    timestamp: "2025-01-10T09:00:00.000Z",
+    timestamp: "2025-01-10T10:00:00.000Z",
   },
   {
-    id: "aud-002",
+    id: "aud-010",
     actorId: "usr-buyer-1",
     actorName: "Dr. Tunde Fashola",
     actorRole: "BUYER",
     action: "WALLET_TOPUP_SUCCESS",
     entity: "Wallet",
     entityId: "wlt-buyer-1",
-    newValue:
-      "+₦2,000,000 (Paystack Ref: PSTK_TOPUP_88492019)",
+    newValue: "+₦2,000,000 (Paystack Ref: PSTK_TOPUP_88492019)",
     details:
       "Buyer funded wallet using Paystack direct bank settlement",
     ipAddress: "102.89.33.102",
-    timestamp: "2025-01-10T09:15:00.000Z",
+    timestamp: "2025-01-10T10:15:00.000Z",
   },
   {
-    id: "aud-003",
+    id: "aud-011",
     actorId: "usr-pharmacist-1",
     actorName: "Pharm. Dr. Amaka Obi",
     actorRole: "PHARMACIST",
@@ -64,11 +176,11 @@ const auditLogs: AuditLogEntry[] = [
     details:
       "Passed chemical stability & NAFDAC compliance check",
     ipAddress: "197.210.88.19",
-    timestamp: "2025-01-13T10:30:00.000Z",
+    timestamp: "2025-01-10T11:30:00.000Z",
   },
 ];
 
-const getRoleClass = (role: AuditLogEntry["actorRole"]) => {
+const getRoleClass = (role: MasterSystemAuditEntry["actorRole"]) => {
   switch (role) {
     case "ADMIN":
       return "bg-purple-100 text-purple-700";
@@ -103,8 +215,8 @@ const formatTime = (timestamp: string) => {
   });
 };
 
-const AuditLog = () => {
-  const columns = useMemo<ColumnDef<AuditLogEntry>[]>(
+const MasterSystemAudit = () => {
+  const columns = useMemo<ColumnDef<MasterSystemAuditEntry>[]>(
     () => [
       {
         accessorKey: "timestamp",
@@ -206,7 +318,7 @@ const AuditLog = () => {
   );
 
   const table = useReactTable({
-    data: auditLogs,
+    data: MasterSystemAudits,
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
@@ -216,7 +328,7 @@ const AuditLog = () => {
       {/* Header */}
       <div className="p-5 border-b border-slate-100 flex items-center justify-between">
         <h2 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wider">
-          System-wide Cryptographic Audit Trail ({auditLogs.length} Events)
+          System-wide Cryptographic Audit Trail ({MasterSystemAudits.length} Events)
         </h2>
       </div>
 
@@ -280,4 +392,4 @@ const AuditLog = () => {
   );
 };
 
-export default AuditLog;
+export default MasterSystemAudit;
