@@ -405,7 +405,7 @@ const getStatusStyles = (status: BuyerOrderStatus) => {
 const formatStatus = (status: BuyerOrderStatus) =>
   status.replace(/_/g, " ");
 
-export const BuyerOrders: React.FC = () => {
+const OrderTracking: React.FC = () => {
   const [orders] = useState<BuyerOrder[]>(mockOrders);
 
   const [activeExpandedOrderId, setActiveExpandedOrderId] =
@@ -898,4 +898,4 @@ export const BuyerOrders: React.FC = () => {
   );
 };
 
-export default BuyerOrders;
+export default OrderTracking;
