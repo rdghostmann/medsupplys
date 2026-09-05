@@ -5,5 +5,10 @@ import MarketplacePage from "./MarketplacePage"
 export default async function Page() {
   // const products = await getMarketplaceProducts()
 
-  return <MarketplacePage products={products} />
+  return (
+    <>
+    Marketplac Page
+    {/* <MarketplacePage products={products} /> */}
+    </>
+  )
 }
