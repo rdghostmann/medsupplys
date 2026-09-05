@@ -1,4 +1,4 @@
-// /models/WalletTransaction.ts
+// /models/CreditTransaction.ts
 
 import {
   Schema,
@@ -8,36 +8,30 @@ import {
   Model,
 } from "mongoose";
 
-export type WalletTransactionType =
-  | "TOPUP"
-  | "PURCHASE"
-  | "REFUND"
-  | "REVERSAL"
+export type CreditTransactionType =
+  | "CREDIT_PURCHASE"
+  | "PAYMENT"
   | "ADJUSTMENT"
-  | "HOLD"
-  | "RELEASE";
+  | "REVERSAL"
+  | "INTEREST"
+  | "FEE";
 
-export type WalletTransactionDirection =
-  | "CREDIT"
-  | "DEBIT";
+export type CreditTransactionDirection =
+  | "CHARGE"
+  | "PAYMENT"
+  | "CREDIT";
 
-export type WalletTransactionStatus =
-  | "PENDING"
-  | "SUCCESS"
-  | "FAILED"
-  | "REVERSED";
-
-export interface IWalletTransaction
+export interface ICreditTransaction
   extends Document {
-  walletId: Schema.Types.ObjectId;
+  creditAccountId: Schema.Types.ObjectId;
 
   buyerId: Schema.Types.ObjectId;
 
-  type: WalletTransactionType;
+  type: CreditTransactionType;
 
   amount: number;
 
-  direction: WalletTransactionDirection;
+  direction: CreditTransactionDirection;
 
   balanceBefore: number;
 
@@ -45,23 +39,21 @@ export interface IWalletTransaction
 
   reference: string;
 
-  description: string;
-
-  status: WalletTransactionStatus;
-
   orderId?: Schema.Types.ObjectId;
+
+  description: string;
 
   metadata?: Record<string, unknown>;
 
   createdAt: Date;
 }
 
-const WalletTransactionSchema =
-  new Schema<IWalletTransaction>(
+const CreditTransactionSchema =
+  new Schema<ICreditTransaction>(
     {
-      walletId: {
+      creditAccountId: {
         type: Schema.Types.ObjectId,
-        ref: "Wallet",
+        ref: "CreditAccount",
         required: true,
         index: true,
       },
@@ -76,13 +68,12 @@ const WalletTransactionSchema =
       type: {
         type: String,
         enum: [
-          "TOPUP",
-          "PURCHASE",
-          "REFUND",
-          "REVERSAL",
+          "CREDIT_PURCHASE",
+          "PAYMENT",
           "ADJUSTMENT",
-          "HOLD",
-          "RELEASE",
+          "REVERSAL",
+          "INTEREST",
+          "FEE",
         ],
         required: true,
       },
@@ -95,7 +86,11 @@ const WalletTransactionSchema =
 
       direction: {
         type: String,
-        enum: ["CREDIT", "DEBIT"],
+        enum: [
+          "CHARGE",
+          "PAYMENT",
+          "CREDIT",
+        ],
         required: true,
       },
 
@@ -118,26 +113,15 @@ const WalletTransactionSchema =
         index: true,
       },
 
-      description: {
-        type: String,
-        required: true,
-      },
-
-      status: {
-        type: String,
-        enum: [
-          "PENDING",
-          "SUCCESS",
-          "FAILED",
-          "REVERSED",
-        ],
-        default: "PENDING",
-      },
-
       orderId: {
         type: Schema.Types.ObjectId,
         ref: "Order",
         index: true,
+      },
+
+      description: {
+        type: String,
+        required: true,
       },
 
       metadata: {
@@ -153,15 +137,15 @@ const WalletTransactionSchema =
     }
   );
 
-WalletTransactionSchema.index({
+CreditTransactionSchema.index({
   buyerId: 1,
   createdAt: -1,
 });
 
-export const WalletTransaction:
-  Model<IWalletTransaction> =
-  models.WalletTransaction ||
-  model<IWalletTransaction>(
-    "WalletTransaction",
-    WalletTransactionSchema
+export const CreditTransaction:
+  Model<ICreditTransaction> =
+  models.CreditTransaction ||
+  model<ICreditTransaction>(
+    "CreditTransaction",
+    CreditTransactionSchema
   );

@@ -28,7 +28,7 @@ import {
 
 import type { MarketplaceProduct } from "../MarketplacePage"
 
-import { getLowestPrice, getStockStatus } from "@/lib/utility_functions"
+// import { getLowestPrice, getStockStatus } from "@/lib/utility_functions"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
