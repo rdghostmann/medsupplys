@@ -9,18 +9,18 @@ export const roleNavMain = {
     { id: "revolving-credit", title: "Revolving Credit", icon: "💰", url: "/buyer/revolving-credit" },
   ],
   supplier: [
-    { id: "overview", title: "Overview", icon: "📊", url: "/supplier" },
-    { id: "inventory", title: "Inventory", icon: "📦", url: "/supplier/inventory" },
+    { id: "overview", title: "Supplier Dashboard", icon: "📊", url: "/supplier" },
     { id: "order-requests", title: "Incoming Requests", icon: "📃", url: "/supplier/order-requests" },
+    { id: "inventory", title: "Inventory & Catalog", icon: "📦", url: "/supplier/inventory" },
     { id: "order-tracking", title: "Commited Order & Dispatch", icon: "🚛", url: "/supplier/order-tracking" },
-    { id: "earnings", title: "Revenue & Earnings", icon: "💰", url: "/supplier/earnings" },
+    { id: "earnings", title: "Revenue & Commission", icon: "💰", url: "/supplier/earnings" },
+    { id: "audit-log", title: "Audit Log", icon: "📝", url: "/supplier/audit-log" },
   ],
   pharmacist: [
     { id: "overview", title: "Compliance Overview", icon: "📊", url: "/pharmacist" },
     { id: "verification-history", title: "Verification History", icon: "🕥", url: "/pharmacist/verification-history" },
-    // { id: "inspection-queue", title: "Inspection Queue", icon: "🕥", url: "/pharmacist/inspection-queue" },
     { id: "verify-order-registry", title: "Verified Order Registry", icon: "🕥", url: "/pharmacist/verify-order-registry" },
-    { id: "audit-log", title: "Audit Log", icon: "📝", url: "/pharmacist/pharmaceutical-audit-log" },
+    { id: "audit-log", title: "Pharmaceutical Audit Log", icon: "📝", url: "/pharmacist/pharmaceutical-audit-log" },
   ],
   admin: [
     { id: "overview", title: "Overview", icon: "📊", url: "/admin" },

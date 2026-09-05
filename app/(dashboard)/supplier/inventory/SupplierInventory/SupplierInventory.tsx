@@ -129,11 +129,11 @@ export default function SupplierInventory() {
 
         <div className="space-y-1">
           <h1 className="text-3xl font-extrabold tracking-tight text-slate-900">
-            My Inventory
+            Supplier Catalogue & Inventory Stock
           </h1>
 
           <p className="text-sm text-slate-500">
-            Supplier workspace for pharmaceutical catalog and stock management.
+            Strict regulatory rule: Products can only be selected from the Admin-verified Master Catalogue
           </p>
         </div>
 

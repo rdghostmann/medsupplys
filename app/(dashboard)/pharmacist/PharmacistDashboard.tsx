@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-// import { motion, AnimatePresence } from "motion/react";
 import { AnimatePresence, motion } from "framer-motion"
 
 import {
@@ -36,9 +35,6 @@ import PharmacistVerifyModal, { OrderStatusBadge } from "./components/Pharmacist
 import PharmacistStatCard from "./components/PharmacistStatsCard/PharmacistStatCard";
 
 
-// export interface PharmacistDashboardProps {
-//   onBackToHome?: () => void;
-// }
 
 export const INITIAL_ORDERS: Order[] = [
   {
@@ -336,7 +332,7 @@ export function PharmacistDashboard() {
         </div>
 
         {/* 4 Stat Metric Cards */}
-        <div className="space-y-6">
+        <div className="hidden space-y-6">
           <PharmacistStatCard
             verificationHistory={verificationHistory}
           />
@@ -346,13 +342,13 @@ export function PharmacistDashboard() {
             SECTION: INCOMING PRODUCTS (Requested by user)
         ========================================================= */}
         <section className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                 <Boxes className="w-4 h-4" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Incoming Products</h3>
+                <h3 className="text-lg font-bold text-slate-900">Verification Queue</h3>
                 <p className="text-xs text-slate-500">
                   Consignments arriving at central dispatch awaiting pharmacist verification
                 </p>
