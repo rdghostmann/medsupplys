@@ -1,3 +1,4 @@
+// MasterProductCatalogue.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -17,6 +18,21 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+// import {
+//   DOSAGE_FORM_GROUPS,
+//   PACK_SIZE_GROUPS,
+// } from '@/lib/catalogOptions';
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { DOSAGE_FORM_GROUPS, PACK_SIZE_GROUPS } from "@/lib/catalogOptions";
 /* =========================================================
    Types
 ========================================================= */
@@ -117,6 +133,7 @@ const EMOJI_OPTIONS = [
   "🫀",
   "🩺",
 ];
+
 
 /* =========================================================
    Mock Product Data
@@ -518,8 +535,7 @@ const DEFAULT_FORM_DATA = {
 
 export const MasterProductCatalog: React.FC = () => {
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
-  const [inventory] =
-    useState<SupplierInventory[]>(MOCK_INVENTORY);
+  const [inventory] = useState<SupplierInventory[]>(MOCK_INVENTORY);
 
   /* =========================================================
      Filters & State
@@ -561,6 +577,22 @@ export const MasterProductCatalog: React.FC = () => {
   const [formData, setFormData] = useState({
     ...DEFAULT_FORM_DATA,
   });
+
+  const [isCustomDosage, setIsCustomDosage] = useState(false);
+  const [isCustomPackSize, setIsCustomPackSize] = useState(false);
+
+  
+  const isKnownDosageForm = useMemo(() => {
+    return DOSAGE_FORM_GROUPS.some((g) =>
+      g.options.some((opt) => opt.value === formData.dosageForm)
+    );
+  }, [formData.dosageForm]);
+
+  const isKnownPackSize = useMemo(() => {
+    return PACK_SIZE_GROUPS.some((g) =>
+      g.options.some((opt) => opt.value === formData.packSize)
+    );
+  }, [formData.packSize]);
 
   /* =========================================================
      Helpers
@@ -646,11 +678,11 @@ export const MasterProductCatalog: React.FC = () => {
     const avgCommission =
       total > 0
         ? (
-            products.reduce(
-              (acc, p) => acc + (p.commissionPercent || 10),
-              0
-            ) / total
-          ).toFixed(1)
+          products.reduce(
+            (acc, p) => acc + (p.commissionPercent || 10),
+            0
+          ) / total
+        ).toFixed(1)
         : "10.0";
 
     return {
@@ -669,6 +701,8 @@ export const MasterProductCatalog: React.FC = () => {
 
   const handleOpenCreate = () => {
     setEditingProduct(null);
+    setIsCustomDosage(false);
+    setIsCustomPackSize(false);
 
     setFormData({
       ...DEFAULT_FORM_DATA,
@@ -687,6 +721,16 @@ export const MasterProductCatalog: React.FC = () => {
 
   const handleOpenEdit = (product: Product) => {
     setEditingProduct(product);
+    setIsCustomDosage(
+      !DOSAGE_FORM_GROUPS.some((group) =>
+        group.options.some((option) => option.value === product.dosageForm)
+      )
+    );
+    setIsCustomPackSize(
+      !PACK_SIZE_GROUPS.some((group) =>
+        group.options.some((option) => option.value === product.packSize)
+      )
+    );
 
     setFormData({
       name: product.name,
@@ -818,9 +862,9 @@ export const MasterProductCatalog: React.FC = () => {
       current.map((item) =>
         item.id === product.id
           ? {
-              ...item,
-              status: nextStatus,
-            }
+            ...item,
+            status: nextStatus,
+          }
           : item
       )
     );
@@ -851,9 +895,9 @@ export const MasterProductCatalog: React.FC = () => {
           current.map((product) =>
             product.id === deleteConfirmProduct.id
               ? {
-                  ...product,
-                  status: "ARCHIVED",
-                }
+                ...product,
+                status: "ARCHIVED",
+              }
               : product
           )
         );
@@ -1055,10 +1099,10 @@ export const MasterProductCatalog: React.FC = () => {
             onChange={(e) =>
               setStatusFilter(
                 e.target.value as
-                  | "ALL"
-                  | "ACTIVE"
-                  | "INACTIVE"
-                  | "ARCHIVED"
+                | "ALL"
+                | "ACTIVE"
+                | "INACTIVE"
+                | "ARCHIVED"
               )
             }
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-700 focus:border-blue-500 focus:outline-none"
@@ -1076,11 +1120,10 @@ export const MasterProductCatalog: React.FC = () => {
                 !isColdChainFilter
               )
             }
-            className={`flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition ${
-              isColdChainFilter
+            className={`flex cursor-pointer items-center gap-1.5 rounded-lg border px-3 py-2 text-xs transition ${isColdChainFilter
                 ? "border-sky-300 bg-sky-50 font-semibold text-sky-700"
                 : "border-slate-200 bg-slate-50 font-medium text-slate-600 hover:bg-slate-100"
-            }`}
+              }`}
           >
             <ThermometerSnowflake className="h-3.5 w-3.5 text-sky-500" />
 
@@ -1270,7 +1313,7 @@ export const MasterProductCatalog: React.FC = () => {
                             Math.round(
                               (prod.referenceBasePrice *
                                 commission) /
-                                100
+                              100
                             )
                           )}
                         </span>
@@ -1280,14 +1323,13 @@ export const MasterProductCatalog: React.FC = () => {
 
                       <td className="px-4 py-3">
                         <span
-                          className={`inline-block rounded-full border px-2 py-0.5 text-[10.5px] font-bold ${
-                            prod.status === "ACTIVE"
+                          className={`inline-block rounded-full border px-2 py-0.5 text-[10.5px] font-bold ${prod.status === "ACTIVE"
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                               : prod.status ===
                                 "ARCHIVED"
-                              ? "border-amber-200 bg-amber-50 text-amber-700"
-                              : "border-slate-200 bg-slate-100 text-slate-600"
-                          }`}
+                                ? "border-amber-200 bg-amber-50 text-amber-700"
+                                : "border-slate-200 bg-slate-100 text-slate-600"
+                            }`}
                         >
                           {prod.status}
                         </span>
@@ -1317,7 +1359,7 @@ export const MasterProductCatalog: React.FC = () => {
                             }
                             title={
                               prod.status ===
-                              "ACTIVE"
+                                "ACTIVE"
                                 ? "Deactivate Product"
                                 : "Activate Product"
                             }
@@ -1365,454 +1407,423 @@ export const MasterProductCatalog: React.FC = () => {
       ====================================================== */}
 
       {isCreateEditModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-slate-900/60 p-4 backdrop-blur-xs">
-          <div className="my-8 w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50 p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full border border-slate-200 shadow-xl overflow-hidden my-8">
+            <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-700">
-                  <Package className="h-4 w-4" />
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <Package className="w-4 h-4" />
                 </div>
-
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">
-                    {editingProduct
-                      ? "Edit Master Product Specifications"
-                      : "Add New Regulated Pharmaceutical Product"}
+                  <h3 className="font-display font-bold text-slate-900 text-sm">
+                    {editingProduct ? 'Edit Master Product Specifications' : 'Add New Regulated Pharmaceutical Product'}
                   </h3>
-
                   <p className="text-[11px] text-slate-500">
                     {editingProduct
-                      ? `Updating ${editingProduct.name}`
-                      : "Register a new regulated pharmaceutical line"}
+                      ? `Updating catalog entry for ${editingProduct.name}`
+                      : 'Register new line with NAFDAC regulatory compliance & pricing bounds'}
                   </p>
                 </div>
               </div>
-
               <button
-                type="button"
-                onClick={() =>
-                  setIsCreateEditModalOpen(false)
-                }
-                className="p-1 text-slate-400 hover:text-slate-600"
+                onClick={() => setIsCreateEditModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
               >
-                <X className="h-4 w-4" />
+                <X className="w-4 h-4" />
               </button>
             </div>
 
-            <form
-              onSubmit={handleSubmitProduct}
-              className="space-y-4 p-5 text-xs"
-            >
-              {/* Product Name */}
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                <div className="space-y-1 sm:col-span-2">
-                  <label className="block font-semibold text-slate-700">
-                    Product Trade Name *
-                  </label>
-
+            <form onSubmit={handleSubmitProduct} className="p-5 space-y-4 text-xs">
+              {/* Basic Details */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="font-semibold text-slate-700 block">Product Trade Name *</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. Ciprofloxacin 500mg Tablets"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none"
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="e.g. Ciprofloxacin 500mg Film-Coated Tablets"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Icon / Emoji
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">Icon / Emoji</label>
                   <div className="flex items-center gap-2">
                     <select
                       value={formData.emoji}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          emoji: e.target.value,
-                        })
-                      }
-                      className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none"
+                      onChange={(e) => setFormData({ ...formData, emoji: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                     >
-                      {EMOJI_OPTIONS.map(
-                        (emoji) => (
-                          <option
-                            key={emoji}
-                            value={emoji}
-                          >
-                            {emoji}
-                          </option>
-                        )
-                      )}
+                      {EMOJI_OPTIONS.map((em) => (
+                        <option key={em} value={em}>
+                          {em}
+                        </option>
+                      ))}
                     </select>
-
-                    <span className="text-xl">
-                      {formData.emoji}
-                    </span>
+                    <span className="text-xl">{formData.emoji}</span>
                   </div>
                 </div>
               </div>
 
-              {/* API + Category */}
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Active Pharmaceutical Ingredient *
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">Active Pharmaceutical Ingredient (API) *</label>
                   <input
                     type="text"
                     required
-                    value={
-                      formData.activeIngredient
-                    }
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        activeIngredient:
-                          e.target.value,
-                      })
-                    }
-                    placeholder="e.g. Ciprofloxacin Hydrochloride"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:bg-white focus:outline-none"
+                    value={formData.activeIngredient}
+                    onChange={(e) => setFormData({ ...formData, activeIngredient: e.target.value })}
+                    placeholder="e.g. Ciprofloxacin Hydrochloride USP"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Therapeutic Category
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">Therapeutic Category *</label>
                   <select
                     value={formData.category}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        category:
-                          e.target.value,
-                      })
-                    }
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-slate-900 focus:border-blue-500 focus:outline-none"
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                   >
-                    {CATEGORIES.filter(
-                      (category) =>
-                        category.value !== "ALL"
-                    ).map((category) => (
-                      <option
-                        key={category.value}
-                        value={category.value}
-                      >
-                        {category.label}
+                    {CATEGORIES.filter((c) => c.value !== 'ALL').map((c) => (
+                      <option key={c.value} value={c.value}>
+                        {c.label}
                       </option>
                     ))}
                   </select>
                 </div>
               </div>
 
-              {/* Strength / Dosage / Pack */}
-
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+              {/* Strength, Dosage, Pack */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Strength *
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">Strength / Concentration *</label>
                   <input
                     type="text"
                     required
                     value={formData.strength}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        strength: e.target.value,
-                      })
-                    }
-                    placeholder="e.g. 500mg"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    onChange={(e) => setFormData({ ...formData, strength: e.target.value })}
+                    placeholder="e.g. 500mg, 1000mg/10ml"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white text-xs h-9"
                   />
                 </div>
 
+                {/* Dosage Form - shadcn UI Select */}
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Dosage Form *
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-slate-700 block">Dosage Form *</label>
+                    {isCustomDosage ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomDosage(false);
+                          setFormData({ ...formData, dosageForm: 'Oral Tablet' });
+                        }}
+                        className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold"
+                      >
+                        ← Standard List
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomDosage(true);
+                        }}
+                        className="text-[11px] text-slate-500 hover:text-blue-600"
+                        title="Enter a custom dosage form not in the list"
+                      >
+                        Custom...
+                      </button>
+                    )}
+                  </div>
 
-                  <input
-                    type="text"
-                    required
-                    value={formData.dosageForm}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        dosageForm:
-                          e.target.value,
-                      })
-                    }
-                    placeholder="Oral Tablet"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                  />
+                  {isCustomDosage ? (
+                    <input
+                      type="text"
+                      required
+                      value={formData.dosageForm}
+                      onChange={(e) => setFormData({ ...formData, dosageForm: e.target.value })}
+                      placeholder="Specify custom formulation (e.g. Sublingual Film)"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white text-xs h-9"
+                    />
+                  ) : (
+                    <Select
+                      value={formData.dosageForm}
+                      onValueChange={(val) => {
+                        if (val === 'OTHER_CUSTOM') {
+                          setIsCustomDosage(true);
+                          setFormData({ ...formData, dosageForm: '' });
+                        } else {
+                          setFormData({ ...formData, dosageForm: val });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-9 bg-slate-50 border-slate-200 text-xs">
+                        <SelectValue placeholder="Select dosage formulation..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {!isKnownDosageForm && formData.dosageForm && (
+                          <>
+                            <SelectGroup>
+                              <SelectLabel>Current Specified Form</SelectLabel>
+                              <SelectItem value={formData.dosageForm}>
+                                {formData.dosageForm}
+                              </SelectItem>
+                            </SelectGroup>
+                            <SelectSeparator />
+                          </>
+                        )}
+                        {DOSAGE_FORM_GROUPS.map((group, groupIdx) => (
+                          <React.Fragment key={group.group}>
+                            {groupIdx > 0 && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>{group.group}</SelectLabel>
+                              {group.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </React.Fragment>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
 
+                {/* Packaging / Pack Size - shadcn UI Select */}
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Pack Size *
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="font-semibold text-slate-700 block">Packaging / Pack Size *</label>
+                    {isCustomPackSize ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomPackSize(false);
+                          setFormData({
+                            ...formData,
+                            packSize: '100 tablets/pack',
+                            unit: 'Packs of 100 Tablets (10x10 Blister)',
+                          });
+                        }}
+                        className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold"
+                      >
+                        ← Standard List
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomPackSize(true);
+                        }}
+                        className="text-[11px] text-slate-500 hover:text-blue-600"
+                        title="Enter a custom packaging or pack size"
+                      >
+                        Custom...
+                      </button>
+                    )}
+                  </div>
 
-                  <input
-                    type="text"
-                    required
-                    value={formData.packSize}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        packSize:
-                          e.target.value,
-                      })
-                    }
-                    placeholder="100 tablets/pack"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                  />
+                  {isCustomPackSize ? (
+                    <input
+                      type="text"
+                      required
+                      value={formData.packSize}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          packSize: e.target.value,
+                          unit: e.target.value,
+                        })
+                      }
+                      placeholder="e.g. 5x10 Ampoules/Carton or 50 Vials/Box"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white text-xs h-9"
+                    />
+                  ) : (
+                    <Select
+                      value={formData.packSize}
+                      onValueChange={(val) => {
+                        if (val === 'OTHER_CUSTOM') {
+                          setIsCustomPackSize(true);
+                          setFormData({ ...formData, packSize: '' });
+                        } else {
+                          const foundOpt = PACK_SIZE_GROUPS.flatMap((g) => g.options).find(
+                            (o) => o.value === val
+                          );
+                          setFormData({
+                            ...formData,
+                            packSize: val,
+                            unit: foundOpt?.unitHint || formData.unit,
+                          });
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="w-full h-9 bg-slate-50 border-slate-200 text-xs">
+                        <SelectValue placeholder="Select pack size..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {!isKnownPackSize && formData.packSize && (
+                          <>
+                            <SelectGroup>
+                              <SelectLabel>Current Specified Size</SelectLabel>
+                              <SelectItem value={formData.packSize}>
+                                {formData.packSize}
+                              </SelectItem>
+                            </SelectGroup>
+                            <SelectSeparator />
+                          </>
+                        )}
+                        {PACK_SIZE_GROUPS.map((group, groupIdx) => (
+                          <React.Fragment key={group.group}>
+                            {groupIdx > 0 && <SelectSeparator />}
+                            <SelectGroup>
+                              <SelectLabel>{group.group}</SelectLabel>
+                              {group.options.map((opt) => (
+                                <SelectItem key={opt.value} value={opt.value}>
+                                  {opt.label}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </React.Fragment>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
               </div>
 
-              {/* Regulatory */}
+              {/* Dispensing Unit synchronization indicator */}
+              <div className="flex items-center justify-between px-3 py-1.5 bg-blue-50/60 rounded-lg border border-blue-100 text-[11px] text-blue-800">
+                <span className="text-blue-700">Hospital Sourcing / Dispensing Unit:</span>
+                <span className="font-semibold text-blue-900">{formData.unit}</span>
+              </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {/* Regulatory & Storage */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    NAFDAC Registration Number *
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">NAFDAC Registration Number *</label>
                   <input
                     type="text"
                     required
-                    value={
-                      formData.nafdacRegNumber
-                    }
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        nafdacRegNumber:
-                          e.target.value,
-                      })
-                    }
-                    placeholder="NAFDAC-04-9912"
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 font-mono focus:border-blue-500 focus:outline-none"
+                    value={formData.nafdacRegNumber}
+                    onChange={(e) => setFormData({ ...formData, nafdacRegNumber: e.target.value })}
+                    placeholder="e.g. NAFDAC-04-9912"
+                    className="w-full px-3 py-2 font-mono bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="block font-semibold text-slate-700">
-                    Catalog Status
-                  </label>
-
+                  <label className="font-semibold text-slate-700 block">Catalog Status</label>
                   <select
                     value={formData.status}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        status:
-                          e.target.value as ProductStatus,
-                      })
-                    }
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value as ProductStatus })}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                   >
-                    <option value="ACTIVE">
-                      ACTIVE
-                    </option>
-                    <option value="INACTIVE">
-                      INACTIVE
-                    </option>
-                    <option value="ARCHIVED">
-                      ARCHIVED
-                    </option>
+                    <option value="ACTIVE">ACTIVE (Hospital Sourcing Enabled)</option>
+                    <option value="INACTIVE">INACTIVE (Temporarily Paused)</option>
+                    <option value="ARCHIVED">ARCHIVED (Historical Record)</option>
                   </select>
                 </div>
               </div>
 
-              {/* Storage */}
-
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">
-                  GDP Storage Conditions *
-                </label>
-
+                <label className="font-semibold text-slate-700 block">GDP Storage Conditions *</label>
                 <input
                   type="text"
                   required
-                  value={
-                    formData.storageCondition
-                  }
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      storageCondition:
-                        e.target.value,
-                    })
-                  }
-                  placeholder="Store below 25°C..."
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  value={formData.storageCondition}
+                  onChange={(e) => setFormData({ ...formData, storageCondition: e.target.value })}
+                  placeholder="e.g. Store below 25°C in original container or Cold chain 2°C - 8°C"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white"
                 />
               </div>
 
-              {/* Pricing */}
-
-              <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3.5">
-                <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-900">
-                  Pricing & Monetization Controls
+              {/* Pricing & Platform Commission Bounds */}
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-3">
+                <span className="font-display font-bold text-slate-900 block text-[11px] uppercase tracking-wider">
+                  Pricing Bounds & Platform Monetization Controls
                 </span>
 
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div>
-                    <label className="mb-1 block font-semibold text-slate-700">
-                      Base Price (₦)
-                    </label>
-
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-slate-700 block">Reference Base Price (₦) *</label>
                     <input
                       type="number"
+                      required
                       min="100"
-                      value={
-                        formData.referenceBasePrice
-                      }
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          referenceBasePrice:
-                            Number(
-                              e.target.value
-                            ),
-                        })
-                      }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono focus:border-blue-500 focus:outline-none"
+                      value={formData.referenceBasePrice}
+                      onChange={(e) => setFormData({ ...formData, referenceBasePrice: Number(e.target.value) })}
+                      className="w-full px-3 py-2 font-mono bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block font-semibold text-slate-700">
-                      Commission (%)
-                    </label>
-
+                  <div className="space-y-1">
+                    <label className="font-semibold text-slate-700 block">Platform Commission (%) *</label>
                     <input
                       type="number"
+                      required
                       min="1"
                       max="30"
-                      value={
-                        formData.commissionPercent
-                      }
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          commissionPercent:
-                            Number(
-                              e.target.value
-                            ),
-                        })
-                      }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono focus:border-blue-500 focus:outline-none"
+                      value={formData.commissionPercent}
+                      onChange={(e) => setFormData({ ...formData, commissionPercent: Number(e.target.value) })}
+                      className="w-full px-3 py-2 font-mono bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
 
-                  <div>
-                    <label className="mb-1 block font-semibold text-slate-700">
-                      Max Markup (%)
-                    </label>
-
+                  <div className="space-y-1">
+                    <label className="font-semibold text-slate-700 block">Max Allowed Markup (%) *</label>
                     <input
                       type="number"
+                      required
                       min="5"
                       max="100"
-                      value={
-                        formData.maxMarkupPercent
-                      }
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          maxMarkupPercent:
-                            Number(
-                              e.target.value
-                            ),
-                        })
-                      }
-                      className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 font-mono focus:border-blue-500 focus:outline-none"
+                      value={formData.maxMarkupPercent}
+                      onChange={(e) => setFormData({ ...formData, maxMarkupPercent: Number(e.target.value) })}
+                      className="w-full px-3 py-2 font-mono bg-white border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between rounded-lg border border-slate-200 bg-white p-2.5 text-[11px] text-slate-500">
+                <div className="text-[11px] text-slate-500 bg-white p-2.5 rounded-lg border border-slate-200/80 flex items-center justify-between">
                   <span>
-                    Platform revenue per unit:
+                    Calculated platform revenue per unit sold:
                   </span>
-
                   <span className="font-mono font-bold text-blue-700">
-                    {formatCurrency(
-                      Math.round(
-                        (formData.referenceBasePrice *
-                          formData.commissionPercent) /
-                          100
-                      )
-                    )}
+                    ₦{Math.round((formData.referenceBasePrice * formData.commissionPercent) / 100).toLocaleString()}
                   </span>
                 </div>
               </div>
 
               {/* Description */}
-
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-700">
-                  Clinical Indication / Description
-                </label>
-
+                <label className="font-semibold text-slate-700 block">Clinical Indication / Description</label>
                 <textarea
-                  rows={3}
+                  rows={2}
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      description:
-                        e.target.value,
-                    })
-                  }
-                  placeholder="Clinical usage, indication and standard dispensing information..."
-                  className="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs focus:border-blue-500 focus:bg-white focus:outline-none"
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  placeholder="Clinical usage, indication, pharmacology, and standard dispensing warnings..."
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-slate-900 focus:outline-none focus:border-blue-500 focus:bg-white text-xs"
                 />
               </div>
 
-              {/* Actions */}
-
-              <div className="flex items-center justify-end gap-2.5 border-t border-slate-100 pt-2">
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
                 <button
                   type="button"
-                  onClick={() =>
-                    setIsCreateEditModalOpen(false)
-                  }
-                  className="cursor-pointer rounded-xl bg-slate-100 px-4 py-2 font-semibold text-slate-700 transition hover:bg-slate-200"
+                  onClick={() => setIsCreateEditModalOpen(false)}
+                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-semibold transition cursor-pointer"
                 >
                   Cancel
                 </button>
-
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex cursor-pointer items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2 font-bold text-white shadow-xs transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50"
                 >
-                  <CheckCircle2 className="h-4 w-4" />
-
-                  <span>
-                    {isSubmitting
-                      ? "Saving..."
-                      : editingProduct
-                      ? "Save Changes"
-                      : "Catalog Product"}
-                  </span>
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>{isSubmitting ? 'Saving...' : editingProduct ? 'Save Changes' : 'Catalog Product'}</span>
                 </button>
               </div>
             </form>
@@ -1897,15 +1908,14 @@ export const MasterProductCatalog: React.FC = () => {
                   </span>
 
                   <span
-                    className={`mt-0.5 block text-xs font-bold ${
-                      viewingProduct.status ===
-                      "ACTIVE"
+                    className={`mt-0.5 block text-xs font-bold ${viewingProduct.status ===
+                        "ACTIVE"
                         ? "text-emerald-700"
                         : viewingProduct.status ===
                           "ARCHIVED"
-                        ? "text-amber-700"
-                        : "text-slate-600"
-                    }`}
+                          ? "text-amber-700"
+                          : "text-slate-600"
+                      }`}
                   >
                     {viewingProduct.status}
                   </span>
@@ -1964,7 +1974,7 @@ export const MasterProductCatalog: React.FC = () => {
                         Math.round(
                           (viewingProduct.referenceBasePrice *
                             viewingProduct.commissionPercent) /
-                            100
+                          100
                         )
                       )}
                     </span>
@@ -2087,17 +2097,17 @@ export const MasterProductCatalog: React.FC = () => {
                           item.productId ===
                           viewingProduct.id
                       ).length === 0 && (
-                        <tr>
-                          <td
-                            colSpan={5}
-                            className="py-5 text-center text-slate-400"
-                          >
-                            No supplier inventory
-                            registered for this
-                            product.
-                          </td>
-                        </tr>
-                      )}
+                          <tr>
+                            <td
+                              colSpan={5}
+                              className="py-5 text-center text-slate-400"
+                            >
+                              No supplier inventory
+                              registered for this
+                              product.
+                            </td>
+                          </tr>
+                        )}
                     </tbody>
                   </table>
                 </div>
