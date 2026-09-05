@@ -1,4 +1,4 @@
-// app/(dashboard)/buyer/marketplace/components/ProductCatalogue.tsx
+// app/(dashboard)/buyer/components/ProductCatalogue.tsx
 "use client"
 
 import {
