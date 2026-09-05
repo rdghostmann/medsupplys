@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge"
 
 import { Button } from "@/components/ui/button"
 import { useState } from "react"
+import type { Supplier } from "@/types"
 
 type MarketplaceProduct = {
   _id: string
@@ -35,7 +36,7 @@ type MarketplaceProduct = {
     image: string
   }
 
-  suppliers: any[]
+  suppliers: Supplier[]
 }
 
 type Props = {
@@ -59,7 +60,7 @@ export function ProductCard({
     suppliers.reduce(
       (
         acc: number,
-        supplier: any
+        supplier: Supplier
       ) =>
         acc +
         (supplier.stock || 0),
@@ -70,7 +71,7 @@ export function ProductCard({
     suppliers.length > 0
       ? Math.min(
           ...suppliers.map(
-            (s: any) =>
+            (s: Supplier) =>
               Number(
                 s.price || 0
               )

@@ -11,6 +11,7 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import { ProductCatalogue } from "./components/ProductCatalogue"
+import type { Supplier } from "@/types"
 export type MarketplaceProduct = {
   _id: string
   product: {
@@ -20,7 +21,7 @@ export type MarketplaceProduct = {
     description: string
     image: string
   }
-  suppliers: any[]
+  suppliers: Supplier[]
 }
 
 export default function MarketplacePage({

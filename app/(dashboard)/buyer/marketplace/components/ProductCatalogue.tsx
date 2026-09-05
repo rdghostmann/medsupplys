@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 import { ProductCard } from "./ProductCard"
+import type { Supplier } from "@/types"
 
 export type MarketplaceProduct = {
   _id: string
@@ -36,7 +37,7 @@ export type MarketplaceProduct = {
     image: string
   }
 
-  suppliers: any[]
+  suppliers: Supplier[]
 }
 
 type Props = {
