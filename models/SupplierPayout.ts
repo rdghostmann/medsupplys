@@ -1,11 +1,10 @@
-// /models/SupplierPayout.ts
-
 import {
   Schema,
   model,
   models,
   Document,
   Model,
+  Types,
 } from "mongoose";
 
 export type SupplierPayoutStatus =
@@ -16,7 +15,7 @@ export type SupplierPayoutStatus =
   | "REVERSED";
 
 export interface ISupplierPayout extends Document {
-  supplierId: Schema.Types.ObjectId;
+  supplierId: Types.ObjectId;
 
   supplierName: string;
 
@@ -36,7 +35,7 @@ export interface ISupplierPayout extends Document {
 
   accountName: string;
 
-  orderIds: Schema.Types.ObjectId[];
+  orderIds: Types.ObjectId[];
 
   failureReason?: string;
 

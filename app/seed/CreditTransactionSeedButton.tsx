@@ -11,10 +11,7 @@ import {
 import { toast } from "sonner";
 import { type CreditTransactionSeedStatus, seedCreditTransactionAction } from "@/lib/seed/seed-credit-transaction.actions";
 
-// import {
-//   seedCreditTransactionAction,
-//   type CreditTransactionSeedStatus,
-// } from "@/lib/actions/seed-credit-transaction.actions";
+
 
 const formatCurrency = (amount: number) => {
   return `₦${amount.toLocaleString("en-NG")}`;

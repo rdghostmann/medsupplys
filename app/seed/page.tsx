@@ -1,256 +1,397 @@
-// app/(dashboard)/admin/seed-orders/page.tsx
+// /app/(dashboard)/admin/seed-supplier-payouts/page.tsx
 
-import { seedMockOrdersAndSupplierPayouts } from "@/lib/seed/admin-seed-orders.action";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Database,
+  WalletCards,
+  Building2,
+} from "lucide-react";
+
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+
+import { Button } from "@/components/ui/button";
+import { seedMayBakerSupplierPayouts } from "@/lib/seed/admin-seed-supplier-payouts.action";
 
 
-interface PageProps {
+/* ==========================================================================
+   TYPES
+============================================================================= */
+
+interface SeedSupplierPayoutsPageProps {
   searchParams: Promise<{
-    seeded?: string;
+    status?: string;
     message?: string;
-    orders?: string;
-    payouts?: string;
+    created?: string;
+    skipped?: string;
+    total?: string;
   }>;
 }
 
-export default async function Page({
+/* ==========================================================================
+   PAGE
+============================================================================= */
+
+export default async function SeedSupplierPayoutsPage({
   searchParams,
-}: PageProps) {
+}: SeedSupplierPayoutsPageProps) {
   const params =
     await searchParams;
 
-  const seeded =
-    params.seeded === "true";
+  const status =
+    params.status;
 
-  const failed =
-    params.seeded === "false";
+  const message =
+    params.message;
 
-  async function seedOrdersAction() {
-    "use server";
+  const created =
+    params.created;
 
-    const result =
-      await seedMockOrdersAndSupplierPayouts();
+  const skipped =
+    params.skipped;
 
-    const query =
-      new URLSearchParams();
-
-    query.set(
-      "seeded",
-      result.success
-        ? "true"
-        : "false"
-    );
-
-    query.set(
-      "message",
-      result.message
-    );
-
-    query.set(
-      "orders",
-      String(
-        result.ordersCreated || 0
-      )
-    );
-
-    query.set(
-      "payouts",
-      String(
-        result.payoutsCreated || 0
-      )
-    );
-
-    /*
-     * Re-render the Server Component
-     * with the result in the URL.
-     */
-    const { redirect } =
-      await import(
-        "next/navigation"
-      );
-
-    redirect(
-      `/admin/seed-orders?${query.toString()}`
-    );
-  }
+  const total =
+    params.total;
 
   return (
-    <div className="min-h-full bg-slate-50 p-6">
-      <div className="mx-auto max-w-3xl space-y-6">
+    <div className="flex flex-1 flex-col gap-6 p-4 md:p-6">
+      {/* ================================================================== */}
+      {/* HEADER                                                             */}
+      {/* ================================================================== */}
 
-        {/* -------------------------------------------------------------- */}
-        {/* Header                                                         */}
-        {/* -------------------------------------------------------------- */}
+      <div>
+        <div className="flex items-center gap-2">
+          <Database className="size-5 text-muted-foreground" />
 
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">
-            Seed Supplier Orders
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Seed Supplier Payouts
           </h1>
-
-          <p className="mt-1 text-sm text-slate-500">
-            Seed mock Orders and SupplierPayout
-            records for the selected supplier.
-          </p>
         </div>
 
-        {/* -------------------------------------------------------------- */}
-        {/* Supplier                                                       */}
-        {/* -------------------------------------------------------------- */}
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-            Target Supplier
-          </p>
-
-          <p className="mt-2 font-mono text-sm font-bold text-slate-900">
-            6a9cb82e853e785e43c110b9
-          </p>
-
-          <p className="mt-1 text-xs text-slate-500">
-            Orders and payouts will be restricted
-            to this supplier.
-          </p>
-        </div>
-
-        {/* -------------------------------------------------------------- */}
-        {/* Seed Action                                                    */}
-        {/* -------------------------------------------------------------- */}
-
-        <form
-          action={
-            seedOrdersAction
-          }
-        >
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 active:scale-[0.99]"
-          >
-            Seed Mock Orders & Supplier Payouts
-          </button>
-        </form>
-
-        {/* -------------------------------------------------------------- */}
-        {/* Status                                                         */}
-        {/* -------------------------------------------------------------- */}
-
-        {seeded && (
-          <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5">
-
-            <div className="flex items-start gap-3">
-
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                ✓
-              </div>
-
-              <div>
-                <h2 className="text-sm font-bold text-emerald-900">
-                  Seed Completed
-                </h2>
-
-                <p className="mt-1 text-xs text-emerald-800">
-                  {params.message}
-                </p>
-
-                <div className="mt-4 grid grid-cols-2 gap-3">
-
-                  <div className="rounded-xl border border-emerald-200 bg-white p-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Orders Created
-                    </p>
-
-                    <p className="mt-1 text-lg font-bold text-slate-900">
-                      {params.orders ||
-                        "0"}
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-emerald-200 bg-white p-3">
-                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                      Payouts Created
-                    </p>
-
-                    <p className="mt-1 text-lg font-bold text-slate-900">
-                      {params.payouts ||
-                        "0"}
-                    </p>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* -------------------------------------------------------------- */}
-        {/* Error                                                          */}
-        {/* -------------------------------------------------------------- */}
-
-        {failed && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-5">
-
-            <div className="flex items-start gap-3">
-
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-700">
-                !
-              </div>
-
-              <div>
-                <h2 className="text-sm font-bold text-red-900">
-                  Seed Failed
-                </h2>
-
-                <p className="mt-1 text-xs text-red-800">
-                  {params.message}
-                </p>
-              </div>
-
-            </div>
-          </div>
-        )}
-
-        {/* -------------------------------------------------------------- */}
-        {/* What Will Be Seeded                                            */}
-        {/* -------------------------------------------------------------- */}
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-
-          <h2 className="text-sm font-bold text-slate-900">
-            Seed Contents
-          </h2>
-
-          <div className="mt-4 space-y-2 text-xs text-slate-600">
-
-            <div className="flex justify-between border-b border-slate-100 pb-2">
-              <span>Mock Orders</span>
-              <strong className="text-slate-900">
-                7
-              </strong>
-            </div>
-
-            <div className="flex justify-between border-b border-slate-100 pb-2">
-              <span>Supplier Payouts</span>
-              <strong className="text-slate-900">
-                3
-              </strong>
-            </div>
-
-            <div className="flex justify-between border-b border-slate-100 pb-2">
-              <span>Supplier</span>
-              <strong className="font-mono text-slate-900">
-                6a9cb82e...
-              </strong>
-            </div>
-
-            <div className="flex justify-between">
-              <span>Duplicate Protection</span>
-              <strong className="text-emerald-700">
-                Enabled
-              </strong>
-            </div>
-
-          </div>
-        </div>
-
+        <p className="mt-1 text-sm text-muted-foreground">
+          Seed mock payout records for the May & Baker supplier
+          directly into MongoDB.
+        </p>
       </div>
+
+      {/* ================================================================== */}
+      {/* STATUS                                                             */}
+      {/* ================================================================== */}
+
+      {status === "success" && (
+        <Card className="border-emerald-500/30 bg-emerald-500/5">
+          <CardContent className="flex items-start gap-3 p-4">
+            <CheckCircle2 className="mt-0.5 size-5 text-emerald-600" />
+
+            <div className="space-y-1">
+              <p className="font-medium text-emerald-700">
+                Supplier payouts seeded successfully
+              </p>
+
+              <p className="text-sm text-muted-foreground">
+                {message}
+              </p>
+
+              <div className="flex flex-wrap gap-4 pt-2 text-sm">
+                <span>
+                  Created:{" "}
+                  <strong>
+                    {created ?? "0"}
+                  </strong>
+                </span>
+
+                <span>
+                  Skipped:{" "}
+                  <strong>
+                    {skipped ?? "0"}
+                  </strong>
+                </span>
+
+                <span>
+                  Total supplier payouts:{" "}
+                  <strong>
+                    {total ?? "0"}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {status === "error" && (
+        <Card className="border-destructive/30 bg-destructive/5">
+          <CardContent className="flex items-start gap-3 p-4">
+            <AlertCircle className="mt-0.5 size-5 text-destructive" />
+
+            <div>
+              <p className="font-medium text-destructive">
+                Supplier payout seed failed
+              </p>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {message}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ================================================================== */}
+      {/* SUPPLIER CARD                                                      */}
+      {/* ================================================================== */}
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Building2 className="size-5" />
+
+            <div>
+              <CardTitle>
+                May & Baker Nigeria Plc
+              </CardTitle>
+
+              <CardDescription>
+                Supplier payout seed target
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-lg border p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Supplier ID
+              </p>
+
+              <p className="mt-1 break-all font-mono text-sm">
+                6a9cb82e853e785e43c110b9
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Supplier Type
+              </p>
+
+              <p className="mt-1 text-sm font-medium">
+                Importer
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Settlement Bank
+              </p>
+
+              <p className="mt-1 text-sm font-medium">
+                Zenith Bank Plc
+              </p>
+            </div>
+
+            <div className="rounded-lg border p-4">
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                Payout Records
+              </p>
+
+              <p className="mt-1 text-sm font-medium">
+                5 mock payouts
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ================================================================== */}
+      {/* PAYOUT SUMMARY                                                     */}
+      {/* ================================================================== */}
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <WalletCards className="size-5" />
+
+            <div>
+              <CardTitle>
+                Mock Payout Settlement
+              </CardTitle>
+
+              <CardDescription>
+                The following payout records will be inserted
+                for this supplier.
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent>
+          <div className="overflow-x-auto rounded-lg border">
+            <table className="w-full text-sm">
+              <thead className="border-b bg-muted/50">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium">
+                    Reference
+                  </th>
+
+                  <th className="px-4 py-3 text-right font-medium">
+                    Amount
+                  </th>
+
+                  <th className="px-4 py-3 text-right font-medium">
+                    Fee
+                  </th>
+
+                  <th className="px-4 py-3 text-right font-medium">
+                    Net Amount
+                  </th>
+
+                  <th className="px-4 py-3 text-left font-medium">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y">
+                <tr>
+                  <td className="px-4 py-3 font-mono">
+                    NIBSS-MS-260906-001
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦450,000
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦50
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-medium">
+                    ₦449,950
+                  </td>
+
+                  <td className="px-4 py-3">
+                    SETTLED
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="px-4 py-3 font-mono">
+                    NIBSS-MS-260903-002
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦375,000
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦50
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-medium">
+                    ₦374,950
+                  </td>
+
+                  <td className="px-4 py-3">
+                    SETTLED
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="px-4 py-3 font-mono">
+                    NIBSS-MS-260830-003
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦525,000
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦50
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-medium">
+                    ₦524,950
+                  </td>
+
+                  <td className="px-4 py-3">
+                    SETTLED
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="px-4 py-3 font-mono">
+                    NIBSS-MS-260825-004
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦300,000
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦50
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-medium">
+                    ₦299,950
+                  </td>
+
+                  <td className="px-4 py-3">
+                    SETTLED
+                  </td>
+                </tr>
+
+                <tr>
+                  <td className="px-4 py-3 font-mono">
+                    NIBSS-MS-260820-005
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦275,000
+                  </td>
+
+                  <td className="px-4 py-3 text-right">
+                    ₦50
+                  </td>
+
+                  <td className="px-4 py-3 text-right font-medium">
+                    ₦274,950
+                  </td>
+
+                  <td className="px-4 py-3">
+                    SETTLED
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* ============================================================ */}
+          {/* SEED BUTTON                                                   */}
+          {/* ============================================================ */}
+
+          <div className="mt-6 flex justify-end">
+            <form
+              action={ seedMayBakerSupplierPayouts }
+            >
+              <Button
+                type="submit"
+                size="lg"
+              >
+                <Database className="mr-2 size-4" />
+
+                Seed 5 Supplier Payouts
+              </Button>
+            </form>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
