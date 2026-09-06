@@ -87,25 +87,17 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       retailer: "RETAILER",
     };
 
-    const supplierApprovalStatus = user.supplierApprovalStatus === "APPROVED"
-        ? "APPROVED"
-        : "PENDING";
+    const supplierApprovalStatus = user.supplierApprovalStatus === "approved"
+        ? "APPROVED"  : "PENDING";
 
     const currentSupplier: CurrentSupplierUser = {
       id: user._id.toString(),
 
-      name:
-        user.fullName ||
-        user.username ||
-        "Authorized Pharmaceutical Supplier",
+      name:  user.username ||  "Authorized Pharmaceutical Supplier",
 
-      organization:
-        user.organizationName ||
-        user.fullName ||
-        "Pharmaceutical Supplier",
+      organization: user.organizationName ||  "Pharmaceutical Supplier",
 
-      supplierType:
-        supplierTypeMap[String(user.supplierType).toLowerCase()] ||
+      supplierType:   supplierTypeMap[String(user.supplierType).toLowerCase()] ||
         "RETAILER",
 
       supplierApprovalStatus,
