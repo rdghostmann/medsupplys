@@ -1,5 +1,6 @@
 // /dashboard/supplier/EarningPage.tsx
 "use client";
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,8 +8,10 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+} from "@/components/ui/breadcrumb";
+
 import SupplierRevenueCommission from "./SupplierRevenueCommission";
+
 import type {
   CurrentSupplierUser,
   SupplierOrder,
@@ -26,61 +29,39 @@ export default function EarningPage({
   orders,
   payouts,
 }: EarningPageProps) {
-  const revenueOrders = orders.map((order) => ({
-    id: order.id,
-    orderNumber: order.orderNumber,
-    supplierId: order.supplierId,
-    buyerName: order.buyerName,
-    buyerId: order.buyerId,
-    items: order.items.map((item) => ({
-      id: item.id,
-      name: item.name,
-      quantity: item.quantity,
-      unitPrice: item.unitPrice,
-    })),
-    batchNumber: order.batchNumber || "-",
-    paymentMethod: order.paymentMethod,
-    status: order.status,
-    total: order.total,
-    commission: order.commission,
-    subtotal: order.subtotal,
-    createdAt: order.createdAt,
-  }));
-
-  const revenuePayouts = payouts.map((payout) => ({
-    ...payout,
-    notes: payout.notes,
-  }));
-
   return (
     <div className="flex flex-1 flex-col">
+      {/* Breadcrumb */}
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
+            <BreadcrumbLink href="/supplier">
+              Dashboard
+            </BreadcrumbLink>
           </BreadcrumbItem>
+
           <BreadcrumbSeparator />
+
           <BreadcrumbItem>
-            <BreadcrumbPage>Revenue & Commission</BreadcrumbPage>
+            <BreadcrumbPage>
+              Revenue & Commission
+            </BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
 
+      {/* Page Content */}
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <div className="px-4 lg:px-6">
             <SupplierRevenueCommission
               user={user}
-              orders={revenueOrders}
-              payouts={revenuePayouts}
+              orders={orders}
+              payouts={payouts}
             />
           </div>
         </div>
       </div>
     </div>
-
-  )
+  );
 }
-
-
-

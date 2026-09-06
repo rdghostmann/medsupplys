@@ -31,6 +31,8 @@ import type { CurrentSupplierUser } from '@/controllers/supplier.action';
 
 type OrderStatus =
   | 'PENDING'
+  | 'PAYMENT_PENDING'
+  | 'PAYMENT_CONFIRMED'
   | 'PROCESSING'
   | 'READY_FOR_DISPATCH'
   | 'VERIFICATION'
@@ -46,7 +48,12 @@ type PaymentMethod =
   | 'CREDIT'
   | 'WALLET_AND_CREDIT';
 
-type PayoutStatus = 'SETTLED' | 'PROCESSING' | 'FAILED';
+type PayoutStatus =
+  | 'PENDING'
+  | 'PROCESSING'
+  | 'SETTLED'
+  | 'FAILED'
+  | 'REVERSED';
 
 interface OrderItem {
   id: string;
@@ -55,7 +62,7 @@ interface OrderItem {
   unitPrice: number;
 }
 
-interface MockOrder {
+interface Order {
   id: string;
   orderNumber: string;
   supplierId: string;
@@ -118,14 +125,14 @@ const isEscrowStatus = (status: OrderStatus) =>
 
 interface SupplierRevenueCommissionProps {
   user: CurrentSupplierUser | null;
-  orders: MockOrder[];
+  orders: Order[];
   payouts: SupplierPayout[];
 }
 
 export const SupplierRevenueCommission: React.FC<
   SupplierRevenueCommissionProps
 > = ({ user, orders: initialOrders, payouts: initialPayouts }) => {
-  const [orders, setOrders] = useState<MockOrder[]>(initialOrders);
+  const [orders, setOrders] = useState<Order[]>(initialOrders);
   const [payouts, setPayouts] = useState<SupplierPayout[]>(initialPayouts);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -142,7 +149,7 @@ export const SupplierRevenueCommission: React.FC<
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
   const [selectedVoucherOrder, setSelectedVoucherOrder] =
-    useState<MockOrder | null>(null);
+    useState<Order | null>(null);
 
   const [selectedPayoutSlip, setSelectedPayoutSlip] =
     useState<SupplierPayout | null>(null);
