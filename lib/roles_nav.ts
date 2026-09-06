@@ -13,7 +13,7 @@ export const roleNavMain = {
     { id: "overview", title: "Supplier Dashboard", icon: "📊", url: "/supplier" },
     { id: "order-requests", title: "Incoming Requests", icon: "📃", url: "/supplier/order-requests" },
     { id: "inventory", title: "Inventory & Catalog", icon: "📦", url: "/supplier/inventory" },
-    { id: "order-tracking", title: "Commited Order & Dispatch", icon: "🚛", url: "/supplier/order-tracking" },
+    { id: "order-tracking", title: "Order Tracking", icon: "🚛", url: "/supplier/order-tracking" },
     { id: "earnings", title: "Revenue & Commission", icon: "💰", url: "/supplier/earnings" },
     { id: "audit-log", title: "Audit Log", icon: "📝", url: "/supplier/audit-log" },
   ],
