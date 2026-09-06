@@ -1,39 +1,20 @@
-// /dashboard/supplier/page.tsx
-"use client";
+// /dashboard/supplier/order-requests/page.tsx
+
+import OrderRequestPage from "./OrderRequestPage";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import IncomingRequests from "./IncomingRequest";
+    getCurrentSupplierDashboard,
+} from "@/controllers/supplier.action";
 
-export default function Page() {
-  return (
-    <div className="flex flex-1 flex-col">
-      <Breadcrumb className="p-4 lg:px-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Incoming Request</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+export default async function Page() {
+    const {
+        user,
+        incomingProcurementRequests,
+    } = await getCurrentSupplierDashboard();
 
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <div className="px-4 lg:px-6">
-            <IncomingRequests />
-
-          </div>
-        </div>
-      </div>
-    </div>
-
-  )
+    return (
+        <OrderRequestPage
+            user={user}
+            incomingProcurementRequests={incomingProcurementRequests}
+        />
+    );
 }

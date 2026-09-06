@@ -1,3 +1,4 @@
+// IncomingRequest.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -9,215 +10,25 @@ import {
 
 } from "lucide-react";
 import { toast } from "sonner";
-
+import type {
+  CurrentSupplierUser,
+  IncomingProcurementRequest,
+} from "@/controllers/supplier.action";
 type ResponseType = "ACCEPT" | "REJECT" | "UNAVAILABLE";
 
-type SupplierQueueItem = {
-  supplierId: string;
-  supplierName: string;
-  supplierType: "Importer" | "Distributor" | "Retailer";
-  unitPrice: number;
-  stock: number;
-  rank: number;
-  status: "PENDING" | "CONTACTED" | "ACCEPTED" | "REJECTED" | "UNAVAILABLE";
-};
+interface IncomingRequestsProps {
+  user: CurrentSupplierUser;
+  procurements: IncomingProcurementRequest[];
+}
 
-type ProcurementRequest = {
-  id: string;
-  procurementNumber: string;
-  productName: string;
-  category: string;
-  quantity: number;
-  unit: string;
-  totalAmount: number;
-  paymentMethod: "WALLET" | "CREDIT" | "WALLET_CREDIT";
-  status: "SUPPLIER_CONTACTED" | "NEXT_SUPPLIER_PENDING";
-  buyerName: string;
-  deliveryAddress: string;
-  currentSupplierId: string;
-  currentSupplierIndex: number;
-  supplierQueue: SupplierQueueItem[];
-  createdAt: string;
-};
+const IncomingRequests: React.FC<
+  IncomingRequestsProps
+> = ({
+  user,
+  procurements,
+}) => {
 
-// -----------------------------------------------------------------------------
-// Mock authenticated supplier
-// -----------------------------------------------------------------------------
-
-const mockCurrentUser = {
-  id: "supplier_fidson_001",
-  name: "Fidson Healthcare Plc",
-  supplierType: "Importer" as const,
-};
-
-// -----------------------------------------------------------------------------
-// Mock incoming procurement requests
-// -----------------------------------------------------------------------------
-
-const mockProcurements: ProcurementRequest[] = [
-  {
-    id: "proc-2026-000184",
-    procurementNumber: "MS-2026-000184",
-    productName: "Paracetamol 500mg",
-    category: "Analgesics",
-    quantity: 5000,
-    unit: "tablets",
-    totalAmount: 610000,
-    paymentMethod: "WALLET_CREDIT",
-    status: "SUPPLIER_CONTACTED",
-    buyerName: "St. Mary's Hospital Procurement",
-    deliveryAddress: "St. Mary's Hospital, Port Harcourt, Rivers State",
-    currentSupplierId: "supplier_fidson_001",
-    currentSupplierIndex: 0,
-    createdAt: "2026-09-05T09:10:00",
-    supplierQueue: [
-      {
-        supplierId: "supplier_fidson_001",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 122,
-        stock: 14200,
-        rank: 1,
-        status: "CONTACTED",
-      },
-      {
-        supplierId: "supplier_emzor_001",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 128,
-        stock: 9600,
-        rank: 2,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier_swiss_001",
-        supplierName: "Swiss Pharma Nigeria Ltd",
-        supplierType: "Distributor",
-        unitPrice: 132,
-        stock: 7100,
-        rank: 3,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier_juhel_001",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 140,
-        stock: 4200,
-        rank: 4,
-        status: "PENDING",
-      },
-    ],
-  },
-
-  {
-    id: "proc-2026-000192",
-    procurementNumber: "MS-2026-000192",
-    productName: "Amoxicillin 500mg",
-    category: "Antibiotics",
-    quantity: 2000,
-    unit: "capsules",
-    totalAmount: 500000,
-    paymentMethod: "WALLET",
-    status: "SUPPLIER_CONTACTED",
-    buyerName: "Rivers State Specialist Hospital",
-    deliveryAddress: "Specialist Hospital, GRA, Port Harcourt",
-    currentSupplierId: "supplier_fidson_001",
-    currentSupplierIndex: 0,
-    createdAt: "2026-09-05T10:25:00",
-    supplierQueue: [
-      {
-        supplierId: "supplier_fidson_001",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 250,
-        stock: 12500,
-        rank: 1,
-        status: "CONTACTED",
-      },
-      {
-        supplierId: "supplier_emzor_001",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 258,
-        stock: 8200,
-        rank: 2,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier_juhel_001",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 275,
-        stock: 3100,
-        rank: 3,
-        status: "PENDING",
-      },
-    ],
-  },
-
-  {
-    id: "proc-2026-000197",
-    procurementNumber: "MS-2026-000197",
-    productName: "Ibuprofen 400mg",
-    category: "Analgesics",
-    quantity: 3500,
-    unit: "tablets",
-    totalAmount: 630000,
-    paymentMethod: "CREDIT",
-    status: "NEXT_SUPPLIER_PENDING",
-    buyerName: "University Teaching Hospital Procurement",
-    deliveryAddress: "University Teaching Hospital, Port Harcourt",
-    currentSupplierId: "supplier_fidson_001",
-    currentSupplierIndex: 0,
-    createdAt: "2026-09-05T11:40:00",
-    supplierQueue: [
-      {
-        supplierId: "supplier_fidson_001",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 175,
-        stock: 0,
-        rank: 1,
-        status: "UNAVAILABLE",
-      },
-      {
-        supplierId: "supplier_emzor_001",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 180,
-        stock: 9600,
-        rank: 2,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier_swiss_001",
-        supplierName: "Swiss Pharma Nigeria Ltd",
-        supplierType: "Distributor",
-        unitPrice: 185,
-        stock: 7100,
-        rank: 3,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier_juhel_001",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 195,
-        stock: 4200,
-        rank: 4,
-        status: "PENDING",
-      },
-    ],
-  },
-];
-
-const IncomingRequests: React.FC = () => {
-  const [procurements, setProcurements] =
-    useState<ProcurementRequest[]>(mockProcurements);
-
-  const [responseNotes, setResponseNotes] = useState<
-    Record<string, string>
+  const [responseNotes, setResponseNotes] = useState<Record<string, string>
   >({});
 
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
@@ -226,12 +37,10 @@ const IncomingRequests: React.FC = () => {
   // candidate in the sourcing queue.
   const pendingRequests = useMemo(() => {
     return procurements.filter(
-      (p) =>
-        p.currentSupplierId === mockCurrentUser.id &&
-        (p.status === "SUPPLIER_CONTACTED" ||
-          p.status === "NEXT_SUPPLIER_PENDING")
+      (procurement) =>
+        procurement.currentSupplierId === user.id
     );
-  }, [procurements]);
+  }, [procurements, user.id]);
 
   const handleRespond = async (
     procurementId: string,
@@ -255,25 +64,7 @@ const IncomingRequests: React.FC = () => {
       const note = responseNotes[procurementId]?.trim();
 
       if (response === "ACCEPT") {
-        setProcurements((current) =>
-          current.map((p) => {
-            if (p.id !== procurementId) return p;
-
-            return {
-              ...p,
-              status: "SUPPLIER_CONTACTED",
-              supplierQueue: p.supplierQueue.map((supplier, index) =>
-                index === p.currentSupplierIndex
-                  ? {
-                      ...supplier,
-                      status: "ACCEPTED",
-                    }
-                  : supplier
-              ),
-            };
-          })
-        );
-
+     
         toast.success("Procurement Request Accepted", {
           description: `Committed to Order #${procurement.procurementNumber}. Ready for Pharmacist verification.`,
         });
@@ -290,51 +81,6 @@ const IncomingRequests: React.FC = () => {
         const hasFallbackSupplier =
           nextSupplierIndex < procurement.supplierQueue.length;
 
-        setProcurements((current) =>
-          current.map((p) => {
-            if (p.id !== procurementId) return p;
-
-            const updatedQueue: SupplierQueueItem[] = p.supplierQueue.map(
-              (supplier, index) => {
-                if (index === p.currentSupplierIndex) {
-                  return {
-                    ...supplier,
-                    status:
-                      response === "UNAVAILABLE"
-                        ? "UNAVAILABLE"
-                        : "REJECTED",
-                  };
-                }
-
-                if (
-                  hasFallbackSupplier &&
-                  index === nextSupplierIndex
-                ) {
-                  return {
-                    ...supplier,
-                    status: "CONTACTED",
-                  };
-                }
-
-                return supplier;
-              }
-            );
-
-            return {
-              ...p,
-              currentSupplierId: hasFallbackSupplier
-                ? p.supplierQueue[nextSupplierIndex].supplierId
-                : p.currentSupplierId,
-              currentSupplierIndex: hasFallbackSupplier
-                ? nextSupplierIndex
-                : p.currentSupplierIndex,
-              status: hasFallbackSupplier
-                ? "NEXT_SUPPLIER_PENDING"
-                : "SUPPLIER_CONTACTED",
-              supplierQueue: updatedQueue,
-            };
-          })
-        );
 
         if (hasFallbackSupplier) {
           const nextSupplier =
@@ -427,7 +173,7 @@ const IncomingRequests: React.FC = () => {
                       </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 text-xs text-slate-600 mt-1">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-3 text-xs text-slate-600 mt-1">
                       <span>
                         Buyer:{" "}
                         <strong className="text-slate-900">
@@ -435,7 +181,7 @@ const IncomingRequests: React.FC = () => {
                         </strong>
                       </span>
 
-                      <span className="hidden sm:inline">•</span>
+                      <span className="hidden lg:inline">•</span>
 
                       <span>
                         Delivery:{" "}
@@ -458,7 +204,7 @@ const IncomingRequests: React.FC = () => {
                 </div>
 
                 {/* Financial Value */}
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 gap-3 text-xs">
                   <div>
                     <span className="text-slate-500 block">
                       Unit Selling Price:
@@ -466,8 +212,7 @@ const IncomingRequests: React.FC = () => {
 
                     <span className="font-mono font-bold text-slate-900 text-sm">
                       ₦
-                      {activeSupplier?.unitPrice.toLocaleString() ||
-                        "0"}
+                      {activeSupplier?.unitPrice.toLocaleString() || "0"}
                     </span>
                   </div>
 
@@ -477,22 +222,23 @@ const IncomingRequests: React.FC = () => {
                     </span>
 
                     <span className="font-mono font-bold text-blue-700 text-sm">
-                      ₦{proc.totalAmount.toLocaleString()}
+                      ₦{activeSupplier?.totalPrice.toLocaleString() || "0"}
                     </span>
                   </div>
 
-                  <div className="hidden">
+                  <div className="">
                     <span className="text-slate-500 block">
                       Buyer Payment Status:
                     </span>
 
-                    <span className="font-semibold text-emerald-700">
-                      ✓ Funds Escrowed (
+                    <span className=" font-semibold text-emerald-700">
+                      ✓ Funds Escrowed 
+                      {/* (
                       {proc.paymentMethod.replace(
                         "_",
                         " + "
                       )}
-                      )
+                      ) */}
                     </span>
                   </div>
                 </div>
@@ -547,7 +293,7 @@ const IncomingRequests: React.FC = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex  items-center justify-end gap-3 pt-2">
+                <div className="flex items-center justify-end gap-3 pt-2">
                   <button
                     disabled={isSubmitting}
                     onClick={() =>
@@ -559,7 +305,7 @@ const IncomingRequests: React.FC = () => {
                     Reject Order
                   </button>
 
-                
+
 
                   <button
                     disabled={isSubmitting}
