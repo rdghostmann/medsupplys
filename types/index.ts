@@ -49,7 +49,11 @@ export type WalletTransactionType =
 export type TransactionDirection = "CREDIT" | "DEBIT"
 export type TransactionStatus = "PENDING" | "SUCCESS" | "FAILED" | "REVERSED"
 export type CreditStatus = "PENDING" | "APPROVED" | "ACTIVE" | "SUSPENDED" | "DEFAULTED" | "CLOSED"
-export type VerificationResult = "APPROVED" | "FLAGGED" | "REJECTED"
+export type VerificationResult =
+    | "APPROVED"
+    | "FLAGGED"
+    | "PENDING"
+    | "REJECTED"
 export type ProductCategory =
   // Anti-infectives
   | 'ANTIBIOTICS'

@@ -1,3 +1,4 @@
+// controllers/buyer.actions.ts
 "use server";
 
 import { getServerSession } from "next-auth";
@@ -5,7 +6,9 @@ import { getServerSession } from "next-auth";
 import { connectToDB } from "@/lib/connectToDB";
 import { User } from "@/models/User";
 import { Wallet } from "@/models/Wallet";
+import { WalletTransaction } from "@/models/WalletTransaction";
 import { CreditAccount } from "@/models/CreditAccount";
+import { CreditTransaction } from "@/models/CreditTransaction";
 import { Order } from "@/models/Order";
 import { Procurement } from "@/models/Procurement";
 import { authOptions } from "@/auth";
@@ -63,6 +66,31 @@ export interface CurrentBuyerCreditAccount {
   updatedAt: string;
 }
 
+export interface CurrentBuyerCreditTransaction {
+  id: string;
+  creditAccountId: string;
+  buyerId: string;
+  type:
+  | "CREDIT_PURCHASE"
+  | "PAYMENT"
+  | "ADJUSTMENT"
+  | "REVERSAL"
+  | "INTEREST"
+  | "FEE";
+  amount: number;
+  direction:
+  | "CHARGE"
+  | "PAYMENT"
+  | "CREDIT";
+  balanceBefore: number;
+  balanceAfter: number;
+  reference: string;
+  orderId?: string;
+  description: string;
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface CurrentBuyerProcurement {
   id: string;
   procurementNumber: string;
@@ -81,12 +109,37 @@ export interface CurrentBuyerProcurement {
   }[];
 }
 
+export interface CurrentBuyerWalletTransaction {
+  id: string;
+  walletId: string;
+  buyerId: string;
+  type:
+  | "TOPUP"
+  | "PURCHASE"
+  | "REFUND"
+  | "ADJUSTMENT"
+  | "CREDIT_PURCHASE"
+  | "CREDIT_REPAYMENT";
+  amount: number;
+  direction: "CREDIT" | "DEBIT";
+  balanceBefore: number;
+  balanceAfter: number;
+  reference: string;
+  description: string;
+  status: "PENDING" | "SUCCESS" | "FAILED" | "REVERSED";
+  metadata?: Record<string, unknown>;
+  createdAt: string;
+}
+
+
 export interface BuyerDashboardData {
   user: CurrentBuyerUser | null;
   wallet: CurrentBuyerWallet | null;
   creditAccount: CurrentBuyerCreditAccount | null;
+  creditTransactions: CurrentBuyerCreditTransaction[];
   orders: BuyerOrder[];
   fallbackQueue: CurrentBuyerProcurement[];
+  walletTransactions: CurrentBuyerWalletTransaction[];
   nonCompletedOrderCount: number;
   totalOrderCount: number;
 }
@@ -109,8 +162,10 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      creditTransactions: [],
       orders: [],
       fallbackQueue: [],
+      walletTransactions: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -157,8 +212,10 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      creditTransactions: [],
       orders: [],
       fallbackQueue: [],
+      walletTransactions: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -175,8 +232,10 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      creditTransactions: [],
       orders: [],
       fallbackQueue: [],
+      walletTransactions: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -187,8 +246,10 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      creditTransactions: [],
       orders: [],
       fallbackQueue: [],
+      walletTransactions: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -222,7 +283,7 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
 
     email: user.email,
 
-    organization:  user.organizationName,
+    organization: user.organizationName,
 
     phone: user.phone,
 
@@ -276,30 +337,62 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
   const currentWallet: CurrentBuyerWallet | null =
     wallet
       ? {
-          id: wallet._id.toString(),
+        id: wallet._id.toString(),
 
-          buyerId:
-            wallet.buyerId.toString(),
+        buyerId:
+          wallet.buyerId.toString(),
 
-          buyerName:
-            wallet.buyerName,
+        buyerName:
+          wallet.buyerName,
 
-          balance:
-            Number(wallet.balance || 0),
+        balance:
+          Number(wallet.balance || 0),
 
-          currency:
-            wallet.currency,
+        currency:
+          wallet.currency,
 
-          status:
-            wallet.status,
+        status:
+          wallet.status,
 
-          createdAt:
-            wallet.createdAt.toISOString(),
+        createdAt:
+          wallet.createdAt.toISOString(),
 
-          updatedAt:
-            wallet.updatedAt.toISOString(),
-        }
+        updatedAt:
+          wallet.updatedAt.toISOString(),
+      }
       : null;
+
+  const walletTransactions = await WalletTransaction.find()
+    .where("buyerId")
+    .equals(user._id.toString())
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const currentWalletTransactions: CurrentBuyerWalletTransaction[] =
+    walletTransactions.map((transaction) => ({
+      id: transaction._id.toString(),
+      walletId: transaction.walletId.toString(),
+      buyerId: transaction.buyerId.toString(),
+      type: [
+        "TOPUP",
+        "PURCHASE",
+        "REFUND",
+        "ADJUSTMENT",
+        "CREDIT_PURCHASE",
+        "CREDIT_REPAYMENT",
+      ].includes(transaction.type)
+        ? (transaction.type as CurrentBuyerWalletTransaction["type"])
+        : "ADJUSTMENT",
+      amount: Number(transaction.amount || 0),
+      direction: transaction.direction,
+      balanceBefore: Number(transaction.balanceBefore || 0),
+      balanceAfter: Number(transaction.balanceAfter || 0),
+      reference: transaction.reference,
+      description: transaction.description,
+      status: transaction.status,
+      metadata: transaction.metadata,
+      createdAt: transaction.createdAt.toISOString(),
+    }));
 
   const creditAccount = await CreditAccount.findOne()
     .where("buyerId")
@@ -328,27 +421,76 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
   const currentCreditAccount: CurrentBuyerCreditAccount | null =
     creditAccount
       ? {
-          id: creditAccount._id.toString(),
-          buyerId: creditAccount.buyerId.toString(),
-          buyerName: creditAccount.buyerName,
-          creditLimit: Number(creditAccount.creditLimit || 0),
-          availableCredit: Number(creditAccount.availableCredit || 0),
-          creditUsed: Number(creditAccount.creditUsed || 0),
-          outstandingBalance: Number(
-            creditAccount.outstandingBalance || 0
-          ),
-          status: creditAccount.status,
-          ratingTier: creditAccount.ratingTier,
-          approvedAt: creditAccount.approvedAt?.toISOString(),
-          dueDate: creditAccount.dueDate?.toISOString(),
-          terms: creditAccount.terms,
-          interestRatePercent: Number(
-            creditAccount.interestRatePercent || 0
-          ),
-          createdAt: creditAccount.createdAt.toISOString(),
-          updatedAt: creditAccount.updatedAt.toISOString(),
-        }
+        id: creditAccount._id.toString(),
+        buyerId: creditAccount.buyerId.toString(),
+        buyerName: creditAccount.buyerName,
+        creditLimit: Number(creditAccount.creditLimit || 0),
+        availableCredit: Number(creditAccount.availableCredit || 0),
+        creditUsed: Number(creditAccount.creditUsed || 0),
+        outstandingBalance: Number(
+          creditAccount.outstandingBalance || 0
+        ),
+        status: creditAccount.status,
+        ratingTier: creditAccount.ratingTier,
+        approvedAt: creditAccount.approvedAt?.toISOString(),
+        dueDate: creditAccount.dueDate?.toISOString(),
+        terms: creditAccount.terms,
+        interestRatePercent: Number(
+          creditAccount.interestRatePercent || 0
+        ),
+        createdAt: creditAccount.createdAt.toISOString(),
+        updatedAt: creditAccount.updatedAt.toISOString(),
+      }
       : null;
+
+
+
+  const creditTransactions = await CreditTransaction.find()
+    .where("buyerId")
+    .equals(user._id.toString())
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const currentCreditTransactions: CurrentBuyerCreditTransaction[] =
+    creditTransactions.map((transaction) => ({
+      id: transaction._id.toString(),
+
+      creditAccountId:
+        transaction.creditAccountId.toString(),
+
+      buyerId:
+        transaction.buyerId.toString(),
+
+      type:
+        transaction.type,
+
+      amount:
+        Number(transaction.amount || 0),
+
+      direction:
+        transaction.direction,
+
+      balanceBefore:
+        Number(transaction.balanceBefore || 0),
+
+      balanceAfter:
+        Number(transaction.balanceAfter || 0),
+
+      reference:
+        transaction.reference,
+
+      orderId:
+        transaction.orderId?.toString(),
+
+      description:
+        transaction.description,
+
+      metadata:
+        transaction.metadata,
+
+      createdAt:
+        transaction.createdAt.toISOString(),
+    }));
 
   const buyerOrders = await Order.find()
     .where("buyerId")
@@ -381,6 +523,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       supplierId: order.supplierId.toString(),
       supplierName: order.supplierName,
       supplierType: order.supplierType as BuyerOrder["supplierType"],
+      batchNo: order.batchNumber,
+      expiryDate: order.expiryDate?.toISOString(),
       items: order.items.map((item) => ({
         productId: item.productId.toString(),
         supplierProductId: item.supplierProductId.toString(),
@@ -399,6 +543,30 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       walletAmount: order.walletAmount,
       creditAmount: order.creditAmount,
       deliveryAddress: order.deliveryAddress,
+      pharmacistVerification: order.pharmacistVerification
+        ? {
+          verifiedBy: order.pharmacistVerification.verifiedBy.toString(),
+          verifiedByName:
+            order.pharmacistVerification.verifiedByName,
+          result: order.pharmacistVerification.result,
+          batchValid: order.pharmacistVerification.batchValid,
+          expiryValid: order.pharmacistVerification.expiryValid,
+          sealIntact: order.pharmacistVerification.sealIntact,
+          storageCompliant:
+            order.pharmacistVerification.storageCompliant,
+          notes: order.pharmacistVerification.notes || "",
+          verifiedAt:
+            order.pharmacistVerification.verifiedAt?.toISOString() || "",
+        }
+        : undefined,
+      trackingUpdates: order.trackingUpdates.map((update) => ({
+        status: update.status as NonNullable<
+          BuyerOrder["trackingUpdates"]
+        >[number]["status"],
+        title: update.title,
+        description: update.description,
+        timestamp: update.timestamp.toISOString(),
+      })),
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
     };
@@ -423,26 +591,26 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
     })
     .map(
       (procurement) => ({
-      id: procurement._id.toString(),
-      procurementNumber: procurement.procurementNumber,
-      productName: procurement.items[0]?.productName || "",
-      quantity: procurement.items[0]?.quantity || 0,
-      unit: procurement.items[0]?.unit || "",
-      totalAmount: procurement.supplierCandidates.reduce(
-        (total, candidate) =>
-          Math.max(total, candidate.totalPrice),
-        0
-      ),
-      status: procurement.status,
-      currentSupplierName:
-        procurement.currentSupplierName || "Supplier pending",
-      currentSupplierIndex: procurement.currentSupplierIndex,
-      attemptHistory: procurement.attemptHistory.map((attempt) => ({
-        supplierName: attempt.supplierName,
-        supplierIndex: attempt.attemptNumber - 1,
-        status: attempt.status,
-        attemptedAt: attempt.contactedAt?.toISOString(),
-      })),
+        id: procurement._id.toString(),
+        procurementNumber: procurement.procurementNumber,
+        productName: procurement.items[0]?.productName || "",
+        quantity: procurement.items[0]?.quantity || 0,
+        unit: procurement.items[0]?.unit || "",
+        totalAmount: procurement.supplierCandidates.reduce(
+          (total, candidate) =>
+            Math.max(total, candidate.totalPrice),
+          0
+        ),
+        status: procurement.status,
+        currentSupplierName:
+          procurement.currentSupplierName || "Supplier pending",
+        currentSupplierIndex: procurement.currentSupplierIndex,
+        attemptHistory: procurement.attemptHistory.map((attempt) => ({
+          supplierName: attempt.supplierName,
+          supplierIndex: attempt.attemptNumber - 1,
+          status: attempt.status,
+          attemptedAt: attempt.contactedAt?.toISOString(),
+        })),
       })
     );
 
@@ -456,8 +624,10 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
     user: currentUser,
     wallet: currentWallet,
     creditAccount: currentCreditAccount,
+    creditTransactions: currentCreditTransactions,
     orders,
     fallbackQueue,
+    walletTransactions: currentWalletTransactions,
     nonCompletedOrderCount,
     totalOrderCount,
   };

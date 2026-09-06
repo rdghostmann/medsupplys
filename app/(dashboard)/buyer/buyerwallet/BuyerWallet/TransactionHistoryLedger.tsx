@@ -193,7 +193,7 @@ export const TransactionHistoryLedger: React.FC<
                 {transaction.type.replace(/_/g, " ")}
               </div>
 
-              <div className="max-w-[280px] line-clamp-1 text-[11px] text-slate-500">
+              <div className="max-w-70 line-clamp-1 text-[11px] text-slate-500">
                 {transaction.description}
               </div>
             </div>

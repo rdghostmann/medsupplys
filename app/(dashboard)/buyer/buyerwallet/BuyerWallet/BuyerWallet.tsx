@@ -14,43 +14,22 @@ import { toast } from "sonner";
 import TransactionHistoryLedger, {
   WalletTransaction,
 } from "./TransactionHistoryLedger";
+import type {
+  CurrentBuyerWallet,
+  CurrentBuyerWalletTransaction,
+} from "@/controllers/buyer.actions";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-type WalletStatus =
-  | "active"
-  | "suspended"
-  | "locked";
-
 /* -------------------------------------------------------------------------- */
 /* Wallet                                                                     */
 /* -------------------------------------------------------------------------- */
 
-interface BuyerWalletData {
-  _id: string;
-  buyerId: string;
-  balance: number;
-  currency: "NGN";
-  status: WalletStatus;
-  createdAt: string;
-  updatedAt: string;
-}
+type BuyerWalletData = CurrentBuyerWallet;
 
-/* -------------------------------------------------------------------------- */
-/* Mock Wallet                                                                */
-/* -------------------------------------------------------------------------- */
 
-const mockWallet: BuyerWalletData = {
-  _id: "wallet_buyer_001",
-  buyerId: "buyer_001",
-  balance: 847500,
-  currency: "NGN",
-  status: "active",
-  createdAt: "2026-08-01T09:00:00",
-  updatedAt: "2026-09-05T09:30:00",
-};
 
 /* -------------------------------------------------------------------------- */
 /* Mock Transactions                                                          */
@@ -239,14 +218,21 @@ const formatCurrency = (value: number) =>
 /* Component                                                                  */
 /* -------------------------------------------------------------------------- */
 
-export const BuyerWallet: React.FC = () => {
-  const [wallet] =
-    useState<BuyerWalletData>(mockWallet);
+interface BuyerWalletProps {
+  wallet: BuyerWalletData | null;
+  walletTransactions: CurrentBuyerWalletTransaction[];
+}
 
-  const [walletTransactions, setWalletTransactions] =
-    useState<WalletTransaction[]>(
-      mockWalletTransactions
-    );
+export const BuyerWallet: React.FC<BuyerWalletProps> = ({
+  wallet,
+  walletTransactions: initialTransactions,
+}) => {
+  void mockWalletTransactions;
+
+  const [walletState] = useState<BuyerWalletData | null>(wallet);
+
+  const [transactions, setTransactions] =
+    useState<WalletTransaction[]>(initialTransactions);
 
   const [isRefreshing, setIsRefreshing] =
     useState(false);
@@ -256,7 +242,7 @@ export const BuyerWallet: React.FC = () => {
   /* ------------------------------------------------------------------------ */
 
   const totalDeposits = useMemo(() => {
-    return walletTransactions
+    return transactions
       .filter(
         (tx) =>
           tx.direction === "CREDIT" &&
@@ -266,10 +252,10 @@ export const BuyerWallet: React.FC = () => {
         (sum, tx) => sum + tx.amount,
         0
       );
-  }, [walletTransactions]);
+  }, [transactions]);
 
   const totalDebits = useMemo(() => {
-    return walletTransactions
+    return transactions
       .filter(
         (tx) =>
           tx.direction === "DEBIT" &&
@@ -279,7 +265,7 @@ export const BuyerWallet: React.FC = () => {
         (sum, tx) => sum + tx.amount,
         0
       );
-  }, [walletTransactions]);
+  }, [transactions]);
 
   /* ------------------------------------------------------------------------ */
   /* Actions                                                                   */
@@ -292,9 +278,7 @@ export const BuyerWallet: React.FC = () => {
       setTimeout(resolve, 700)
     );
 
-    setWalletTransactions([
-      ...mockWalletTransactions,
-    ]);
+    setTransactions([...initialTransactions]);
 
     setIsRefreshing(false);
 
@@ -339,29 +323,32 @@ export const BuyerWallet: React.FC = () => {
       </div>
 
       {/* Balance Cards */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Available Balance */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-900 to-slate-900 p-6 text-white shadow-lg">
+        <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-900 to-slate-900 p-6 text-white shadow-lg">
           <div className="mb-1 text-xs font-bold uppercase tracking-wider text-blue-200">
             Available Institutional Balance
           </div>
 
           <div className="mt-2 font-mono text-2xl font-bold">
-            {formatCurrency(wallet.balance)}
+            {formatCurrency(walletState?.balance || 0)}
           </div>
 
           <div className="mt-4 flex items-center gap-2 text-[11px] text-blue-200/80">
             <span
               className={`h-2 w-2 rounded-full ${
-                wallet.status === "active"
+                walletState?.status === "ACTIVE"
                   ? "bg-emerald-400"
                   : "bg-red-400"
               }`}
             />
 
             <span>
-              Status: {wallet.status} • {wallet.currency}{" "}
-              (Nigerian Naira)
+              Status: {walletState?.status || "UNAVAILABLE"} 
+              {" "}
+             
+             {/* {" "}  •  {wallet.currency}{" "}
+              (Nigerian Naira) */}
             </span>
           </div>
         </div>
@@ -407,7 +394,7 @@ export const BuyerWallet: React.FC = () => {
 
       {/* Transaction History Ledger */}
       <TransactionHistoryLedger
-        transactions={walletTransactions}
+        transactions={transactions}
         isRefreshing={isRefreshing}
         onRefresh={refreshAll}
       />

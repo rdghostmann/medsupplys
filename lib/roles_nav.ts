@@ -6,8 +6,8 @@ export const roleNavMain = {
     { id: "browse", title: "Products Catalogue", icon: "🛍️", url: "/buyer/marketplace" },
     { id: "browse", title: "Procurement Sourcing", icon: "✨", url: "/buyer/procurement-sourcing" },
     { id: "orders", title: "My Orders & Tracking", icon: "📋", url: "/buyer/orders" },
-    { id: "buyer-wallet", title: "Procurement Wallet", icon: "💰", url: "/buyer/buyerwallet" },
-    { id: "revolving-credit", title: "Revolving Credit", icon: "💰", url: "/buyer/revolving-credit" },
+    { id: "buyer-wallet", title: "Procurement Wallet", icon: "👜", url: "/buyer/buyerwallet" },
+    { id: "credit-repayment", title: "Credit Facility Repayment", icon: "💰", url: "/buyer/revolving-credit" },
   ],
   supplier: [
     { id: "overview", title: "Supplier Dashboard", icon: "📊", url: "/supplier" },

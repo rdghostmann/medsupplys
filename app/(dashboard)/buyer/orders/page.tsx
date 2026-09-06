@@ -1,45 +1,15 @@
-// app/(dashboard)/buyer/page.tsx
-"use client";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { BuyerOrders } from "./BuyerOrder";
+// app/(dashboard)/buyer/orders/page.tsx
 
-export default function Page() {
+import { getCurrentBuyerDashboard } from "@/controllers/buyer.actions";
 
-   
+import OrdersTracking from "./OrdersTracking";
+
+export default async function Page() {
+  const { orders } = await getCurrentBuyerDashboard();
 
   return (
-    <div className="flex flex-1 flex-col">
-      <Breadcrumb className="p-4 lg:px-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/buyer">Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Buyer Orders</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
-
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-
-          <div className="px-4 lg:px-6">
-          <BuyerOrders />
-
-          </div>
-        </div>
-      </div>
-    </div>
-
-  )
+    <OrdersTracking orders={orders} />
+  );
 }
 
 
