@@ -244,7 +244,7 @@ const IncomingRequests: React.FC<
                 </div>
 
                 {/* Current Queue Context */}
-                <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-3">
+                <div className="hidden bg-blue-50/60 border border-blue-100 rounded-xl p-3">
                   <div className="flex flex-wrap items-center gap-2 text-[11px]">
                     <span className="font-semibold text-slate-500">
                       Current sourcing position:

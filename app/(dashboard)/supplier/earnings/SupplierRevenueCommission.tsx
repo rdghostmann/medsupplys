@@ -23,6 +23,7 @@ import {
   Building2,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import type { CurrentSupplierUser } from '@/controllers/supplier.action';
 
 /* =========================================================
    TYPES
@@ -41,11 +42,9 @@ type OrderStatus =
   | 'REFUNDED';
 
 type PaymentMethod =
-  | 'BANK_TRANSFER'
-  | 'CREDIT_FACILITY'
   | 'WALLET'
-  | 'PAYSTACK'
-  | 'FLUTTERWAVE';
+  | 'CREDIT'
+  | 'WALLET_AND_CREDIT';
 
 type PayoutStatus = 'SETTLED' | 'PROCESSING' | 'FAILED';
 
@@ -96,227 +95,6 @@ interface SupplierMetrics {
   availableForPayout: number;
 }
 
-/* =========================================================
-   MOCK SUPPLIER
-========================================================= */
-
-const MOCK_SUPPLIER = {
-  id: 'supplier-001',
-  name: 'May & Baker Nigeria Plc',
-  settlementBankName: 'Zenith Bank Plc',
-  settlementAccountNumber: '1014892841',
-  settlementAccountName: 'MAY & BAKER NIGERIA PLC',
-};
-
-/* =========================================================
-   MOCK ORDERS
-========================================================= */
-
-const MOCK_ORDERS: MockOrder[] = [
-  {
-    id: 'ord-001',
-    orderNumber: 'MS-ORD-2026-00871',
-    supplierId: 'supplier-001',
-    buyerName: "St. Mary's Hospital Procurement",
-    buyerId: 'buyer-001',
-    items: [
-      {
-        id: 'item-001',
-        name: 'Paracetamol 500mg Tablets',
-        quantity: 5000,
-        unitPrice: 120,
-      },
-    ],
-    batchNumber: 'PCM-2026-081',
-    paymentMethod: 'BANK_TRANSFER',
-    status: 'COMPLETED',
-    total: 660000,
-    commission: 60000,
-    subtotal: 600000,
-    createdAt: '2026-08-28T09:30:00.000Z',
-  },
-  {
-    id: 'ord-002',
-    orderNumber: 'MS-ORD-2026-00866',
-    supplierId: 'supplier-001',
-    buyerName: 'Rivers State University Teaching Hospital',
-    buyerId: 'buyer-002',
-    items: [
-      {
-        id: 'item-002',
-        name: 'Amoxicillin 500mg Capsules',
-        quantity: 2000,
-        unitPrice: 250,
-      },
-    ],
-    batchNumber: 'AMX-2026-442',
-    paymentMethod: 'CREDIT_FACILITY',
-    status: 'DELIVERED',
-    total: 550000,
-    commission: 50000,
-    subtotal: 500000,
-    createdAt: '2026-08-25T11:15:00.000Z',
-  },
-  {
-    id: 'ord-003',
-    orderNumber: 'MS-ORD-2026-00859',
-    supplierId: 'supplier-001',
-    buyerName: 'University of Port Harcourt Medical Centre',
-    buyerId: 'buyer-003',
-    items: [
-      {
-        id: 'item-003',
-        name: 'Artemether/Lumefantrine 20/120mg',
-        quantity: 1500,
-        unitPrice: 350,
-      },
-    ],
-    batchNumber: 'AL-2026-198',
-    paymentMethod: 'WALLET',
-    status: 'IN_TRANSIT',
-    total: 577500,
-    commission: 52500,
-    subtotal: 525000,
-    createdAt: '2026-08-22T14:40:00.000Z',
-  },
-  {
-    id: 'ord-004',
-    orderNumber: 'MS-ORD-2026-00843',
-    supplierId: 'supplier-001',
-    buyerName: 'UPTH Central Procurement Unit',
-    buyerId: 'buyer-004',
-    items: [
-      {
-        id: 'item-004',
-        name: 'Metformin 500mg Tablets',
-        quantity: 3000,
-        unitPrice: 220,
-      },
-    ],
-    batchNumber: 'MET-2026-309',
-    paymentMethod: 'BANK_TRANSFER',
-    status: 'PROCESSING',
-    total: 726000,
-    commission: 66000,
-    subtotal: 660000,
-    createdAt: '2026-08-20T08:20:00.000Z',
-  },
-  {
-    id: 'ord-005',
-    orderNumber: 'MS-ORD-2026-00831',
-    supplierId: 'supplier-001',
-    buyerName: 'Niger Delta Specialist Hospital',
-    buyerId: 'buyer-005',
-    items: [
-      {
-        id: 'item-005',
-        name: 'Vitamin C 1000mg Tablets',
-        quantity: 4000,
-        unitPrice: 90,
-      },
-    ],
-    batchNumber: 'VTC-2026-712',
-    paymentMethod: 'CREDIT_FACILITY',
-    status: 'VERIFICATION',
-    total: 396000,
-    commission: 36000,
-    subtotal: 360000,
-    createdAt: '2026-08-18T15:05:00.000Z',
-  },
-  {
-    id: 'ord-006',
-    orderNumber: 'MS-ORD-2026-00818',
-    supplierId: 'supplier-001',
-    buyerName: 'Government House Medical Centre',
-    buyerId: 'buyer-006',
-    items: [
-      {
-        id: 'item-006',
-        name: 'Amlodipine 5mg Tablets',
-        quantity: 2500,
-        unitPrice: 200,
-      },
-    ],
-    batchNumber: 'AML-2026-551',
-    paymentMethod: 'BANK_TRANSFER',
-    status: 'READY_FOR_DISPATCH',
-    total: 550000,
-    commission: 50000,
-    subtotal: 500000,
-    createdAt: '2026-08-15T10:45:00.000Z',
-  },
-  {
-    id: 'ord-007',
-    orderNumber: 'MS-ORD-2026-00794',
-    supplierId: 'supplier-001',
-    buyerName: 'St. Mary’s Catholic Hospital',
-    buyerId: 'buyer-007',
-    items: [
-      {
-        id: 'item-007',
-        name: 'Omeprazole 20mg Capsules',
-        quantity: 1800,
-        unitPrice: 160,
-      },
-    ],
-    batchNumber: 'OMP-2026-227',
-    paymentMethod: 'WALLET',
-    status: 'COMPLETED',
-    total: 316800,
-    commission: 28800,
-    subtotal: 288000,
-    createdAt: '2026-08-10T12:10:00.000Z',
-  },
-];
-
-/* =========================================================
-   MOCK PAYOUTS
-========================================================= */
-
-const MOCK_PAYOUTS: SupplierPayout[] = [
-  {
-    id: 'pay-001',
-    supplierId: 'supplier-001',
-    reference: 'NIBSS-MS-260828-001',
-    amount: 450000,
-    transferFee: 50,
-    netAmount: 449950,
-    status: 'SETTLED',
-    bankName: 'Zenith Bank Plc',
-    accountNumber: '1014892841',
-    accountName: 'MAY & BAKER NIGERIA PLC',
-    notes: 'Weekly wholesale settlement',
-    createdAt: '2026-08-28T15:30:00.000Z',
-  },
-  {
-    id: 'pay-002',
-    supplierId: 'supplier-001',
-    reference: 'NIBSS-MS-260820-002',
-    amount: 350000,
-    transferFee: 50,
-    netAmount: 349950,
-    status: 'SETTLED',
-    bankName: 'Zenith Bank Plc',
-    accountNumber: '1014892841',
-    accountName: 'MAY & BAKER NIGERIA PLC',
-    notes: 'Completed order liquidation',
-    createdAt: '2026-08-20T13:10:00.000Z',
-  },
-  {
-    id: 'pay-003',
-    supplierId: 'supplier-001',
-    reference: 'NIBSS-MS-260812-003',
-    amount: 275000,
-    transferFee: 50,
-    netAmount: 274950,
-    status: 'SETTLED',
-    bankName: 'Zenith Bank Plc',
-    accountNumber: '1014892841',
-    accountName: 'MAY & BAKER NIGERIA PLC',
-    notes: 'Monthly settlement',
-    createdAt: '2026-08-12T09:45:00.000Z',
-  },
-];
 
 /* =========================================================
    HELPERS
@@ -338,9 +116,17 @@ const isEscrowStatus = (status: OrderStatus) =>
    COMPONENT
 ========================================================= */
 
-export const SupplierRevenueCommission: React.FC = () => {
-  const [orders, setOrders] = useState<MockOrder[]>(MOCK_ORDERS);
-  const [payouts, setPayouts] = useState<SupplierPayout[]>(MOCK_PAYOUTS);
+interface SupplierRevenueCommissionProps {
+  user: CurrentSupplierUser | null;
+  orders: MockOrder[];
+  payouts: SupplierPayout[];
+}
+
+export const SupplierRevenueCommission: React.FC<
+  SupplierRevenueCommissionProps
+> = ({ user, orders: initialOrders, payouts: initialPayouts }) => {
+  const [orders, setOrders] = useState<MockOrder[]>(initialOrders);
+  const [payouts, setPayouts] = useState<SupplierPayout[]>(initialPayouts);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -366,7 +152,7 @@ export const SupplierRevenueCommission: React.FC = () => {
   ========================================================= */
 
   const supplierOrders = useMemo(
-    () => orders.filter((order) => order.supplierId === MOCK_SUPPLIER.id),
+    () => orders.filter((order) => order.supplierId === user?.id),
     [orders]
   );
 
@@ -398,7 +184,7 @@ export const SupplierRevenueCommission: React.FC = () => {
       .filter(
         (payout) =>
           payout.status === 'SETTLED' &&
-          payout.supplierId === MOCK_SUPPLIER.id
+          payout.supplierId === user?.id
       )
       .reduce((sum, payout) => sum + payout.netAmount, 0);
 
@@ -513,8 +299,8 @@ export const SupplierRevenueCommission: React.FC = () => {
      * In production this is where the supplier revenue,
      * escrow and payout APIs would be called.
      */
-    setOrders([...MOCK_ORDERS]);
-    setPayouts([...MOCK_PAYOUTS]);
+    setOrders([...initialOrders]);
+    setPayouts([...initialPayouts]);
 
     setIsLoading(false);
 
@@ -567,7 +353,7 @@ export const SupplierRevenueCommission: React.FC = () => {
 
       const newPayout: SupplierPayout = {
         id: `pay-${Date.now()}`,
-        supplierId: MOCK_SUPPLIER.id,
+        supplierId: user?.id || '',
         reference: `NIBSS-MS-${Date.now()
           .toString()
           .slice(-10)}`,
@@ -575,9 +361,9 @@ export const SupplierRevenueCommission: React.FC = () => {
         transferFee,
         netAmount: Math.max(0, payoutAmount - transferFee),
         status: 'SETTLED',
-        bankName: MOCK_SUPPLIER.settlementBankName,
-        accountNumber: MOCK_SUPPLIER.settlementAccountNumber,
-        accountName: MOCK_SUPPLIER.settlementAccountName,
+        bankName: user?.settlementBankName || 'Not configured',
+        accountNumber: user?.settlementAccountNumber || 'Not configured',
+        accountName: user?.settlementAccountName || 'Not configured',
         notes: payoutNotes,
         createdAt: new Date().toISOString(),
       };
@@ -1372,7 +1158,7 @@ export const SupplierRevenueCommission: React.FC = () => {
                   </span>
 
                   <span className="font-bold text-slate-800 text-right">
-                    {MOCK_SUPPLIER.settlementBankName}
+                    {user?.settlementBankName || 'Not configured'}
                   </span>
                 </div>
 
@@ -1382,7 +1168,7 @@ export const SupplierRevenueCommission: React.FC = () => {
                   </span>
 
                   <span className="font-mono font-bold text-slate-800">
-                    {MOCK_SUPPLIER.settlementAccountNumber}
+                    {user?.settlementAccountNumber || 'Not configured'}
                   </span>
                 </div>
 
@@ -1392,7 +1178,7 @@ export const SupplierRevenueCommission: React.FC = () => {
                   </span>
 
                   <span className="text-slate-700 text-right">
-                    {MOCK_SUPPLIER.settlementAccountName}
+                    {user?.settlementAccountName || 'Not configured'}
                   </span>
                 </div>
 

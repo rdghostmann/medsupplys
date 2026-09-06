@@ -38,7 +38,14 @@ export type ProcurementStatus =
     | "CANCELLED"
     | "FAILED"
     | "REFUNDED"
-export type PaymentMethod = "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
+export type PaymentMethod =
+    | "WALLET"
+    | "CREDIT"
+    | "WALLET_AND_CREDIT"
+    | "BANK_TRANSFER"
+    | "CREDIT_FACILITY"
+    | "PAYSTACK"
+    | "FLUTTERWAVE"
 export type WalletTransactionType =
     | "TOPUP"
     | "PURCHASE"

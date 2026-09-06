@@ -7,6 +7,7 @@ import { connectToDB } from "@/lib/connectToDB";
 import { User } from "@/models/User";
 import { Procurement } from "@/models/Procurement";
 import { Order } from "@/models/Order";
+import { SupplierPayout } from "@/models/SupplierPayout";
 import { authOptions } from "@/auth";
 
 /* -------------------------------------------------------------------------- */
@@ -249,6 +250,23 @@ export interface SupplierDashboardData {
   incomingProcurementRequests: IncomingProcurementRequest[];
 
   orders: SupplierOrder[];
+
+  payouts: SupplierPayoutRecord[];
+}
+
+export interface SupplierPayoutRecord {
+  id: string;
+  supplierId: string;
+  reference: string;
+  amount: number;
+  transferFee: number;
+  netAmount: number;
+  status: "PENDING" | "PROCESSING" | "SETTLED" | "FAILED" | "REVERSED";
+  bankName: string;
+  accountNumber: string;
+  accountName: string;
+  notes?: string;
+  createdAt: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -309,6 +327,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
         user: null,
         incomingProcurementRequests: [],
         orders: [],
+        payouts: [],
       };
     }
 
@@ -351,6 +370,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
         user: null,
         incomingProcurementRequests: [],
         orders: [],
+        payouts: [],
       };
     }
 
@@ -594,6 +614,29 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       })
       .lean();
 
+    const payouts = await SupplierPayout.find()
+      .where("supplierId")
+      .equals(user._id.toString())
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const supplierPayouts: SupplierPayoutRecord[] = payouts.map(
+      (payout) => ({
+        id: payout._id.toString(),
+        supplierId: payout.supplierId.toString(),
+        reference: payout.reference,
+        amount: Number(payout.amount || 0),
+        transferFee: Number(payout.transferFee || 0),
+        netAmount: Number(payout.netAmount || 0),
+        status: payout.status,
+        bankName: payout.bankName,
+        accountNumber: payout.accountNumber,
+        accountName: payout.accountName,
+        notes: payout.failureReason,
+        createdAt: payout.createdAt.toISOString(),
+      })
+    );
+
     /* ---------------------------------------------------------------------- */
     /* Normalize Supplier Orders                                               */
     /* ---------------------------------------------------------------------- */
@@ -776,6 +819,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       incomingProcurementRequests,
 
       orders: supplierOrders,
+      payouts: supplierPayouts,
     };
   } catch (error) {
     console.error(
@@ -787,6 +831,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       user: null,
       incomingProcurementRequests: [],
       orders: [],
+      payouts: [],
     };
   }
 }

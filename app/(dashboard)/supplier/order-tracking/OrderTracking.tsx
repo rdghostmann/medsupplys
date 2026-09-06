@@ -482,7 +482,7 @@ const OrderTracking: React.FC<
                                   className="relative"
                                 >
 
-                                  <div className="absolute -left-[31px] top-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-xs bg-blue-600 text-white">
+                                  <div className="absolute -left-7.5 top-0.5 w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-bold shadow-xs bg-blue-600 text-white">
                                     <CheckCircle2 className="w-3 h-3" />
                                   </div>
 
@@ -568,7 +568,7 @@ const OrderTracking: React.FC<
                                   Delivery Address:
                                 </span>
 
-                                <span className="text-slate-800 text-right max-w-[240px]">
+                                <span className="text-slate-800 text-right max-w-60">
                                   {
                                     ord.deliveryAddress
                                   }
