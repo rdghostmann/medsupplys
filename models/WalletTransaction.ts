@@ -2,6 +2,7 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
@@ -29,9 +30,9 @@ export type WalletTransactionStatus =
 
 export interface IWalletTransaction
   extends Document {
-  walletId: Schema.Types.ObjectId;
+  walletId: Types.ObjectId;
 
-  buyerId: Schema.Types.ObjectId;
+  buyerId: Types.ObjectId;
 
   type: WalletTransactionType;
 
@@ -49,7 +50,7 @@ export interface IWalletTransaction
 
   status: WalletTransactionStatus;
 
-  orderId?: Schema.Types.ObjectId;
+  orderId?: Types.ObjectId;
 
   metadata?: Record<string, unknown>;
 

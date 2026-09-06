@@ -219,6 +219,24 @@ export interface Order {
     updatedAt?: string;
 }
 
+export interface CreditAccount {
+  id: string;
+  buyerId: string;
+  buyerName: string;
+  creditLimit: number;
+  availableCredit: number;
+  creditUsed: number;
+  outstandingBalance: number;
+  status: CreditStatus;
+  approvedBy: string;
+  approvedAt: string;
+  dueDate: string;
+  terms: string; // e.g. "Net 30 Days"
+  interestRatePercent: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface PharmacistVerificationRecord {
     id: string;
     orderId: string;

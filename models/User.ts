@@ -34,6 +34,11 @@ export type SupplierStatus =
   | "approved"
   | "rejected";
 
+export type UserStatus =
+  | "active"
+  | "suspended"
+  | "pending";
+
 export type SupplierApprovalStatus =
   | "pending"
   | "approved"
@@ -107,6 +112,8 @@ export interface IUser extends Document {
 
   lastName: string;
 
+  username?: string;
+
   email: string;
 
   phone?: string;
@@ -114,6 +121,8 @@ export interface IUser extends Document {
   password: string;
 
   role: UserRole;
+
+  status: UserStatus;
 
   avatar?: string;
 
@@ -429,6 +438,13 @@ const UserSchema = new Schema<IUser>(
       maxlength: 50,
     },
 
+    username: {
+      type: String,
+      unique: true,
+      trim: true,
+      index: true,
+    },
+
     email: {
       type: String,
       required: [true, "Email is required"],
@@ -460,6 +476,13 @@ const UserSchema = new Schema<IUser>(
       ],
       required: true,
       default: "buyer",
+      index: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["active", "suspended", "pending"],
+      default: "active",
       index: true,
     },
 

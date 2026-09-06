@@ -2,6 +2,7 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
@@ -24,12 +25,12 @@ export interface ISupplierProduct extends Document {
   /**
    * References the Admin-approved Master Catalogue Product.
    */
-  productId: Schema.Types.ObjectId;
+  productId: Types.ObjectId;
 
   /**
    * Supplier who owns this listing.
    */
-  supplierId: Schema.Types.ObjectId;
+  supplierId: Types.ObjectId;
 
   supplierType: SupplierType;
 
@@ -156,7 +157,6 @@ const SupplierProductSchema =
         type: String,
         required: true,
         trim: true,
-        index: true,
       },
 
       /**

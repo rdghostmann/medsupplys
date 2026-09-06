@@ -2,6 +2,7 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
@@ -15,7 +16,7 @@ export type WalletStatus =
   | "CLOSED";
 
 export interface IWallet extends Document {
-  buyerId: Schema.Types.ObjectId;
+  buyerId: Types.ObjectId;
 
   buyerName: string;
 

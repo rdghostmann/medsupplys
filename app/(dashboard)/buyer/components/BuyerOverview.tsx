@@ -1,96 +1,116 @@
 // BuyerOverview.tsx
-"use client"
+"use client";
 
-import React, { useMemo } from "react"
+import React, { useMemo } from "react";
 
-import FallBackQueueMonitor from "./FallBackQueueMonitor"
+import FallBackQueueMonitor from "./FallBackQueueMonitor";
+import FinancialOperationalMetricCards from "./FinancialOperationalMetricCards";
+import WelcomeBanner from "./WelcomeBanner";
 
 import type {
   Order,
   OrderStatus,
   Supplier,
   ProcurementOrder,
-} from "@/types"
-import FinancialOperationalMetricCards from "./FinancialOperationalMetricCards"
-import WelcomeBanner from "./WelcomeBanner"
+} from "@/types";
+import {
+  CurrentBuyerCreditAccount,
+  CurrentBuyerUser,
+  CurrentBuyerWallet,
+} from "@/controllers/buyer.actions";
 
 
+
+/* ============================================================
+   PROPS
+============================================================ */
 
 export interface BuyerOverviewProps {
-  user?: {
-    id?: string
-    name?: string
-    firstName?: string
-    lastName?: string
-    organization?: string
-    email?: string
-  }
+  user?: CurrentBuyerUser;
 
-  wallet?: {
-    balance: number
-    currency?: string
-    creditLimit?: number
-    creditUsed?: number
-  }
+  wallet?: CurrentBuyerWallet;
 
-  orders?: Order[]
+  creditAccount?: CurrentBuyerCreditAccount;
 
-  fallbackQueue?: Supplier[]
+  nonCompletedOrderCount?: number;
 
-  recentProcurements?: ProcurementOrder[]
+  totalOrderCount?: number;
 
-  loading?: boolean
+  orders?: Order[];
+
+  fallbackQueue?: Supplier[];
+
+  recentProcurements?: ProcurementOrder[];
+
+  loading?: boolean;
 }
 
-const DEFAULT_WALLET = {
-  balance: 0,
-  currency: "NGN",
-  creditLimit: 0,
-  creditUsed: 0,
-}
+/* ============================================================
+   DEFAULTS
+============================================================ */
 
-const DEFAULT_ORDERS: Order[] = []
 
-const DEFAULT_QUEUE: Supplier[] = []
+const DEFAULT_ORDERS: Order[] = [];
 
-export const BuyerOverview: React.FC<BuyerOverviewProps> = ({
+const DEFAULT_QUEUE: Supplier[] = [];
+
+/* ============================================================
+   COMPONENT
+============================================================ */
+
+export const BuyerOverview: React.FC<
+  BuyerOverviewProps
+> = ({
   user,
-  wallet = DEFAULT_WALLET,
+
+  wallet,
+
+  creditAccount,
+
+  nonCompletedOrderCount = 0,
+
+  totalOrderCount = 0,
+
   orders = DEFAULT_ORDERS,
+
   fallbackQueue = DEFAULT_QUEUE,
+
   recentProcurements = [],
+
   loading = false,
 }) => {
-  /**
-   * Resolve display name safely.
-   */
+  /* ==========================================================
+     DISPLAY NAME
+  ========================================================== */
+
   const displayName = useMemo(() => {
     if (user?.firstName?.trim()) {
-      return [user.firstName.trim(), user.lastName?.trim()]
+      return [
+        user.firstName.trim(),
+        user.lastName?.trim(),
+      ]
         .filter(Boolean)
-        .join(" ")
+        .join(" ");
     }
 
     if (user?.name?.trim()) {
-      return user.name.trim().split(" ")[0]
+      return user.name.trim();
     }
 
-    return "Buyer"
-  }, [user])
+    return "Buyer";
+  }, [user]);
 
-  /**
-   * Calculate operational order metrics.
-   *
-   * These are derived from the existing OrderStatus type rather
-   * than introducing another dashboard-specific status system.
-   */
+  /* ==========================================================
+     ORDER METRICS
+  ========================================================== */
+
   const orderMetrics = useMemo(() => {
     const pendingStatuses: OrderStatus[] = [
       "Pending",
       "Supplier Contacted",
       "Under Verification",
       "Supplier Confirmed",
-    ]
+    ];
 
     const activeStatuses: OrderStatus[] = [
       "Supplier Contacted",
@@ -98,23 +118,25 @@ export const BuyerOverview: React.FC<BuyerOverviewProps> = ({
       "Under Verification",
       "In Transit to Office",
       "Verified",
-    ]
+    ];
 
     const pending = orders.filter((order) =>
       pendingStatuses.includes(order.status)
-    ).length
+    ).length;
 
     const active = orders.filter((order) =>
       activeStatuses.includes(order.status)
-    ).length
+    ).length;
 
     const delivered = orders.filter(
-      (order) => order.status === "Delivered"
-    ).length
+      (order) =>
+        order.status === "Delivered"
+    ).length;
 
     const rejected = orders.filter(
-      (order) => order.status === "Rejected"
-    ).length
+      (order) =>
+        order.status === "Rejected"
+    ).length;
 
     return {
       total: orders.length,
@@ -122,70 +144,121 @@ export const BuyerOverview: React.FC<BuyerOverviewProps> = ({
       active,
       delivered,
       rejected,
-    }
-  }, [orders])
+    };
+  }, [orders]);
 
-  /**
-   * Wallet / credit calculations.
-   */
+  /* ==========================================================
+     FINANCIAL METRICS
+  ========================================================== */
+
   const financialMetrics = useMemo(() => {
-    const balance = Number(wallet.balance || 0)
-    const creditLimit = Number(wallet.creditLimit || 0)
-    const creditUsed = Number(wallet.creditUsed || 0)
+    const balance = Number(
+      wallet?.balance || 0
+    );
 
-    const availableCredit = Math.max(creditLimit - creditUsed, 0)
+    const creditLimit = Number(
+      creditAccount?.creditLimit || 0
+    );
+
+    const creditUsed = Number(
+      creditAccount?.creditUsed || 0
+    );
+
+    const availableCredit = Number(
+      creditAccount?.availableCredit ??
+        Math.max(creditLimit - creditUsed, 0)
+    );
 
     return {
       balance,
-      creditLimit,
-      creditUsed,
-      availableCredit,
-      totalPurchasingPower: balance + availableCredit,
-    }
-  }, [wallet])
 
-  /**
-   * Determine whether there is currently an active fallback queue.
-   */
-  const hasFallbackQueue = fallbackQueue.length > 0
+      creditLimit,
+
+      creditUsed,
+
+      availableCredit,
+
+      totalPurchasingPower:
+        balance + availableCredit,
+    };
+  }, [wallet, creditAccount]);
+
+  /* ==========================================================
+     FALLBACK QUEUE
+  ========================================================== */
+
+  const hasFallbackQueue =   fallbackQueue.length > 0;
+
+  /* ==========================================================
+     RENDER
+  ========================================================== */
 
   return (
     <section
       aria-labelledby="buyer-overview-title"
       className="space-y-6"
     >
-      {/* =========================================================
-          WELCOME / HEADER
-      ========================================================= */}
+      {/* ========================================================
+          WELCOME BANNER
+      ======================================================== */}
+
       <WelcomeBanner
         id="buyer-overview-title"
         fullName={displayName}
-        organization={user?.organization}
-        walletBalance={financialMetrics.balance}
-        creditAvailable={financialMetrics.availableCredit}
+        organization={
+          user?.organization
+        }
+        walletBalance={
+          financialMetrics.balance
+        }
+        creditAvailable={
+          financialMetrics.availableCredit
+        }
         loading={loading}
       />
 
-      {/* =========================================================
+      {/* ========================================================
           FINANCIAL + OPERATIONAL METRICS
-      ========================================================= */}
+      ======================================================== */}
+
       <FinancialOperationalMetricCards
-        walletBalance={financialMetrics.balance}
-        creditLimit={financialMetrics.creditLimit}
-        creditUsed={financialMetrics.creditUsed}
-        availableCredit={financialMetrics.availableCredit}
-        totalPurchasingPower={financialMetrics.totalPurchasingPower}
-        totalOrders={orderMetrics.total}
-        pendingOrders={orderMetrics.pending}
-        activeOrders={orderMetrics.active}
-        deliveredOrders={orderMetrics.delivered}
-        rejectedOrders={orderMetrics.rejected}
+        walletBalance={
+          financialMetrics.balance
+        }
+        creditLimit={
+          financialMetrics.creditLimit
+        }
+        creditUsed={
+          financialMetrics.creditUsed
+        }
+        availableCredit={
+          financialMetrics.availableCredit
+        }
+        totalPurchasingPower={
+          financialMetrics.totalPurchasingPower
+        }
+        totalOrders={
+          orderMetrics.total
+        }
+        pendingOrders={
+          nonCompletedOrderCount
+        }
+        activeOrders={
+          totalOrderCount
+        }
+        deliveredOrders={
+          orderMetrics.delivered
+        }
+        rejectedOrders={
+          orderMetrics.rejected
+        }
         loading={loading}
       />
 
-      {/* =========================================================
+      {/* ========================================================
           SUPPLIER FALLBACK QUEUE
-      ========================================================= */}
+      ======================================================== */}
+
       <FallBackQueueMonitor
         queue={fallbackQueue}
         orders={orders}
@@ -193,24 +266,23 @@ export const BuyerOverview: React.FC<BuyerOverviewProps> = ({
         loading={loading}
       />
 
-      {/* =========================================================
-          OPTIONAL PROCUREMENT CONTEXT
-          This data is intentionally passed through without
-          rendering another dashboard module yet.
-          
-          It allows future procurement analytics to be introduced
-          without changing BuyerOverview's API.
-      ========================================================= */}
-      {/* {recentProcurements.length > 0 && (
-        <div className="sr-only" aria-hidden="true">
-          {recentProcurements.length} procurement records available.
+      {/* ========================================================
+          FUTURE PROCUREMENT ANALYTICS
+      ======================================================== */}
+
+      {/* 
+      {recentProcurements.length > 0 && (
+        <div
+          className="sr-only"
+          aria-hidden="true"
+        >
+          {recentProcurements.length} procurement
+          records available.
         </div>
-      )} */}
-
-       
-
+      )}
+      */}
     </section>
-  )
-}
+  );
+};
 
-export default BuyerOverview
+export default BuyerOverview;
