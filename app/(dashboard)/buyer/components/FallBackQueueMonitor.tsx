@@ -7,6 +7,7 @@ import { motion } from "framer-motion"
 
 import type { Order } from "@/types"
 import type { CurrentBuyerProcurement } from "@/controllers/buyer.actions"
+import Link from "next/link"
 
 interface FallBackQueueMonitorProps {
   queue?: CurrentBuyerProcurement[]
@@ -23,7 +24,7 @@ interface FallBackQueueMonitorProps {
 const formatCurrency = (value: number) =>
   `₦${Number(value || 0).toLocaleString("en-NG")}`
 
-const procurementStatusLabel = (status: string) =>  status.replace(/_/g, " ")
+const procurementStatusLabel = (status: string) => status.replace(/_/g, " ")
 
 /* -------------------------------------------------------------------------- */
 /* Mock Fallback Queue                                                        */
@@ -148,7 +149,7 @@ export const FallBackQueueMonitor: React.FC<
               <div className="flex items-center gap-2">
                 <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500" />
 
-                <h2 className="font-display text-sm font-bold uppercase tracking-wider text-slate-900">
+                <h2 className="font-display text-xs **:md:text-sm font-bold uppercase tracking-wider text-slate-900">
                   Live Procurement Sourcing & Fallback Queue (
                   {activeProcurements.length}
                   )
@@ -158,10 +159,17 @@ export const FallBackQueueMonitor: React.FC<
               <button
                 type="button"
                 onClick={onViewQueue}
-                className="shrink-0 cursor-pointer text-xs font-semibold text-blue-600 hover:underline"
+                className="hidden shrink-0 cursor-pointer text-xs font-semibold text-blue-600 hover:underline"
               >
                 Full Queue Details →
               </button>
+
+              <Link
+                href="/buyer/procurement-sourcing"
+                className="shrink-0 cursor-pointer text-xs font-semibold text-blue-600 hover:underline"
+              >
+                Full Queue Details →
+              </Link>
             </div>
 
             <div className="space-y-3">
@@ -227,7 +235,7 @@ export const FallBackQueueMonitor: React.FC<
                         </span>
 
                         {currentAttempt && (
-                          <span className="text-slate-400">
+                          <span className="hidden text-slate-400">
                             •{" "}
                             {proc.attemptHistory.length}{" "}
                             supplier attempt
@@ -240,7 +248,7 @@ export const FallBackQueueMonitor: React.FC<
                       </div>
                     </div>
 
-                   
+
                   </motion.div>
                 )
               })}
