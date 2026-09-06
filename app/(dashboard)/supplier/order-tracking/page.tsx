@@ -1,13 +1,18 @@
-// app/(dashboard)/buyer/page.tsx
+// app/(dashboard)/supplier/order-tracking/page.tsx
 
-import OrderTracking from "./OrderTracking";
+import OrderTrackingPage from "./OrderTrackingPage";
 
+import {
+  getCurrentSupplierOrders,
+} from "@/controllers/supplier.action";
 
-export default function Page() {
+export default async function Page() {
+  const orders =
+    await getCurrentSupplierOrders();
 
-   
-
-  return (<OrderTracking />);
+  return (
+    <OrderTrackingPage
+      orders={orders}
+    />
+  );
 }
-
-

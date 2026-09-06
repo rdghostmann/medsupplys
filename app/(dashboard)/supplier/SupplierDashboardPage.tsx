@@ -23,6 +23,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import type {
   CurrentSupplierUser,
+  IncomingProcurementRequest,
+  SupplierOrder,
 } from "@/controllers/supplier.action";
 
 /* =========================================================
@@ -375,13 +377,19 @@ const MOCK_METRICS: SupplierMetrics = {
 
 interface SupplierDashboardPageProps {
   user: CurrentSupplierUser | null;
+  incomingProcurementRequests?: IncomingProcurementRequest[];
+  orders?: SupplierOrder[];
 }
-
+  
 const SupplierDashboardPage: React.FC<
   SupplierDashboardPageProps
-> = ({ user }) => {
+> = ({
+  user,
+  incomingProcurementRequests = [],
+  orders = [],
+}) => {
 
-  const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
+  // const [orders, setOrders] = useState<Order[]>(MOCK_ORDERS);
   const [procurements, setProcurements] =
     useState<Procurement[]>(MOCK_PROCUREMENTS);
   const [inventory] = useState<InventoryItem[]>(MOCK_INVENTORY);
@@ -397,7 +405,7 @@ const SupplierDashboardPage: React.FC<
 
   // Dispatch Modal State
   const [dispatchOrder, setDispatchOrder] =
-    useState<Order | null>(null);
+    useState<SupplierOrder | null>(null);
 
   const [courierName, setCourierName] = useState(
     'MediSupply Cold Logistics'
@@ -554,8 +562,6 @@ const SupplierDashboardPage: React.FC<
           commission: request.totalAmount * 0.1,
         };
 
-        setOrders((prev) => [newOrder, ...prev]);
-
         setProcurements((prev) =>
           prev.map((item) =>
             item.id === procurementId
@@ -621,17 +627,6 @@ const SupplierDashboardPage: React.FC<
     const orderBeingDispatched = dispatchOrder;
 
     setTimeout(() => {
-      setOrders((prev) =>
-        prev.map((order) =>
-          order.id === orderBeingDispatched.id
-            ? {
-              ...order,
-              status: 'IN_TRANSIT',
-            }
-            : order
-        )
-      );
-
       setDispatchOrder(null);
       setIsSubmittingDispatch(false);
 
@@ -1169,9 +1164,7 @@ const SupplierDashboardPage: React.FC<
               <div className="divide-y divide-slate-100">
                 {activeCommittedOrders.map((order) => {
                   const canDispatch =
-                    order.status === 'PROCESSING' ||
-                    order.status === 'READY_FOR_DISPATCH' ||
-                    order.status === 'SUPPLIER_CONFIRMED';
+                    order.status === 'READY_FOR_DISPATCH';
 
                   return (
                     <div

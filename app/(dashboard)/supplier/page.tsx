@@ -4,7 +4,17 @@ import { getCurrentSupplierDashboard } from "@/controllers/supplier.action";
 import SupplierDashboard from "./SupplierDashboard";
 
 export default async function Page() {
-  const { user } = await getCurrentSupplierDashboard();
+  const {
+    user,
+    incomingProcurementRequests,
+    orders,
+  } = await getCurrentSupplierDashboard();
 
-  return <SupplierDashboard user={user} />;
+  return (
+    <SupplierDashboard
+      user={user}
+      incomingProcurementRequests={incomingProcurementRequests}
+      orders={orders}
+    />
+  );
 }
