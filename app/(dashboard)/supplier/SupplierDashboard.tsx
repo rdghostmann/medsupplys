@@ -19,6 +19,8 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRouter } from 'next/navigation';
+
 
 /* =========================================================
    TYPES
@@ -431,6 +433,9 @@ const SupplierDashboard: React.FC = () => {
   const [isSubmittingDispatch, setIsSubmittingDispatch] =
     useState(false);
 
+  const router = useRouter();
+
+
   // Demo navigation state
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -571,9 +576,9 @@ const SupplierDashboard: React.FC = () => {
           prev.map((item) =>
             item.id === procurementId
               ? {
-                  ...item,
-                  status: 'ACCEPTED',
-                }
+                ...item,
+                status: 'ACCEPTED',
+              }
               : item
           )
         );
@@ -586,9 +591,9 @@ const SupplierDashboard: React.FC = () => {
           prev.map((item) =>
             item.id === procurementId
               ? {
-                  ...item,
-                  status: 'REJECTED',
-                }
+                ...item,
+                status: 'REJECTED',
+              }
               : item
           )
         );
@@ -632,9 +637,9 @@ const SupplierDashboard: React.FC = () => {
         prev.map((order) =>
           order.id === orderBeingDispatched.id
             ? {
-                ...order,
-                status: 'IN_TRANSIT',
-              }
+              ...order,
+              status: 'IN_TRANSIT',
+            }
             : order
         )
       );
@@ -672,30 +677,31 @@ const SupplierDashboard: React.FC = () => {
       <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
         <div className="flex flex-col justify-between gap-4">
           <div className="flex items-start gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 font-bold text-xl shrink-0 shadow-inner">
-              <Building2 className="w-7 h-7 text-blue-600" />
-            </div>
+
 
             <div>
-              <div className="flex flex-wrap items-center gap-2">
+              <div className=" gap-2">
+                {/* <div className="flex flex-wrap items-center gap-2"> */}
                 <h1 className="font-display text-2xl font-bold text-slate-900 tracking-tight">
                   {currentUser.organization ||
                     currentUser.name ||
                     'Authorized Pharmaceutical Supplier'}
                 </h1>
 
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   {currentUser.supplierApprovalStatus ===
-                  'APPROVED'
+                    'APPROVED'
                     ? 'KYC Verified & Licensed'
                     : 'KYC Pending Review'}
                 </span>
+                <div className="">
 
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
-                  Tier: {currentUser.supplierType} (100% Matching
-                  Priority)
-                </span>
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
+                    Tier: {currentUser.supplierType} (100% Matching
+                    Priority)
+                  </span>
+                </div>
               </div>
 
               <p className="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-3">
@@ -732,13 +738,13 @@ const SupplierDashboard: React.FC = () => {
             <button
               id="supplier-btn-refresh-dashboard"
               onClick={handleSync}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              className="hidden items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+              // className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-600 hover:bg-slate-50 transition-colors"
               title="Refresh Real-Time Data"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${
-                  isSyncing ? 'animate-spin' : ''
-                }`}
+                className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''
+                  }`}
               />
               Sync
             </button>
@@ -746,7 +752,8 @@ const SupplierDashboard: React.FC = () => {
             <button
               id="supplier-btn-nav-revenue"
               onClick={() => navigateTo('ledger')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+              className="hidden items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
+            // className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-semibold hover:bg-slate-800 transition-colors shadow-sm"
             >
               <DollarSign className="w-4 h-4 text-emerald-400" />
               Settlement & Payouts
@@ -840,11 +847,10 @@ const SupplierDashboard: React.FC = () => {
 
         {/* Card 3 */}
         <div
-          className={`rounded-2xl border p-5 shadow-sm transition-all group ${
-            pendingRequests.length > 0
-              ? 'bg-amber-50/50 border-amber-200'
-              : 'bg-white border-slate-200'
-          }`}
+          className={`rounded-2xl border p-5 shadow-sm transition-all group ${pendingRequests.length > 0
+            ? 'bg-amber-50/50 border-amber-200'
+            : 'bg-white border-slate-200'
+            }`}
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
@@ -852,11 +858,10 @@ const SupplierDashboard: React.FC = () => {
             </span>
 
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform ${
-                pendingRequests.length > 0
-                  ? 'bg-amber-100 text-amber-700'
-                  : 'bg-slate-100 text-slate-600'
-              }`}
+              className={`w-9 h-9 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform ${pendingRequests.length > 0
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-slate-100 text-slate-600'
+                }`}
             >
               <Sparkles className="w-4 h-4" />
             </div>
@@ -868,11 +873,10 @@ const SupplierDashboard: React.FC = () => {
             </div>
 
             <p
-              className={`text-xs font-medium mt-1 ${
-                pendingRequests.length > 0
-                  ? 'text-amber-700 font-semibold'
-                  : 'text-slate-500'
-              }`}
+              className={`text-xs font-medium mt-1 ${pendingRequests.length > 0
+                ? 'text-amber-700 font-semibold'
+                : 'text-slate-500'
+                }`}
             >
               {pendingRequests.length > 0
                 ? 'Immediate action required'
@@ -936,7 +940,7 @@ const SupplierDashboard: React.FC = () => {
 
       {/* 3. Real-Time RFQ Alert Banner */}
       {pendingRequests.length > 0 && (
-        <div className="bg-gradient-to-r from-amber-500 to-amber-600 rounded-2xl p-4 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="bg-linear-to-r from-amber-500 to-amber-600 rounded-2xl p-4 text-white shadow-md flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center shrink-0">
               <Sparkles className="w-5 h-5 text-amber-100" />
@@ -957,7 +961,7 @@ const SupplierDashboard: React.FC = () => {
           </div>
 
           <button
-            onClick={() => navigateTo('requests')}
+            onClick={() => router.push('/supplier/order-requests')}
             className="px-4 py-2 rounded-xl bg-white text-amber-900 font-bold text-xs hover:bg-amber-50 transition-colors shadow-sm shrink-0"
           >
             Review & Accept Orders
@@ -1214,11 +1218,11 @@ const SupplierDashboard: React.FC = () => {
                           <span>
                             Destination:{' '}
                             {order.deliveryAddress.length >
-                            45
+                              45
                               ? `${order.deliveryAddress.slice(
-                                  0,
-                                  45
-                                )}...`
+                                0,
+                                45
+                              )}...`
                               : order.deliveryAddress}
                           </span>
                         </div>
@@ -1247,11 +1251,10 @@ const SupplierDashboard: React.FC = () => {
                               setSelectedOrderId(order.id);
                               navigateTo('orders');
                             }}
-                            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${
-                              selectedOrderId === order.id
-                                ? 'border-blue-200 bg-blue-50 text-blue-700'
-                                : 'border-slate-200 text-slate-700 hover:bg-slate-50'
-                            }`}
+                            className={`px-3 py-1.5 rounded-lg border text-xs font-semibold transition-colors ${selectedOrderId === order.id
+                              ? 'border-blue-200 bg-blue-50 text-blue-700'
+                              : 'border-slate-200 text-slate-700 hover:bg-slate-50'
+                              }`}
                           >
                             Track
                           </button>
