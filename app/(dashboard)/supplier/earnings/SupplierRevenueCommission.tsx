@@ -65,10 +65,10 @@ const formatNaira = (amount: number) =>
     maximumFractionDigits: 0,
   })}`;
 
-const isCompletedStatus = (status: OrderStatus) =>
+const isCompletedStatus = (status: SupplierOrder['status']) =>
   ['DELIVERED', 'COMPLETED'].includes(status);
 
-const isEscrowStatus = (status: OrderStatus) =>
+const isEscrowStatus = (status: SupplierOrder['status']) =>
   !['DELIVERED', 'COMPLETED', 'CANCELLED', 'REFUNDED'].includes(status);
 
 /* =========================================================
@@ -136,7 +136,7 @@ export const SupplierRevenueCommission: React.FC<
     );
 
     const inEscrow = supplierOrders
-      .filter((order) => isEscrowStatus(order.status as OrderStatus))
+      .filter((order) => isEscrowStatus(order.status as SupplierOrder['status']))
       .reduce((sum, order) => sum + order.subtotal, 0);
 
     const totalPaidOut = payouts
@@ -167,7 +167,7 @@ export const SupplierRevenueCommission: React.FC<
       totalPaidOut,
       availableForPayout,
     };
-  }, [supplierOrders, payouts]);
+  }, []);
 
   const {
     totalGrossRevenue,
