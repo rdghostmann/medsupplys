@@ -1,3 +1,4 @@
+// models/SupplierPayout.ts
 import {
   Schema,
   model,
