@@ -507,6 +507,11 @@ const SupplierDashboardPage: React.FC<
     procurementId: string,
     response: 'ACCEPT' | 'REJECT' | 'UNAVAILABLE'
   ) => {
+    if (!user) {
+      toast.error('Supplier Account Not Found');
+      return;
+    }
+
     setIsProcessingRFQ(procurementId);
 
     const request = procurements.find(
@@ -530,7 +535,7 @@ const SupplierDashboardPage: React.FC<
           orderNumber: `MS-ORD-${Date.now()
             .toString()
             .slice(-4)}`,
-          supplierId: user?.id,
+          supplierId: user.id,
           buyerName: request.buyerName,
           status: 'SUPPLIER_CONFIRMED',
           items: [
@@ -578,7 +583,10 @@ const SupplierDashboardPage: React.FC<
         );
 
         toast.info(
-          `Procurement Request ${response === 'REJECT' ? 'Declined' : 'Marked Unavailable'}`,
+          `Procurement Request ${response === 'REJECT'
+            ? 'Declined'
+            : 'Marked Unavailable'
+          }`,
           {
             description:
               'Automated fallback routing has been initiated to the next ranked supplier.',
@@ -594,6 +602,7 @@ const SupplierDashboardPage: React.FC<
 
       setIsProcessingRFQ(null);
     }, 700);
+
   };
 
   /* =========================================================
@@ -651,24 +660,24 @@ const SupplierDashboardPage: React.FC<
   };
 
 
-if (!user) {
-  return (
-    <div className="flex min-h-100 items-center justify-center">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
-        <ShieldCheck className="mx-auto mb-4 h-10 w-10 text-slate-300" />
+  if (!user) {
+    return (
+      <div className="flex min-h-100 items-center justify-center">
+        <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
+          <ShieldCheck className="mx-auto mb-4 h-10 w-10 text-slate-300" />
 
-        <h2 className="text-base font-bold text-slate-900">
-          Supplier Account Not Found
-        </h2>
+          <h2 className="text-base font-bold text-slate-900">
+            Supplier Account Not Found
+          </h2>
 
-        <p className="mt-2 text-xs leading-relaxed text-slate-500">
-          We could not resolve an authenticated supplier
-          account for this dashboard.
-        </p>
+          <p className="mt-2 text-xs leading-relaxed text-slate-500">
+            We could not resolve an authenticated supplier
+            account for this dashboard.
+          </p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="space-y-8 pb-12">
@@ -1319,7 +1328,7 @@ if (!user) {
               </div>
 
               <button
-                onClick={() => navigateTo('ledger')}
+                onClick={() => router.push('/supplier/earnings  ')}
                 className="px-3 py-1.5 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-colors"
               >
                 Instant Payout
@@ -1391,7 +1400,7 @@ if (!user) {
             )}
 
             <button
-              onClick={() => navigateTo('inventory')}
+              onClick={() => router.push('/supplier/inventory')}
               className="w-full mt-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5"
             >
               <Package className="w-3.5 h-3.5" />
