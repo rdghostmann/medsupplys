@@ -7,7 +7,9 @@ import { User } from "@/models/User";
 import { Wallet } from "@/models/Wallet";
 import { CreditAccount } from "@/models/CreditAccount";
 import { Order } from "@/models/Order";
+import { Procurement } from "@/models/Procurement";
 import { authOptions } from "@/auth";
+import type { Order as BuyerOrder } from "@/types";
 
 // IMPORTANT:
 // Change this import path if your NextAuth configuration
@@ -61,10 +63,30 @@ export interface CurrentBuyerCreditAccount {
   updatedAt: string;
 }
 
+export interface CurrentBuyerProcurement {
+  id: string;
+  procurementNumber: string;
+  productName: string;
+  quantity: number;
+  unit: string;
+  totalAmount: number;
+  status: string;
+  currentSupplierName: string;
+  currentSupplierIndex: number;
+  attemptHistory: {
+    supplierName: string;
+    supplierIndex: number;
+    status: string;
+    attemptedAt?: string;
+  }[];
+}
+
 export interface BuyerDashboardData {
   user: CurrentBuyerUser | null;
   wallet: CurrentBuyerWallet | null;
   creditAccount: CurrentBuyerCreditAccount | null;
+  orders: BuyerOrder[];
+  fallbackQueue: CurrentBuyerProcurement[];
   nonCompletedOrderCount: number;
   totalOrderCount: number;
 }
@@ -87,6 +109,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      orders: [],
+      fallbackQueue: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -133,6 +157,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      orders: [],
+      fallbackQueue: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -149,6 +175,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      orders: [],
+      fallbackQueue: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -159,6 +187,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
       user: null,
       wallet: null,
       creditAccount: null,
+      orders: [],
+      fallbackQueue: [],
       nonCompletedOrderCount: 0,
       totalOrderCount: 0,
     };
@@ -320,16 +350,101 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
         }
       : null;
 
-  const totalOrderCount = await Order.countDocuments()
+  const buyerOrders = await Order.find()
     .where("buyerId")
-    .equals(user._id.toString());
+    .equals(user._id.toString())
+    .sort({ createdAt: -1 })
+    .lean();
 
-  const nonCompletedOrderCount =
-    await Order.countDocuments()
-      .where("buyerId")
-      .equals(user._id.toString())
-      .where("status")
-      .ne("COMPLETED");
+  const totalOrderCount = buyerOrders.length;
+
+  const nonCompletedOrderCount = buyerOrders.filter(
+    (order) => order.status !== "COMPLETED"
+  ).length;
+
+  const orders: BuyerOrder[] = buyerOrders.map((order) => {
+    const firstItem = order.items[0];
+
+    return {
+      id: order._id.toString(),
+      product: firstItem?.name || "",
+      buyer: order.buyerName,
+      qty: firstItem?.quantity || 0,
+      basePrice: firstItem?.unitPrice || 0,
+      status: order.status,
+      date: order.createdAt.toISOString(),
+      supplier: order.supplierName,
+      orderNumber: order.orderNumber,
+      procurementId: order.procurementId.toString(),
+      buyerId: order.buyerId.toString(),
+      buyerName: order.buyerName,
+      supplierId: order.supplierId.toString(),
+      supplierName: order.supplierName,
+      supplierType: order.supplierType as BuyerOrder["supplierType"],
+      items: order.items.map((item) => ({
+        productId: item.productId.toString(),
+        supplierProductId: item.supplierProductId.toString(),
+        name: item.name,
+        unit: item.unit,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        subtotal: item.subtotal,
+        batchNumber: item.batchNumber,
+        expiryDate: item.expiryDate.toISOString(),
+      })),
+      subtotal: order.subtotal,
+      commission: order.commission,
+      total: order.total,
+      paymentMethod: order.paymentMethod,
+      walletAmount: order.walletAmount,
+      creditAmount: order.creditAmount,
+      deliveryAddress: order.deliveryAddress,
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+    };
+  });
+
+  const buyerProcurements = await Procurement.find()
+    .where("buyerId")
+    .equals(user._id.toString())
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const fallbackQueue: CurrentBuyerProcurement[] = buyerProcurements
+    .filter((procurement) => {
+      const status = procurement.status.toUpperCase();
+
+      return ![
+        "COMPLETED",
+        "REJECTED",
+        "CANCELLED",
+        "EXPIRED",
+      ].includes(status);
+    })
+    .map(
+      (procurement) => ({
+      id: procurement._id.toString(),
+      procurementNumber: procurement.procurementNumber,
+      productName: procurement.items[0]?.productName || "",
+      quantity: procurement.items[0]?.quantity || 0,
+      unit: procurement.items[0]?.unit || "",
+      totalAmount: procurement.supplierCandidates.reduce(
+        (total, candidate) =>
+          Math.max(total, candidate.totalPrice),
+        0
+      ),
+      status: procurement.status,
+      currentSupplierName:
+        procurement.currentSupplierName || "Supplier pending",
+      currentSupplierIndex: procurement.currentSupplierIndex,
+      attemptHistory: procurement.attemptHistory.map((attempt) => ({
+        supplierName: attempt.supplierName,
+        supplierIndex: attempt.attemptNumber - 1,
+        status: attempt.status,
+        attemptedAt: attempt.contactedAt?.toISOString(),
+      })),
+      })
+    );
 
   /**
    * ----------------------------------------------------------
@@ -341,6 +456,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
     user: currentUser,
     wallet: currentWallet,
     creditAccount: currentCreditAccount,
+    orders,
+    fallbackQueue,
     nonCompletedOrderCount,
     totalOrderCount,
   };

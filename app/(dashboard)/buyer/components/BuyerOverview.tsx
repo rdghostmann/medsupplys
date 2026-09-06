@@ -15,6 +15,7 @@ import type {
 } from "@/types";
 import {
   CurrentBuyerCreditAccount,
+  CurrentBuyerProcurement,
   CurrentBuyerUser,
   CurrentBuyerWallet,
 } from "@/controllers/buyer.actions";
@@ -38,7 +39,7 @@ export interface BuyerOverviewProps {
 
   orders?: Order[];
 
-  fallbackQueue?: Supplier[];
+  fallbackQueue?: CurrentBuyerProcurement[];
 
   recentProcurements?: ProcurementOrder[];
 
@@ -52,7 +53,7 @@ export interface BuyerOverviewProps {
 
 const DEFAULT_ORDERS: Order[] = [];
 
-const DEFAULT_QUEUE: Supplier[] = [];
+const DEFAULT_QUEUE: CurrentBuyerProcurement[] = [];
 
 /* ============================================================
    COMPONENT

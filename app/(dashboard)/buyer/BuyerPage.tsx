@@ -13,9 +13,11 @@ import {
 import BuyerOverview from "./components/BuyerOverview";
 import {
   CurrentBuyerCreditAccount,
+  CurrentBuyerProcurement,
   CurrentBuyerUser,
   CurrentBuyerWallet,
 } from "@/controllers/buyer.actions";
+import type { Order } from "@/types";
 
 
 
@@ -23,6 +25,8 @@ interface BuyerPageProps {
   user: CurrentBuyerUser | null;
   wallet: CurrentBuyerWallet | null;
   creditAccount: CurrentBuyerCreditAccount | null;
+  orders: Order[];
+  fallbackQueue: CurrentBuyerProcurement[];
   nonCompletedOrderCount: number;
   totalOrderCount: number;
 }
@@ -31,6 +35,8 @@ export default function BuyerPage({
   user,
   wallet,
   creditAccount,
+  orders,
+  fallbackQueue,
   nonCompletedOrderCount,
   totalOrderCount,
 }: BuyerPageProps) {
@@ -69,6 +75,8 @@ export default function BuyerPage({
               user={user ?? undefined}
               wallet={wallet ?? undefined}
               creditAccount={creditAccount ?? undefined}
+              orders={orders}
+              fallbackQueue={fallbackQueue}
               nonCompletedOrderCount={nonCompletedOrderCount}
               totalOrderCount={totalOrderCount}
               loading={false}

@@ -4,6 +4,10 @@
 
 @import 'react-phone-number-input/style.css';
 
+.font-mono {
+  font-family:    "Courier New",    Courier,    monospace;
+}
+
 
 @custom-variant dark (&:is(.dark *));
 

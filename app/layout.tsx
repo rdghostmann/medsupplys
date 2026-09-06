@@ -25,10 +25,14 @@ const fontSans = Geist({
   variable: "--font-sans",
 })
 
-const fontMono = Geist_Mono({
-  subsets: ["latin"],
+// const fontMono = Geist_Mono({
+//   subsets: ["latin"],
+//   variable: "--font-mono",
+// })
+
+const fontMono = {
   variable: "--font-mono",
-})
+}
 
 
 export const metadata: Metadata = {

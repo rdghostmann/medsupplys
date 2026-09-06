@@ -7,6 +7,8 @@ export default async function Page() {
     user,
     wallet,
     creditAccount,
+    orders,
+    fallbackQueue,
     nonCompletedOrderCount,
     totalOrderCount,
   } =
@@ -17,6 +19,8 @@ export default async function Page() {
       user={user}
       wallet={wallet}
       creditAccount={creditAccount}
+      orders={orders}
+      fallbackQueue={fallbackQueue}
       nonCompletedOrderCount={nonCompletedOrderCount}
       totalOrderCount={totalOrderCount}
     />
