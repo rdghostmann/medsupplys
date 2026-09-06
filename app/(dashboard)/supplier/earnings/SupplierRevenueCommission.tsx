@@ -20,8 +20,11 @@ import {
   Building2,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import type { CurrentSupplierUser } from '@/controllers/supplier.action';
-
+import type {
+  CurrentSupplierUser,
+  SupplierOrder,
+  SupplierPayoutRecord,
+} from '@/controllers/supplier.action';
 /* =========================================================
    TYPES
 ========================================================= */
@@ -40,55 +43,7 @@ type OrderStatus =
   | 'CANCELLED'
   | 'REFUNDED';
 
-type PaymentMethod =
-  | 'WALLET'
-  | 'CREDIT'
-  | 'WALLET_AND_CREDIT';
 
-type PayoutStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'SETTLED'
-  | 'FAILED'
-  | 'REVERSED';
-
-interface OrderItem {
-  id: string;
-  name: string;
-  quantity: number;
-  unitPrice: number;
-}
-
-interface Order {
-  id: string;
-  orderNumber: string;
-  supplierId: string;
-  buyerName: string;
-  buyerId: string;
-  items: OrderItem[];
-  batchNumber: string;
-  paymentMethod: PaymentMethod;
-  status: OrderStatus;
-  total: number;
-  commission: number;
-  subtotal: number;
-  createdAt: string;
-}
-
-interface SupplierPayout {
-  id: string;
-  supplierId: string;
-  reference: string;
-  amount: number;
-  transferFee: number;
-  netAmount: number;
-  status: PayoutStatus;
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
-  notes?: string;
-  createdAt: string;
-}
 
 interface SupplierMetrics {
   totalGrossRevenue: number;
@@ -122,15 +77,15 @@ const isEscrowStatus = (status: OrderStatus) =>
 
 interface SupplierRevenueCommissionProps {
   user: CurrentSupplierUser | null;
-  orders: Order[];
-  payouts: SupplierPayout[];
+  orders: SupplierOrder[];
+  payouts: SupplierPayoutRecord[];
 }
 
 export const SupplierRevenueCommission: React.FC<
   SupplierRevenueCommissionProps
 > = ({ user, orders: initialOrders, payouts: initialPayouts }) => {
-  const [orders, setOrders] = useState<Order[]>(initialOrders);
-  const [payouts, setPayouts] = useState<SupplierPayout[]>(initialPayouts);
+  const [orders, setOrders] = useState<SupplierOrder[]>(initialOrders);
+  const [payouts, setPayouts] = useState<SupplierPayoutRecord[]>(initialPayouts);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -146,10 +101,10 @@ export const SupplierRevenueCommission: React.FC<
   const [isSubmittingPayout, setIsSubmittingPayout] = useState(false);
 
   const [selectedVoucherOrder, setSelectedVoucherOrder] =
-    useState<Order | null>(null);
+    useState<SupplierOrder | null>(null);
 
   const [selectedPayoutSlip, setSelectedPayoutSlip] =
-    useState<SupplierPayout | null>(null);
+    useState<SupplierPayoutRecord | null>(null);
 
   /* =========================================================
      SUPPLIER ORDERS
@@ -181,7 +136,7 @@ export const SupplierRevenueCommission: React.FC<
     );
 
     const inEscrow = supplierOrders
-      .filter((order) => isEscrowStatus(order.status))
+      .filter((order) => isEscrowStatus(order.status as OrderStatus))
       .reduce((sum, order) => sum + order.subtotal, 0);
 
     const totalPaidOut = payouts
@@ -272,9 +227,7 @@ export const SupplierRevenueCommission: React.FC<
           item.name.toLowerCase().includes(q)
         );
 
-        const matchBatch = order.batchNumber
-          .toLowerCase()
-          .includes(q);
+        const matchBatch = order.batchNumber?.toLowerCase().includes(q);
 
         return (
           matchNumber ||
@@ -355,7 +308,7 @@ export const SupplierRevenueCommission: React.FC<
 
       const transferFee = 50;
 
-      const newPayout: SupplierPayout = {
+      const newPayout: SupplierPayoutRecord = {
         id: `pay-${Date.now()}`,
         supplierId: user?.id || '',
         reference: `NIBSS-MS-${Date.now()
@@ -872,7 +825,7 @@ export const SupplierRevenueCommission: React.FC<
               <tbody className="divide-y divide-slate-100">
                 {filteredOrders.map((order) => {
                   const isCompleted = isCompletedStatus(
-                    order.status
+                    order.status as OrderStatus
                   );
 
                   const isDispatched =
@@ -1488,7 +1441,7 @@ export const SupplierRevenueCommission: React.FC<
 
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                   {isCompletedStatus(
-                    selectedVoucherOrder.status
+                    selectedVoucherOrder.status as OrderStatus
                   )
                     ? 'Escrow Released'
                     : 'In Escrow'}

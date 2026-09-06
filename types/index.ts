@@ -230,6 +230,20 @@ export interface Order {
     updatedAt?: string;
 }
 
+export interface SupplierOrderItem {
+  id: string;
+  productId: string;
+  supplierProductId: string;
+  name: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+  batchNumber: string;
+  expiryDate: string;
+}
+
+
 export interface CreditAccount {
   id: string;
   buyerId: string;
