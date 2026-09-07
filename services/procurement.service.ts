@@ -1203,61 +1203,61 @@ export async function createProcurement(
                  Buyer Notification
                  ============================================== */
 
-                // await Notification.create(
-                //     [
-                //         {
-                //             recipientId: buyerId,
+                await Notification.create(
+                    [
+                        {
+                            recipientId: buyerId,
 
-                //             recipientRole: "buyer",
+                            recipientRole: "buyer",
 
-                //             title: "Procurement request created",
+                            title: "Procurement request created",
 
-                //             message:
-                //                 `Procurement ${procurementNumber} has been created for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. ${selectedSupplier.supplierName} is currently being contacted.`,
+                            message:
+                                `Procurement ${procurementNumber} has been created for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. ${selectedSupplier.supplierName} is currently being contacted.`,
 
-                //             type: "ORDER",
+                            type: "ORDER",
 
-                //             isRead: false,
+                            isRead: false,
 
-                //             entityType: "Procurement",
+                            entityType: "Procurement",
 
-                //             entityId: procurementId,
-                //         },
-                //     ],
-                //     {
-                //         session,
-                //     }
-                // );
+                            entityId: procurementId,
+                        },
+                    ],
+                    {
+                        session,
+                    }
+                );
 
                 /* ==============================================
                    Supplier Notification
                    ============================================== */
 
-                // await Notification.create(
-                //     [
-                //         {
-                //             recipientId: supplierId,
+                await Notification.create(
+                    [
+                        {
+                            recipientId: supplierId,
 
-                //             recipientRole: "supplier",
+                            recipientRole: "supplier",
 
-                //             title: "New procurement request",
+                            title: "New procurement request",
 
-                //             message:
-                //                 `You have received procurement ${procurementNumber} for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. Please review and respond.`,
+                            message:
+                                `You have received procurement ${procurementNumber} for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. Please review and respond.`,
 
-                //             type: "SUPPLIER",
+                            type: "SUPPLIER",
 
-                //             isRead: false,
+                            isRead: false,
 
-                //             entityType: "Procurement",
+                            entityType: "Procurement",
 
-                //             entityId: procurementId,
-                //         },
-                //     ],
-                //     {
-                //         session,
-                //     }
-                // );
+                            entityId: procurementId,
+                        },
+                    ],
+                    {
+                        session,
+                    }
+                );
 
                 /* ==============================================
                    Audit Log — Procurement Created
