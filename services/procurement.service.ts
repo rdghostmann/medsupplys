@@ -15,7 +15,6 @@ import { User } from "@/models/User";
 
 import {
     Procurement,
-    type IProcurement,
     type SupplierCandidateStatus,
 } from "@/models/Procurement";
 
@@ -846,11 +845,8 @@ export async function createProcurement(
         await Procurement.db.startSession();
 
     try {
-        let createdProcurement:
-            | IProcurement
-            | null = null;
-
-        await session.withTransaction(
+        const createdProcurement =
+            await session.withTransaction(
             async () => {
                 /* ==============================================
                    Create Procurement
@@ -984,7 +980,7 @@ export async function createProcurement(
                         }
                     );
 
-                createdProcurement =
+                const createdProcurement =
                     procurementDocs[0];
 
                 const procurementId =
@@ -1477,6 +1473,8 @@ export async function createProcurement(
                         session,
                     }
                 );
+
+                return createdProcurement;
             }
         );
 
@@ -1484,46 +1482,39 @@ export async function createProcurement(
            Transaction Completed
            ===================================================== */
 
-        if (
-            !createdProcurement
-        ) {
-            throw new Error(
-                "Procurement creation failed."
-            );
-        }
-
         /* =====================================================
            Safe Client Response
            ===================================================== */
 
-        return {
-            success: true,
+      return {
+    success: true,
 
-            procurement: {
-                id: createdProcurement._id.toString(),
+    procurement: {
+        id: createdProcurement._id.toString(),
 
-                procurementNumber:
-                    createdProcurement.procurementNumber,
+        procurementNumber:
+            createdProcurement.procurementNumber,
 
-                status: createdProcurement.status,
+        status:
+            createdProcurement.status,
 
-                totalAmount,
+        totalAmount,
 
-                walletAmount,
+        walletAmount,
 
-                creditAmount,
+        creditAmount,
 
-                supplierName:
-                    selectedSupplier.supplierName,
+        supplierName:
+            selectedSupplier.supplierName,
 
-                supplierType:
-                    selectedSupplier.supplierType,
+        supplierType:
+            selectedSupplier.supplierType,
 
-                quantity,
+        quantity,
 
-                unitPrice,
-            },
-        };
+        unitPrice,
+    },
+};
     } finally {
         await session.endSession();
     }
