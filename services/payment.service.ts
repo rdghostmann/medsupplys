@@ -253,15 +253,30 @@ export async function initializeWalletTopup(params: {
 /**
  * Resolve the gateway transaction and
  * complete the wallet top-up.
+ *
+ * `buyerId` is optional because:
+ *
+ * - Browser callback => authenticated buyer ID is supplied.
+ * - Gateway webhook => no user session exists.
  */
 export async function verifyWalletTopup(
-  reference: string
+  reference: string,
+  buyerId?: string
 ) {
   await connectToDB();
 
+  const normalizedReference =
+    String(reference ?? "").trim();
+
+  if (!normalizedReference) {
+    throw new Error(
+      "Payment reference is required"
+    );
+  }
+
   const payment =
     await PaymentTransaction.findOne({
-      reference,
+      reference: normalizedReference,
     });
 
   if (!payment) {
@@ -279,31 +294,69 @@ export async function verifyWalletTopup(
     );
   }
 
-  /**
-   * Idempotency:
+  /*
+   * SECURITY:
    *
-   * If the payment has already been
-   * completed, do not credit the wallet again.
+   * When called from an authenticated browser request,
+   * make sure the payment belongs to that buyer.
+   *
+   * Webhooks omit buyerId because they are server-to-server.
+   */
+  if (buyerId) {
+    if (
+      !Types.ObjectId.isValid(buyerId)
+    ) {
+      throw new Error(
+        "Invalid buyer ID"
+      );
+    }
+
+    if (
+      payment.buyerId.toString() !==
+      buyerId
+    ) {
+      throw new Error(
+        "You are not authorized to verify this payment"
+      );
+    }
+  }
+
+  /*
+   * IDEMPOTENCY
+   *
+   * A successful payment must never be credited twice.
    */
   if (
-    payment.status === "successful"
+    payment.status ===
+    "successful"
   ) {
     return {
       success: true,
 
       alreadyProcessed: true,
 
+      status: "SUCCESS" as const,
+
       reference:
         payment.reference,
 
       amount:
         payment.amount,
+
+      provider:
+        payment.provider,
     };
   }
 
   let verification:
     VerifyPaymentResult;
 
+  /*
+   * FLUTTERWAVE
+   *
+   * Flutterwave verification requires the
+   * provider transaction ID.
+   */
   if (
     payment.provider ===
     "flutterwave"
@@ -320,7 +373,15 @@ export async function verifyWalletTopup(
       ).verifyPayment(
         payment.providerReference
       );
-  } else {
+  }
+
+  /*
+   * PAYSTACK
+   *
+   * Paystack verifies directly using
+   * the transaction reference.
+   */
+  else {
     verification =
       await getProvider(
         "PAYSTACK"
@@ -329,15 +390,8 @@ export async function verifyWalletTopup(
       );
   }
 
-  /**
-   * Never credit based merely on
-   * redirect/webhook status.
-   *
-   * Validate:
-   * - successful status
-   * - exact internal reference
-   * - exact amount
-   * - NGN currency
+  /*
+   * Payment isn't successful yet.
    */
   if (
     verification.status !==
@@ -364,8 +418,19 @@ export async function verifyWalletTopup(
 
       reference:
         payment.reference,
+
+      amount:
+        payment.amount,
+
+      provider:
+        payment.provider,
     };
   }
+
+  /*
+   * NEVER trust only the gateway's
+   * success status.
+   */
 
   if (
     verification.reference !==
@@ -378,7 +443,7 @@ export async function verifyWalletTopup(
 
   if (
     verification.currency !==
-    "NGN"
+    payment.currency
   ) {
     throw new Error(
       "Payment currency mismatch"

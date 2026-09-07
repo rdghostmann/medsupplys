@@ -91,29 +91,95 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
     setLastRef(reference);
 
     try {
-      /**
-       * Connect your real gateway initialization here.
-       *
-       * Example:
-       *
-       * await api.topupPaystack({
-       *   buyerId: currentUser.id,
-       *   amount,
-       *   reference,
-       *   channel: paymentMethod,
-       * });
-       */
+     const handleContinuePayment = async () => {
+  if (!amount || amount <= 0) {
+    toast.error("Invalid amount", {
+      description:
+        "Please enter an amount greater than ₦0.",
+    });
 
-      await new Promise((resolve) =>
-        setTimeout(resolve, 1500)
+    return;
+  }
+
+  if (!currentUser?.id) {
+    toast.error("Authentication required", {
+      description:
+        "Unable to identify your wallet account.",
+    });
+
+    return;
+  }
+
+  setIsProcessing(true);
+  setStep("PROCESSING");
+
+  try {
+    const endpoint =
+      paymentMethod === "paystack"
+        ? "/api/payments/paystack/initialize"
+        : "/api/payments/flutterwave/initialize";
+
+    const response =
+      await fetch(endpoint, {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json",
+        },
+
+        body: JSON.stringify({
+          amount,
+        }),
+      });
+
+    const data =
+      await response.json();
+
+    if (
+      !response.ok ||
+      !data?.success ||
+      !data?.checkoutUrl
+    ) {
+      throw new Error(
+        data?.message ||
+          "Unable to initialize payment"
       );
+    }
 
-      if (onSuccess) {
-        await onSuccess();
+    setLastRef(
+      data.reference || ""
+    );
+
+    /*
+     * The gateway now takes over.
+     *
+     * Do NOT credit the wallet here.
+     */
+    window.location.assign(
+      data.checkoutUrl
+    );
+  } catch (error: unknown) {
+    console.error(
+      "Wallet top-up initialization error:",
+      error
+    );
+
+    setIsProcessing(false);
+    setStep("FORM");
+
+    toast.error(
+      "Unable to start payment",
+      {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Please try again.",
       }
+    );
+  }
+};
 
-      setStep("SUCCESS");
-      setIsProcessing(false);
 
       toast.success("Wallet funded successfully", {
         description: `${formatAmount(

@@ -9,13 +9,13 @@ import {
   initializeWalletTopup,
 } from "@/services/payment.service";
 
-import { auth } from "@/auth";
+import { authOptions } from "@/auth";
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const session = await auth();
+    const session = await authOptions();
 
     if (!session?.user?.id) {
       return NextResponse.json(

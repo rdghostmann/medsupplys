@@ -19,6 +19,7 @@ import type {
 } from "@/controllers/buyer.actions";
 
 import TopUpModal from "./TopUpModal";
+import { useRouter } from "next/dist/client/components/navigation";
 
 type BuyerWalletData = CurrentBuyerWallet;
 
@@ -46,7 +47,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 
 
 
-  const [walletState] = useState<BuyerWalletData | null>(wallet);
+  const walletState = wallet;
 
   const [transactions, setTransactions] =
     useState<WalletTransaction[]>(initialTransactions);
@@ -56,28 +57,25 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 
   const [isTopUpModalOpen, setIsTopUpModalOpen] =
     useState(false);
-  /* ------------------------------------------------------------------------ */
-  /* Totals                                                                   */
-  /* ------------------------------------------------------------------------ */
-
-  /* ------------------------------------------------------------------------ */
-  /* Actions                                                                   */
-  /* ------------------------------------------------------------------------ */
-
+  const router = useRouter();
   const refreshAll = async () => {
     setIsRefreshing(true);
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 700)
-    );
+    try {
+      router.refresh();
 
-    setTransactions([...initialTransactions]);
+      await new Promise(
+        (resolve) =>
+          setTimeout(resolve, 500)
+      );
 
-    setIsRefreshing(false);
-
-    toast.success("Wallet ledger refreshed");
+      toast.success(
+        "Wallet ledger refreshed"
+      );
+    } finally {
+      setIsRefreshing(false);
+    }
   };
-
 
   /* ------------------------------------------------------------------------ */
   /* UI                                                                        */
@@ -148,7 +146,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 
               <span className="text-blue-200/80">
                 {" "}
-                • {wallet?.currency || "NGN"} (Nigerian Naira)
+                • {walletState?.currency || "NGN"} (Nigerian Naira)
               </span>
             </span>
           </div>
@@ -162,7 +160,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
             </div>
 
             <div className="mt-1 font-mono text-2xl font-bold text-slate-900">
-              {formatCurrency(wallet?.creditAllowance || 0)}
+              {formatCurrency(walletState?.creditAllowance || 0)}
             </div>
 
             <p className="mt-1 text-[11px] text-slate-500">
@@ -174,7 +172,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
             <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
 
             <span>
-              {wallet?.creditStatus === "ACTIVE"
+              {walletState?.creditStatus === "ACTIVE"
                 ? "Credit facility active"
                 : "Credit facility available"}
             </span>
@@ -191,7 +189,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
             <div className="mt-1 font-mono text-2xl font-bold text-emerald-700">
               {/* Available Purchasing Power */}
               <div className="font-mono text-2xl font-bold text-emerald-700">
-                {formatCurrency(wallet?.purchasingPower || 0)}
+                {formatCurrency(walletState?.purchasingPower || 0)}
               </div>
 
             </div>

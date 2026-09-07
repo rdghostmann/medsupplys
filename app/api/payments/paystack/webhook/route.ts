@@ -1,5 +1,3 @@
-// /app/api/payments/paystack/webhook/route.ts
-
 import {
   NextRequest,
   NextResponse,
@@ -24,7 +22,7 @@ function verifyPaystackSignature(
     );
   }
 
-  const hash =
+  const expected =
     crypto
       .createHmac(
         "sha512",
@@ -33,22 +31,22 @@ function verifyPaystackSignature(
       .update(rawBody)
       .digest("hex");
 
-  const expected =
-    Buffer.from(hash);
+  const expectedBuffer =
+    Buffer.from(expected);
 
-  const received =
+  const receivedBuffer =
     Buffer.from(signature);
 
   if (
-    expected.length !==
-    received.length
+    expectedBuffer.length !==
+    receivedBuffer.length
   ) {
     return false;
   }
 
   return crypto.timingSafeEqual(
-    expected,
-    received
+    expectedBuffer,
+    receivedBuffer
   );
 }
 
@@ -91,12 +89,14 @@ export async function POST(
     const event =
       JSON.parse(rawBody);
 
-    /**
+    /*
      * We only care about successful
-     * wallet top-up events here.
+     * wallet funding events.
      *
-     * Other Paystack events can be handled
-     * later without affecting the wallet.
+     * verifyWalletTopup() independently
+     * verifies the transaction with Paystack,
+     * so the webhook payload itself is
+     * never trusted for wallet crediting.
      */
     if (
       event?.event !==
@@ -126,12 +126,6 @@ export async function POST(
       );
     }
 
-    /**
-     * verifyWalletTopup() independently
-     * calls Paystack's verification API.
-     *
-     * We do NOT trust webhook amount/status.
-     */
     await verifyWalletTopup(
       reference
     );
@@ -150,10 +144,6 @@ export async function POST(
       error
     );
 
-    /**
-     * Returning 500 allows Paystack's retry
-     * mechanism to retry delivery.
-     */
     return NextResponse.json(
       {
         success: false,

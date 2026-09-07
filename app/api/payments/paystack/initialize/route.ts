@@ -1,20 +1,19 @@
-// /app/api/payments/paystack/initialize/route.ts
+import {
+  NextRequest,
+  NextResponse,
+} from "next/server";
 
-import { NextRequest, NextResponse } from "next/server";
 
 import {
   initializeWalletTopup,
 } from "@/services/payment.service";
 import { authOptions } from "@/auth";
 
-// Adjust this import to the authentication
-// export already used by your MedSupply app.
-
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const session = authOptions();
+    const session =   await authOptions();
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -28,7 +27,8 @@ export async function POST(
       );
     }
 
-    const body = await request.json();
+    const body =
+      await request.json();
 
     const amount =
       Number(body?.amount);
@@ -59,7 +59,7 @@ export async function POST(
     }
 
     const callbackUrl =
-      `${appUrl}/dashboard/buyer/wallet/topup/callback?provider=paystack`;
+      `${appUrl}/dashboard/buyerwallet/topup/callback?provider=paystack`;
 
     const result =
       await initializeWalletTopup({
