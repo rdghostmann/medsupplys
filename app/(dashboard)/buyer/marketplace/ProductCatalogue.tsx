@@ -130,7 +130,7 @@ export default function ProductCatalogue({
               <div>
                 <div className="flex items-center gap-2">
                   <div className="hidden h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                  {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50"> */}
+                    {/* <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50"> */}
                     <Package2 className="h-5 w-5 text-blue-600" />
                   </div>
                   <h1 className="text-xl font-bold tracking-tight text-slate-900">
@@ -274,6 +274,7 @@ export default function ProductCatalogue({
 
       {selectedProduct && (
         <SourcingDrawer
+          key={selectedProduct.productId}
           product={selectedProduct}
           open={isSourcingOpen}
           onClose={handleCloseSourcing}

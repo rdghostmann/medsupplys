@@ -685,63 +685,73 @@ export interface UserNotificationPreferences {
     weeklyDigest: boolean;
 }
 
-export interface SupplierScoreBreakdown {
-    supplierId: string;
-    supplierProductId: string;
+export type SupplierScoreBreakdown = {
+  supplierId: string;
+  supplierProductId: string;
 
-    supplierName: string;
+  supplierName: string;
+  username?: string;
 
-    supplierType:
-    | "importer"
-    | "distributor"
-    | "retailer";
+  supplierType:
+    | "IMPORTER"
+    | "DISTRIBUTOR"
+    | "RETAILER";
 
-    basePrice: number;
-    commission: number;
-    commissionPercent: number;
-    finalPrice: number;
+  stock: number;
 
+  moq: number;
+  maxOrderQuantity: number;
+
+  rating: number;
+  fulfillmentRate: number;
+  deliveryDays: number;
+
+  basePrice: number;
+  commission: number;
+  commissionPercent: number;
+  finalPrice: number;
+
+  totalScore: number;
+
+  scoreBreakdown: {
+    price: number;
     stock: number;
-    moq: number;
-    maxOrderQuantity: number;
-
     rating: number;
-    fulfillmentRate: number;
-    deliveryDays: number;
+    fulfillment: number;
+    delivery: number;
+    supplierType: number;
+  };
 
-    availabilityScore: number;
-    priceScore: number;
-    supplierTypeScore: number;
-    fulfillmentScore: number;
-    reliabilityScore: number;
+  isEligible: boolean;
+  ineligibilityReason?: string;
 
-    totalScore: number;
+  nafdacRegNumber: string;
 
-    isEligible: boolean;
-    ineligibilityReason?: string;
+  batchNumber: string;
+  expiryDate: string;
+  manufacturingDate?: string;
 
-    nafdacRegNumber: string;
-    batchNumber: string;
-    expiryDate: string;
-    manufacturingDate?: string;
+  verified: boolean;
+  supplierApprovalStatus?: string;
 
-    verified: boolean;
-    supplierApprovalStatus?: SupplierApprovalStatus;
+  creditRatingTier?: string;
 
-    state?: string;
-    lga?: string;
+  isColdChainCertified: boolean;
 
-    unit: string;
+  state?: string;
+  lga?: string;
 
-    isFlagged: boolean;
+  unit: string;
 
-    status:
+  isFlagged: boolean;
+
+  status:
     | "AVAILABLE"
     | "LOW_STOCK"
     | "OUT_OF_STOCK"
     | "ON_REQUEST"
     | "SUSPENDED";
-}
+};
 
 export interface SupplierAttemptHistory {
     attemptNumber: number;

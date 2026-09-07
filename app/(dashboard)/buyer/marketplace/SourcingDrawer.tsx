@@ -1,4 +1,5 @@
 // SourcingDrawer.tsx
+
 "use client";
 
 import React, {
@@ -10,15 +11,15 @@ import React, {
 import {
   ArrowRight,
   CheckCircle2,
-  ChevronRight,
-  Clock3,
   CreditCard,
+  Layers,
   Loader2,
   Lock,
   MapPin,
   Package2,
   ShieldCheck,
   ShoppingCart,
+  Sparkles,
   Star,
   Wallet,
   X,
@@ -31,9 +32,13 @@ import { Input } from "@/components/ui/input";
 
 import type {
   MarketplaceProduct,
-  SupplierScoreBreakdown,
   PaymentMethod,
+  SupplierScoreBreakdown,
 } from "@/types";
+
+import {
+  matchSuppliers,
+} from "@/services/supplier-matching.service";
 
 /* =========================================================
    Props
@@ -54,24 +59,55 @@ export default function SourcingDrawer({
   open,
   onClose,
 }: SourcingDrawerProps) {
+  /* =======================================================
+     Procurement State
+     ======================================================= */
+
   const [quantity, setQuantity] = useState(
     product.suppliers[0]?.minOrderQuantity ?? 1
   );
 
-  const [selectedSupplierId, setSelectedSupplierId] =
-    useState<string | null>(null);
+  /* =======================================================
+     Selected Supplier Listing
+     
+     IMPORTANT:
+     We select the SupplierProduct listing rather than
+     merely selecting a supplier account.
+     ======================================================= */
+
+  const [
+    selectedSupplierProductId,
+    setSelectedSupplierProductId,
+  ] = useState<string | null>(null);
+
+  /* =======================================================
+     Payment State
+     ======================================================= */
 
   const [paymentMethod, setPaymentMethod] =
     useState<PaymentMethod>("WALLET");
 
-  const [walletAmount, setWalletAmount] =
+  /*
+   * Only the wallet portion needs to be stored.
+   *
+   * Credit portion is derived:
+   *
+   * totalAmount - walletAmount
+   */
+
+  const [splitWalletAmount, setSplitWalletAmount] =
     useState(0);
 
-  const [creditAmount, setCreditAmount] =
-    useState(0);
+  /* =======================================================
+     Delivery State
+     ======================================================= */
 
   const [deliveryAddress, setDeliveryAddress] =
     useState("");
+
+  /* =======================================================
+     Supplier Matching State
+     ======================================================= */
 
   const [isMatching, setIsMatching] =
     useState(false);
@@ -83,25 +119,23 @@ export default function SourcingDrawer({
     useState<string | null>(null);
 
   /* =======================================================
-     Reset when product changes
-     ======================================================= */
-
-  useEffect(() => {
-    const defaultQuantity =
-      product.suppliers[0]?.minOrderQuantity ?? 1;
-
-    setQuantity(defaultQuantity);
-    setSelectedSupplierId(null);
-    setPaymentMethod("WALLET");
-    setWalletAmount(0);
-    setCreditAmount(0);
-    setDeliveryAddress("");
-    setMatches([]);
-    setError(null);
-  }, [product]);
-
-  /* =======================================================
-     Match suppliers
+     Match Suppliers
+     
+     IMPORTANT:
+     
+     This does NOT call:
+     
+       /api/marketplace/matching
+     
+     and does NOT use:
+     
+       services/matching.service.ts
+     
+     It invokes the canonical:
+     
+       services/supplier-matching.service.ts
+     
+     directly as a Server Action.
      ======================================================= */
 
   useEffect(() => {
@@ -109,65 +143,90 @@ export default function SourcingDrawer({
       return;
     }
 
-    const controller = new AbortController();
+    let cancelled = false;
 
     async function loadMatches() {
       try {
         setIsMatching(true);
         setError(null);
 
-        const response = await fetch(
-          "/api/marketplace/matching",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              productId: product.productId,
-              quantity,
-            }),
-            signal: controller.signal,
-          }
+        /*
+         * Clear the old supplier pool while the new
+         * quantity is being evaluated.
+         */
+        setMatches([]);
+
+        /*
+         * Call the canonical supplier matching service
+         * directly.
+         *
+         * No fetch().
+         * No API route.
+         * No response.json().
+         * Therefore an HTML <!DOCTYPE> response cannot
+         * occur here.
+         */
+        const result = await matchSuppliers(
+          product.productId,
+          quantity
         );
 
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data?.message ||
-              "Unable to match suppliers."
-          );
-        }
-
-        setMatches(
-          Array.isArray(data.matches)
-            ? data.matches
-            : []
-        );
-      } catch (err) {
-        if (
-          err instanceof DOMException &&
-          err.name === "AbortError"
-        ) {
+        if (cancelled) {
           return;
         }
+
+        const nextMatches = Array.isArray(result)
+          ? result
+          : [];
+
+        setMatches(nextMatches);
+
+        /*
+         * Automatically select the highest-ranked
+         * eligible SupplierProduct.
+         *
+         * The canonical matching service sorts eligible
+         * suppliers first and then by score.
+         */
+        const topEligibleSupplier =
+          nextMatches.find(
+            (supplier) => supplier.isEligible
+          );
+
+        setSelectedSupplierProductId(
+          topEligibleSupplier?.supplierProductId ??
+            null
+        );
+      } catch (err) {
+        if (cancelled) {
+          return;
+        }
+
+        console.error(
+          "[SOURCING_DRAWER_MATCHING]",
+          err
+        );
+
+        setMatches([]);
+        setSelectedSupplierProductId(null);
 
         setError(
           err instanceof Error
             ? err.message
-            : "Unable to load supplier matches."
+            : "Unable to evaluate supplier matches."
         );
-
-        setMatches([]);
       } finally {
-        setIsMatching(false);
+        if (!cancelled) {
+          setIsMatching(false);
+        }
       }
     }
 
     loadMatches();
 
-    return () => controller.abort();
+    return () => {
+      cancelled = true;
+    };
   }, [
     open,
     product.productId,
@@ -175,40 +234,48 @@ export default function SourcingDrawer({
   ]);
 
   /* =======================================================
-     Selected supplier
+     Selected Supplier
      ======================================================= */
 
   const selectedSupplier = useMemo(() => {
+    if (!selectedSupplierProductId) {
+      return null;
+    }
+
     return (
       matches.find(
         (supplier) =>
-          supplier.supplierId ===
-          selectedSupplierId
+          supplier.supplierProductId ===
+          selectedSupplierProductId
       ) ?? null
     );
   }, [
     matches,
-    selectedSupplierId,
+    selectedSupplierProductId,
   ]);
 
   /* =======================================================
-     Pricing
+     Procurement Total
      
      IMPORTANT:
-     These are display values only.
-
-     The backend MUST recalculate authoritative
-     pricing during procurement creation.
+     
+     SupplierProduct.finalPrice is the buyer-facing
+     supplier listing price.
+     
+     Product.referenceBasePrice is NOT reconstructed
+     here.
      ======================================================= */
 
   const totalAmount = useMemo(() => {
-    if (!selectedSupplier) {
+    if (
+      !selectedSupplier ||
+      !selectedSupplier.isEligible
+    ) {
       return 0;
     }
 
     return Math.round(
-      selectedSupplier.finalPrice *
-        quantity
+      selectedSupplier.finalPrice * quantity
     );
   }, [
     selectedSupplier,
@@ -216,389 +283,845 @@ export default function SourcingDrawer({
   ]);
 
   /* =======================================================
-     Payment allocation
+     Payment Allocation
      ======================================================= */
 
-  useEffect(() => {
-    if (!totalAmount) {
-      setWalletAmount(0);
-      setCreditAmount(0);
-      return;
+  const paymentAllocation = useMemo(() => {
+    if (totalAmount <= 0) {
+      return {
+        walletAmount: 0,
+        creditAmount: 0,
+      };
     }
 
     if (paymentMethod === "WALLET") {
-      setWalletAmount(totalAmount);
-      setCreditAmount(0);
-      return;
+      return {
+        walletAmount: totalAmount,
+        creditAmount: 0,
+      };
     }
 
     if (paymentMethod === "CREDIT") {
-      setWalletAmount(0);
-      setCreditAmount(totalAmount);
-      return;
+      return {
+        walletAmount: 0,
+        creditAmount: totalAmount,
+      };
     }
 
-    if (
-      paymentMethod ===
-      "WALLET_AND_CREDIT"
-    ) {
-      setWalletAmount(totalAmount);
-      setCreditAmount(0);
-    }
+    const walletAmount = Math.min(
+      totalAmount,
+      Math.max(0, splitWalletAmount)
+    );
+
+    return {
+      walletAmount,
+      creditAmount:
+        totalAmount - walletAmount,
+    };
   }, [
     paymentMethod,
     totalAmount,
+    splitWalletAmount,
   ]);
 
   /* =======================================================
-     Drawer guard
+     Payment Handlers
+     ======================================================= */
+
+  const handleWalletPayment = () => {
+    setPaymentMethod("WALLET");
+    setSplitWalletAmount(0);
+  };
+
+  const handleCreditPayment = () => {
+    setPaymentMethod("CREDIT");
+    setSplitWalletAmount(0);
+  };
+
+  const handleSplitPayment = () => {
+    setPaymentMethod(
+      "WALLET_AND_CREDIT"
+    );
+
+    /*
+     * Start at 50/50 rather than allocating 100%
+     * of the total to wallet.
+     *
+     * Buyer can modify either portion.
+     */
+    setSplitWalletAmount(
+      Math.round(totalAmount / 2)
+    );
+  };
+
+  /* =======================================================
+     Split Wallet Amount
+     ======================================================= */
+
+  const handleSplitWalletAmountChange = (
+    value: number
+  ) => {
+    const safeValue = Number.isFinite(value)
+      ? value
+      : 0;
+
+    const normalizedValue = Math.min(
+      totalAmount,
+      Math.max(0, safeValue)
+    );
+
+    setSplitWalletAmount(
+      normalizedValue
+    );
+  };
+
+  /* =======================================================
+     Quantity Validation
+     ======================================================= */
+
+  const handleQuantityChange = (
+    value: number
+  ) => {
+    const safeValue = Number.isFinite(value)
+      ? value
+      : 1;
+
+    setQuantity(
+      Math.max(1, Math.floor(safeValue))
+    );
+
+    /*
+     * The selected SupplierProduct may no longer
+     * satisfy the new quantity.
+     *
+     * Clear it while the matching engine evaluates
+     * the new quantity.
+     */
+    setSelectedSupplierProductId(null);
+  };
+
+  /* =======================================================
+     Submit Validation
+     
+     This is client-side UX validation only.
+     
+     Final validation MUST happen server-side before
+     creating the procurement.
+     ======================================================= */
+
+  const canSubmit =
+    Boolean(selectedSupplier) &&
+    Boolean(selectedSupplier?.isEligible) &&
+    quantity > 0 &&
+    Boolean(deliveryAddress.trim()) &&
+    totalAmount > 0 &&
+    (
+      paymentMethod !==
+        "WALLET_AND_CREDIT" ||
+      paymentAllocation.walletAmount +
+        paymentAllocation.creditAmount ===
+        totalAmount
+    );
+
+  /* =======================================================
+     Drawer Guard
      ======================================================= */
 
   if (!open) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-50">
+  /* =======================================================
+     Render
+     ======================================================= */
 
-      {/* Backdrop */}
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-end bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+
+      {/* ===================================================
+          Backdrop
+          =================================================== */}
+
       <button
         type="button"
         aria-label="Close sourcing drawer"
         onClick={onClose}
-        className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
+        className="absolute inset-0 cursor-default"
       />
 
-      {/* Drawer */}
-      <aside className="absolute right-0 top-0 flex h-full w-full max-w-2xl flex-col bg-white shadow-2xl">
+      {/* ===================================================
+          Drawer
+          =================================================== */}
+
+      <aside className="relative flex h-full w-full max-w-2xl flex-col overflow-hidden border-l border-slate-200 bg-white shadow-2xl animate-in slide-in-from-right duration-200">
 
         {/* =================================================
             Header
             ================================================= */}
 
-        <div className="border-b border-slate-200 bg-white px-5 py-4">
+        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/70 px-6 py-4">
 
-          <div className="flex items-start justify-between gap-4">
+          <div className="flex min-w-0 items-center gap-3">
 
-            <div className="flex min-w-0 items-start gap-3">
-
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
-                <Package2 className="h-5 w-5 text-blue-600" />
-              </div>
-
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2">
-
-                  <h2 className="truncate text-base font-bold text-slate-900">
-                    {product.name}
-                  </h2>
-
-                  <Badge
-                    variant="secondary"
-                    className="rounded-full bg-blue-50 text-[10px] text-blue-700"
-                  >
-                    {product.category}
-                  </Badge>
-
-                </div>
-
-                <p className="mt-1 text-xs text-slate-500">
-                  {product.activeIngredient}
-                  {product.strength
-                    ? ` • ${product.strength}`
-                    : ""}
-                  {" • "}
-                  {product.unit}
-                </p>
-              </div>
+            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50">
+              <Package2 className="h-5 w-5 text-blue-600" />
             </div>
 
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700"
-              aria-label="Close"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="min-w-0">
+
+              <div className="flex flex-wrap items-center gap-2">
+
+                <h2 className="truncate text-base font-bold text-slate-900">
+                  {product.name}
+                </h2>
+
+                <Badge
+                  variant="secondary"
+                  className="rounded bg-blue-100 px-2 py-0.5 text-[10px] font-bold text-blue-800"
+                >
+                  {product.category}
+                </Badge>
+
+              </div>
+
+              <p className="mt-1 text-xs font-mono text-slate-500">
+                {product.activeIngredient}
+
+                {product.strength
+                  ? ` • ${product.strength}`
+                  : ""}
+
+                {" • "}
+
+                {product.unit}
+              </p>
+
+            </div>
 
           </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-200/60 hover:text-slate-700"
+            aria-label="Close sourcing drawer"
+          >
+            <X className="h-4 w-4" />
+          </button>
+
         </div>
 
         {/* =================================================
-            Scrollable Content
+            Content
             ================================================= */}
 
         <div className="flex-1 overflow-y-auto">
 
-          <div className="space-y-6 p-5">
+          <div className="space-y-6 p-6">
 
-            {/* Quantity */}
-            <section>
-              <div className="mb-2 flex items-center justify-between">
+            {/* =================================================
+                Quantity & Pricing
+                ================================================= */}
+
+            <section className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+
+              <div className="grid gap-4 sm:grid-cols-2">
+
+                {/* Quantity */}
+
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Procurement Quantity
-                  </h3>
 
-                  <p className="text-xs text-slate-500">
-                    Quantity is measured in {product.unit}.
+                  <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                    Required Order Quantity
+                  </label>
+
+                  <div className="flex items-center gap-2">
+
+                    <Input
+                      type="number"
+                      min={1}
+                      step={1}
+                      value={quantity}
+                      onChange={(event) => {
+                        handleQuantityChange(
+                          Number(
+                            event.target.value
+                          )
+                        );
+                      }}
+                      className="h-10 rounded-lg bg-white font-mono text-sm font-bold"
+                    />
+
+                    <span className="whitespace-nowrap text-[11px] font-medium text-slate-500">
+                      {product.unit}
+                    </span>
+
+                  </div>
+
+                  <p className="mt-1.5 text-[10px] text-slate-500">
+                    Quantity is measured in{" "}
+                    {product.unit}.
                   </p>
+
                 </div>
 
-                <Badge
-                  variant="outline"
-                  className="rounded-full"
-                >
-                  {product.unit}
-                </Badge>
+                {/* Pricing */}
+
+                <div className="flex flex-col justify-center rounded-lg border border-slate-200 bg-white p-3">
+
+                  <div className="mb-1 flex items-center justify-between text-[11px] text-slate-500">
+
+                    <span>
+                      Unit Price
+                    </span>
+
+                    <span className="font-mono font-semibold text-slate-700">
+                      {selectedSupplier
+                        ? `₦${selectedSupplier.finalPrice.toLocaleString()}`
+                        : "—"}
+                    </span>
+
+                  </div>
+
+                  <div className="mb-1 flex items-center justify-between text-[11px] text-slate-500">
+
+                    <span>
+                      Quantity
+                    </span>
+
+                    <span className="font-mono">
+                      {quantity.toLocaleString()}x
+                    </span>
+
+                  </div>
+
+                  <div className="mt-1.5 flex items-center justify-between border-t border-slate-100 pt-1.5 text-xs font-bold text-slate-900">
+
+                    <span>
+                      Total Procurement Cost
+                    </span>
+
+                    <span className="font-mono text-sm text-blue-700">
+                      ₦
+                      {totalAmount.toLocaleString()}
+                    </span>
+
+                  </div>
+
+                </div>
+
               </div>
 
-              <Input
-                type="number"
-                min={1}
-                value={quantity}
-                onChange={(event) => {
-                  const value = Number(
-                    event.target.value
-                  );
-
-                  setQuantity(
-                    Number.isFinite(value)
-                      ? Math.max(1, value)
-                      : 1
-                  );
-                }}
-                className="h-11 rounded-xl"
-              />
             </section>
 
             {/* =================================================
-                Supplier Matching
+                Matching Engine
                 ================================================= */}
 
             <section>
-              <div className="mb-3 flex items-center justify-between">
 
-                <div>
-                  <h3 className="text-sm font-semibold text-slate-900">
-                    Supplier Matching Engine
+              <div className="mb-2 flex items-center justify-between">
+
+                <div className="flex items-center gap-2">
+
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+
+                  <h3 className="text-[11px] font-bold uppercase tracking-wider text-slate-900">
+                    Supplier Matching Engine & Dynamic Ranked Pool
                   </h3>
 
-                  <p className="text-xs text-slate-500">
-                    Suppliers are ranked according to
-                    availability, price, reliability and
-                    fulfilment performance.
-                  </p>
                 </div>
 
                 {isMatching && (
-                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  <span className="flex items-center gap-1.5 text-[10px] text-blue-600">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Calculating scores...
+                  </span>
                 )}
+
               </div>
 
+              <p className="mb-3 text-xs text-slate-500">
+                Suppliers are dynamically ranked by price,
+                stock availability, rating, fulfilment,
+                delivery performance and supplier
+                classification.
+              </p>
+
+              {/* Error */}
+
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-                  {error}
+                <div className="mb-3 rounded-xl border border-red-200 bg-red-50 p-3">
+
+                  <div className="flex items-start gap-2">
+
+                    <X className="mt-0.5 h-4 w-4 shrink-0 text-red-500" />
+
+                    <div>
+
+                      <p className="text-xs font-semibold text-red-700">
+                        Supplier matching unavailable
+                      </p>
+
+                      <p className="mt-0.5 text-[10px] leading-4 text-red-600">
+                        {error}
+                      </p>
+
+                    </div>
+
+                  </div>
+
                 </div>
               )}
+
+              {/* Loading */}
+
+              {isMatching &&
+                matches.length === 0 && (
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-5 text-center">
+
+                    <Sparkles className="mx-auto h-6 w-6 animate-pulse text-blue-600" />
+
+                    <p className="mt-2 text-xs font-semibold text-slate-700">
+                      Evaluating supplier network...
+                    </p>
+
+                    <p className="mt-1 text-[10px] text-slate-500">
+                      Comparing price, stock, reliability
+                      and delivery performance.
+                    </p>
+
+                  </div>
+                )}
+
+              {/* Empty */}
 
               {!isMatching &&
                 !error &&
                 matches.length === 0 && (
                   <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+
                     <Package2 className="mx-auto h-7 w-7 text-slate-400" />
 
-                    <p className="mt-2 text-sm font-medium text-slate-700">
-                      No eligible suppliers found
+                    <p className="mt-2 text-sm font-semibold text-slate-700">
+                      No supplier listings found
                     </p>
 
                     <p className="mt-1 text-xs text-slate-500">
-                      Try adjusting the procurement quantity.
+                      Try adjusting the procurement
+                      quantity.
                     </p>
+
                   </div>
                 )}
 
-              <div className="space-y-3">
+              {/* Ranked Pool */}
 
-                {matches.map(
-                  (supplier, index) => {
-                    const isSelected =
-                      selectedSupplierId ===
-                      supplier.supplierId;
+              {matches.length > 0 && (
+                <div className="max-h-60 space-y-2 overflow-y-auto pr-1">
 
-                    return (
-                      <button
-                        key={
-                          supplier.supplierId
-                        }
-                        type="button"
-                        disabled={
-                          !supplier.isEligible
-                        }
-                        onClick={() =>
-                          supplier.isEligible &&
-                          setSelectedSupplierId(
-                            supplier.supplierId
+                  {matches.map(
+                    (supplier, index) => {
+                      const isSelected =
+                        selectedSupplierProductId ===
+                        supplier.supplierProductId;
+
+                      const supplierType =
+                        String(
+                          supplier.supplierType
+                        ).toUpperCase();
+
+                      const statusLabel =
+                        String(
+                          supplier.status
+                        )
+                          .replaceAll(
+                            "_",
+                            " "
                           )
-                        }
-                        className={[
-                          "w-full rounded-2xl border p-4 text-left transition-all",
-                          supplier.isEligible
-                            ? "cursor-pointer"
-                            : "cursor-not-allowed opacity-60",
-                          isSelected
-                            ? "border-blue-500 bg-blue-50/50 ring-2 ring-blue-100"
-                            : "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50",
-                        ].join(" ")}
-                      >
+                          .toLowerCase()
+                          .replace(
+                            /^\w/,
+                            (char) =>
+                              char.toUpperCase()
+                          );
 
-                        <div className="flex items-start justify-between gap-4">
+                      return (
+                        <button
+                          key={
+                            supplier.supplierProductId
+                          }
+                          type="button"
+                          disabled={
+                            !supplier.isEligible
+                          }
+                          onClick={() => {
+                            if (
+                              supplier.isEligible
+                            ) {
+                              setSelectedSupplierProductId(
+                                supplier.supplierProductId
+                              );
+                            }
+                          }}
+                          className={[
+                            "w-full rounded-xl border p-3 text-left transition-all",
 
-                          <div className="flex min-w-0 items-start gap-3">
+                            supplier.isEligible
+                              ? "cursor-pointer"
+                              : "cursor-not-allowed opacity-60",
 
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-600">
-                              #{index + 1}
-                            </div>
+                            isSelected
+                              ? "border-blue-500 bg-blue-50/80 shadow-sm"
+                              : supplier.isEligible
+                                ? "border-slate-200 bg-white hover:border-blue-200 hover:bg-slate-50"
+                                : "border-slate-200 bg-slate-50/70",
+                          ].join(" ")}
+                        >
 
-                            <div className="min-w-0">
+                          {/* Main row */}
 
-                              <div className="flex flex-wrap items-center gap-2">
+                          <div className="flex items-center justify-between gap-3">
 
-                                <span className="font-semibold text-slate-900">
-                                  {supplier.supplierName}
-                                </span>
+                            {/* Supplier information */}
 
-                                {supplier.isEligible && (
-                                  <ShieldCheck className="h-4 w-4 text-emerald-600" />
-                                )}
+                            <div className="flex min-w-0 items-center gap-3">
 
+                              {/* Rank */}
+
+                              <div
+                                className={[
+                                  "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-xs font-bold",
+
+                                  index === 0 &&
+                                    supplier.isEligible
+                                    ? "border border-amber-300 bg-amber-100 text-amber-900"
+                                    : "bg-slate-100 text-slate-700",
+                                ].join(" ")}
+                              >
+                                #{index + 1}
                               </div>
 
-                              <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-slate-500">
+                              <div className="min-w-0">
 
-                                <span className="rounded-full bg-slate-100 px-2 py-1">
-                                  {String(
-                                    supplier.supplierType
-                                  ).toUpperCase()}
-                                </span>
+                                <div className="flex flex-wrap items-center gap-2">
 
-                                <span className="flex items-center gap-1">
-                                  <Star className="h-3 w-3 fill-current text-amber-500" />
-                                  {supplier.rating.toFixed(
-                                    1
+                                  <span className="truncate text-xs font-semibold text-slate-900">
+                                    {
+                                      supplier.supplierName
+                                    }
+                                  </span>
+
+                                  <span
+                                    className={[
+                                      "rounded px-1.5 py-0.5 text-[9px] font-bold",
+
+                                      supplierType ===
+                                        "IMPORTER"
+                                        ? "bg-emerald-100 text-emerald-800"
+                                        : supplierType ===
+                                            "DISTRIBUTOR"
+                                          ? "bg-blue-100 text-blue-800"
+                                          : "bg-slate-100 text-slate-700",
+                                    ].join(" ")}
+                                  >
+                                    {supplierType}
+                                  </span>
+
+                                  {supplier.verified && (
+                                    <span className="flex items-center gap-0.5 text-[9px] font-semibold text-emerald-600">
+                                      <ShieldCheck className="h-3 w-3" />
+                                      Verified
+                                    </span>
                                   )}
-                                </span>
 
-                                <span>
-                                  {supplier.stock.toLocaleString()}{" "}
-                                  stock
+                                </div>
+
+                                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-500">
+
+                                  <span>
+                                    Stock:{" "}
+                                    {supplier.stock.toLocaleString()}
+                                  </span>
+
+                                  <span>
+                                    MOQ:{" "}
+                                    {supplier.moq.toLocaleString()}
+                                  </span>
+
+                                  <span className="flex items-center gap-0.5 font-semibold text-amber-600">
+
+                                    <Star className="h-3 w-3 fill-current" />
+
+                                    {supplier.rating.toFixed(
+                                      1
+                                    )}
+
+                                  </span>
+
+                                  <span>
+                                    {
+                                      supplier.deliveryDays
+                                    }
+                                    d delivery
+                                  </span>
+
+                                </div>
+
+                              </div>
+
+                            </div>
+
+                            {/* Price */}
+
+                            <div className=" shrink-0 text-right">
+
+                              <div className="flex flex-col font-mono text-xs font-bold text-slate-900">
+
+                               <span> ₦ {supplier.finalPrice.toLocaleString()}</span>
+
+                                <span className="font-sans text-[9px] font-normal text-slate-400">
+                                  /{product.unit}
                                 </span>
 
                               </div>
+
+                              <div className="mt-1">
+
+                                <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] font-semibold text-slate-700">
+                                  Score:{" "}
+                                  {
+                                    supplier.totalScore
+                                  }{" "}
+                                  pts
+                                </span>
+
+                              </div>
+
                             </div>
-                          </div>
-
-                          <div className="shrink-0 text-right">
-
-                            <p className="text-base font-bold text-slate-900">
-                              ₦
-                              {supplier.finalPrice.toLocaleString()}
-                            </p>
-
-                            <p className="text-[10px] text-slate-400">
-                              per {product.unit}
-                            </p>
 
                           </div>
 
-                        </div>
+                          {/* Secondary metrics */}
 
-                        <div className="mt-4 grid grid-cols-3 gap-2">
+                          <div className="mt-2 hidden flex-wrap items-center gap-1.5">
+                          {/* <div className="mt-2 flex flex-wrap items-center gap-1.5"> */}
 
-                          <div className="rounded-lg bg-slate-50 p-2">
-                            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                              MOQ
-                            </p>
+                            <span className="rounded-md bg-slate-50 px-2 py-1 text-[9px] font-medium text-slate-600">
+                              Fulfilment{" "}
+                              {
+                                supplier.fulfillmentRate
+                              }
+                              %
+                            </span>
 
-                            <p className="mt-0.5 text-xs font-semibold text-slate-700">
-                              {supplier.moq.toLocaleString()}
-                            </p>
+                            <span
+                              className={[
+                                "rounded-md px-2 py-1 text-[9px] font-medium",
+
+                                supplier.status ===
+                                  "AVAILABLE"
+                                  ? "bg-emerald-50 text-emerald-700"
+                                  : "bg-amber-50 text-amber-700",
+                              ].join(" ")}
+                            >
+                              {statusLabel}
+                            </span>
+
+                            {supplier.state && (
+                              <span className="flex items-center gap-0.5 rounded-md bg-slate-50 px-2 py-1 text-[9px] font-medium text-slate-600">
+
+                                <MapPin className="h-2.5 w-2.5" />
+
+                                {supplier.state}
+
+                                {supplier.lga
+                                  ? `, ${supplier.lga}`
+                                  : ""}
+
+                              </span>
+                            )}
+
                           </div>
 
-                          <div className="rounded-lg bg-slate-50 p-2">
-                            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                              Fulfilment
-                            </p>
+                          {/* Ranking breakdown */}
 
-                            <p className="mt-0.5 text-xs font-semibold text-slate-700">
-                              {supplier.fulfillmentRate}%
-                            </p>
-                          </div>
+                          {isSelected &&
+                            supplier.isEligible && (
+                              <div className="hidden mt-2 rounded-lg border border-blue-100 bg-white/80 p-2">
+                              {/* <div className="mt-2 rounded-lg border border-blue-100 bg-white/80 p-2"> */}
 
-                          <div className="rounded-lg bg-slate-50 p-2">
-                            <p className="text-[9px] font-semibold uppercase tracking-wide text-slate-400">
-                              Delivery
-                            </p>
+                                <div className="mb-1.5 flex items-center justify-between">
 
-                            <p className="mt-0.5 text-xs font-semibold text-slate-700">
-                              {supplier.deliveryDays}{" "}
-                              days
-                            </p>
-                          </div>
+                                  <span className="text-[9px] font-bold uppercase tracking-wide text-blue-700">
+                                    Ranking Breakdown
+                                  </span>
 
-                        </div>
+                                  <span className="text-[9px] font-semibold text-slate-500">
+                                    {
+                                      supplier.totalScore
+                                    }{" "}
+                                    / 100
+                                  </span>
 
-                        {!supplier.isEligible &&
-                          supplier.ineligibilityReason && (
-                            <div className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">
-                              {supplier.ineligibilityReason}
-                            </div>
-                          )}
+                                </div>
 
-                        {isSelected && (
-                          <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-blue-700">
-                            <CheckCircle2 className="h-4 w-4" />
-                            Supplier selected
-                          </div>
-                        )}
+                                <div className="grid grid-cols-3 gap-1.5">
 
-                      </button>
-                    );
-                  }
-                )}
+                                  {[
+                                    [
+                                      "Price",
+                                      supplier
+                                        .scoreBreakdown
+                                        .price,
+                                    ],
+                                    [
+                                      "Stock",
+                                      supplier
+                                        .scoreBreakdown
+                                        .stock,
+                                    ],
+                                    [
+                                      "Rating",
+                                      supplier
+                                        .scoreBreakdown
+                                        .rating,
+                                    ],
+                                    [
+                                      "Fulfilment",
+                                      supplier
+                                        .scoreBreakdown
+                                        .fulfillment,
+                                    ],
+                                    [
+                                      "Delivery",
+                                      supplier
+                                        .scoreBreakdown
+                                        .delivery,
+                                    ],
+                                    [
+                                      "Supplier",
+                                      supplier
+                                        .scoreBreakdown
+                                        .supplierType,
+                                    ],
+                                  ].map(
+                                    ([
+                                      label,
+                                      score,
+                                    ]) => (
+                                      <div
+                                        key={String(
+                                          label
+                                        )}
+                                        className="rounded bg-slate-50 p-1.5"
+                                      >
 
-              </div>
+                                        <p className="text-[8px] uppercase text-slate-400">
+                                          {label}
+                                        </p>
+
+                                        <p className="text-[10px] font-semibold text-slate-700">
+                                          {score}
+                                        </p>
+
+                                      </div>
+                                    )
+                                  )}
+
+                                </div>
+
+                                <div className="mt-2 flex items-center gap-1.5 text-[10px] font-semibold text-blue-700">
+
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+
+                                  Supplier selected for procurement
+
+                                </div>
+
+                              </div>
+                            )}
+
+                          {/* Ineligibility */}
+
+                          {!supplier.isEligible &&
+                            supplier.ineligibilityReason && (
+                              <div className="mt-2 rounded-lg border border-red-100 bg-red-50 px-2.5 py-2">
+
+                                <div className="flex items-start gap-1.5">
+
+                                  <X className="mt-0.5 h-3 w-3 shrink-0 text-red-500" />
+
+                                  <span className="text-[9.5px] font-medium leading-4 text-red-600">
+                                    {
+                                      supplier.ineligibilityReason
+                                    }
+                                  </span>
+
+                                </div>
+
+                              </div>
+                            )}
+
+                        </button>
+                      );
+                    }
+                  )}
+
+                </div>
+              )}
+
             </section>
 
             {/* =================================================
-                Pricing Summary
+                Procurement Summary
                 ================================================= */}
 
             {selectedSupplier && (
               <section className="rounded-2xl border border-blue-100 bg-blue-50/50 p-4">
 
                 <div className="mb-3 flex items-center gap-2">
+
                   <ShoppingCart className="h-4 w-4 text-blue-600" />
 
                   <h3 className="text-sm font-semibold text-slate-900">
                     Procurement Summary
                   </h3>
+
                 </div>
 
                 <div className="space-y-2 text-sm">
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-4">
+
                     <span className="text-slate-500">
                       Supplier
                     </span>
 
-                    <span className="font-medium text-slate-800">
-                      {selectedSupplier.supplierName}
+                    <span className="text-right font-medium text-slate-800">
+                      {
+                        selectedSupplier.supplierName
+                      }
                     </span>
+
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-4">
+
+                    <span className="text-slate-500">
+                      Supplier Type
+                    </span>
+
+                    <span className="font-medium uppercase text-slate-800">
+                      {
+                        selectedSupplier.supplierType
+                      }
+                    </span>
+
+                  </div>
+
+                  <div className="flex justify-between gap-4">
+
                     <span className="text-slate-500">
                       Quantity
                     </span>
@@ -607,9 +1130,11 @@ export default function SourcingDrawer({
                       {quantity.toLocaleString()}{" "}
                       {product.unit}
                     </span>
+
                   </div>
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-4">
+
                     <span className="text-slate-500">
                       Unit price
                     </span>
@@ -618,27 +1143,47 @@ export default function SourcingDrawer({
                       ₦
                       {selectedSupplier.finalPrice.toLocaleString()}
                     </span>
+
+                  </div>
+
+                  <div className="flex justify-between gap-4">
+
+                    <span className="text-slate-500">
+                      Delivery
+                    </span>
+
+                    <span className="font-medium text-slate-800">
+                      {
+                        selectedSupplier.deliveryDays
+                      }{" "}
+                      days
+                    </span>
+
                   </div>
 
                   <div className="my-2 border-t border-blue-100" />
 
-                  <div className="flex justify-between">
+                  <div className="flex justify-between gap-4">
+
                     <span className="font-semibold text-slate-700">
                       Estimated Total
                     </span>
 
                     <span className="text-lg font-bold text-blue-700">
-                      ₦{totalAmount.toLocaleString()}
+                      ₦
+                      {totalAmount.toLocaleString()}
                     </span>
+
                   </div>
 
                 </div>
 
                 <p className="mt-3 text-[10px] leading-4 text-slate-400">
-                  Final pricing is validated by the MedSupply
-                  procurement service before the procurement
-                  is created.
+                  Final price, stock, supplier eligibility
+                  and payment availability are revalidated
+                  by the procurement service before creation.
                 </p>
+
               </section>
             )}
 
@@ -647,145 +1192,215 @@ export default function SourcingDrawer({
                 ================================================= */}
 
             <section>
-              <div className="mb-3">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Payment Method
-                </h3>
 
-                <p className="text-xs text-slate-500">
-                  Select how this procurement should be funded.
-                </p>
-              </div>
+              <label className="mb-2 block text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                Payment & Procurement Finance Method
+              </label>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-2 sm:grid-cols-3">
+
+                {/* Wallet */}
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setPaymentMethod("WALLET")
+                  onClick={
+                    handleWalletPayment
                   }
                   className={[
-                    "rounded-xl border p-3 text-left transition-colors",
-                    paymentMethod === "WALLET"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-blue-200",
-                  ].join(" ")}
-                >
-                  <Wallet className="h-4 w-4 text-blue-600" />
+                    "flex flex-col justify-between rounded-xl border p-3 text-left transition",
 
-                  <p className="mt-2 text-xs font-semibold text-slate-800">
-                    100% Wallet
-                  </p>
-
-                  <p className="mt-0.5 text-[10px] text-slate-500">
-                    Pay from wallet balance
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPaymentMethod("CREDIT")
-                  }
-                  className={[
-                    "rounded-xl border p-3 text-left transition-colors",
-                    paymentMethod === "CREDIT"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-blue-200",
-                  ].join(" ")}
-                >
-                  <CreditCard className="h-4 w-4 text-blue-600" />
-
-                  <p className="mt-2 text-xs font-semibold text-slate-800">
-                    100% Credit
-                  </p>
-
-                  <p className="mt-0.5 text-[10px] text-slate-500">
-                    Use approved credit
-                  </p>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPaymentMethod(
-                      "WALLET_AND_CREDIT"
-                    )
-                  }
-                  className={[
-                    "rounded-xl border p-3 text-left transition-colors",
                     paymentMethod ===
-                    "WALLET_AND_CREDIT"
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-blue-200",
+                      "WALLET"
+                      ? "border-blue-500 bg-blue-50/80 text-blue-900 shadow-sm"
+                      : "border-slate-200 hover:bg-slate-50",
                   ].join(" ")}
                 >
-                  <Zap className="h-4 w-4 text-blue-600" />
 
-                  <p className="mt-2 text-xs font-semibold text-slate-800">
-                    Split Payment
-                  </p>
+                  <div>
 
-                  <p className="mt-0.5 text-[10px] text-slate-500">
-                    Wallet + credit
-                  </p>
+                    <div className="mb-1 flex items-center gap-1.5 font-bold">
+
+                      <Wallet className="h-4 w-4 text-blue-600" />
+
+                      <span>
+                        100% Wallet
+                      </span>
+
+                    </div>
+
+                    <p className="text-[10px] text-slate-500">
+                      Pay from wallet balance
+                    </p>
+
+                  </div>
+
+                  <div className="mt-2 font-mono text-[10px] text-slate-500">
+                    Atomic instant debit
+                  </div>
+
+                </button>
+
+                {/* Credit */}
+
+                <button
+                  type="button"
+                  onClick={
+                    handleCreditPayment
+                  }
+                  className={[
+                    "flex flex-col justify-between rounded-xl border p-3 text-left transition",
+
+                    paymentMethod ===
+                      "CREDIT"
+                      ? "border-emerald-500 bg-emerald-50/80 text-emerald-900 shadow-sm"
+                      : "border-slate-200 hover:bg-slate-50",
+                  ].join(" ")}
+                >
+
+                  <div>
+
+                    <div className="mb-1 flex items-center gap-1.5 font-bold">
+
+                      <CreditCard className="h-4 w-4 text-emerald-600" />
+
+                      <span>
+                        100% Credit
+                      </span>
+
+                    </div>
+
+                    <p className="text-[10px] text-slate-500">
+                      Use approved credit
+                    </p>
+
+                  </div>
+
+                  <div className="mt-2 font-mono text-[10px] text-slate-500">
+                    Approved credit facility
+                  </div>
+
+                </button>
+
+                {/* Split */}
+
+                <button
+                  type="button"
+                  onClick={
+                    handleSplitPayment
+                  }
+                  className={[
+                    "flex flex-col justify-between rounded-xl border p-3 text-left transition",
+
+                    paymentMethod ===
+                      "WALLET_AND_CREDIT"
+                      ? "border-indigo-500 bg-indigo-50/80 text-indigo-900 shadow-sm"
+                      : "border-slate-200 hover:bg-slate-50",
+                  ].join(" ")}
+                >
+
+                  <div>
+
+                    <div className="mb-1 flex items-center gap-1.5 font-bold">
+
+                      <Layers className="h-4 w-4 text-indigo-600" />
+
+                      <span>
+                        Split Payment
+                      </span>
+
+                    </div>
+
+                    <p className="text-[10px] text-slate-500">
+                      Wallet + approved credit
+                    </p>
+
+                  </div>
+
+                  <div className="mt-2 font-mono text-[10px] text-slate-500">
+                    Custom allocation
+                  </div>
+
                 </button>
 
               </div>
+
+              {/* Split Allocation */}
 
               {paymentMethod ===
                 "WALLET_AND_CREDIT" &&
                 totalAmount > 0 && (
-                  <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="mt-3 rounded-xl border border-indigo-100 bg-indigo-50/50 p-3">
 
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid grid-cols-2 gap-3">
+
+                      {/* Wallet */}
 
                       <div>
-                        <label className="text-xs font-medium text-slate-600">
-                          Wallet Amount
+
+                        <label className="mb-1 block text-[10px] font-bold text-indigo-900">
+                          Wallet Portion
                         </label>
 
                         <Input
                           type="number"
                           min={0}
                           max={totalAmount}
-                          value={walletAmount}
-                          onChange={(event) => {
-                            const value = Math.min(
-                              totalAmount,
-                              Math.max(
-                                0,
-                                Number(
-                                  event.target.value
-                                ) || 0
+                          value={
+                            splitWalletAmount
+                          }
+                          onChange={(
+                            event
+                          ) =>
+                            handleSplitWalletAmountChange(
+                              Number(
+                                event.target
+                                  .value
                               )
-                            );
-
-                            setWalletAmount(value);
-                            setCreditAmount(
-                              totalAmount - value
-                            );
-                          }}
-                          className="mt-1 rounded-lg"
+                            )
+                          }
+                          className="rounded-lg border-indigo-200 bg-white font-mono text-xs font-bold"
                         />
+
                       </div>
 
+                      {/* Credit */}
+
                       <div>
-                        <label className="text-xs font-medium text-slate-600">
-                          Credit Amount
+
+                        <label className="mb-1 block text-[10px] font-bold text-indigo-900">
+                          Credit Line Portion
                         </label>
 
                         <Input
                           type="number"
-                          value={creditAmount}
+                          min={0}
+                          value={
+                            paymentAllocation.creditAmount
+                          }
                           readOnly
-                          className="mt-1 rounded-lg bg-slate-100"
+                          className="rounded-lg border-indigo-200 bg-white font-mono text-xs font-bold"
                         />
+
                       </div>
 
                     </div>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-indigo-100 pt-2 text-[10px]">
+
+                      <span className="text-slate-500">
+                        Total allocation
+                      </span>
+
+                      <span className="font-mono font-bold text-indigo-700">
+                        ₦
+                        {totalAmount.toLocaleString()}
+                      </span>
+
+                    </div>
+
                   </div>
                 )}
+
             </section>
 
             {/* =================================================
@@ -793,102 +1408,112 @@ export default function SourcingDrawer({
                 ================================================= */}
 
             <section>
-              <div className="mb-3">
-                <h3 className="text-sm font-semibold text-slate-900">
-                  Delivery Address
-                </h3>
 
-                <p className="text-xs text-slate-500">
-                  Where should the procurement be delivered?
-                </p>
-              </div>
+              <label className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-700">
+                Verified Delivery & Storage Address
+              </label>
+
+              <p className="mb-2 text-[10px] text-slate-500">
+                Enter the receiving facility and delivery
+                location for this procurement.
+              </p>
 
               <div className="relative">
+
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
 
                 <textarea
-                  value={deliveryAddress}
+                  value={
+                    deliveryAddress
+                  }
                   onChange={(event) =>
                     setDeliveryAddress(
                       event.target.value
                     )
                   }
                   placeholder="Enter receiving facility and delivery address..."
-                  className="min-h-[100px] w-full resize-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                  className="min-h-[100px] w-full resize-none rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-3 text-sm font-medium text-slate-800 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
+
               </div>
+
             </section>
 
           </div>
+
         </div>
 
-        {/* =================================================
+        {/* ===================================================
             Footer
-            ================================================= */}
+            =================================================== */}
 
-        <div className="border-t border-slate-200 bg-white p-4">
+        <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 p-6">
 
-          <div className="mb-3 flex items-center justify-between">
+          <div>
 
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">
-                Estimated Procurement Total
-              </p>
+            <p className="text-[11px] text-slate-500">
+              Committed Sourcing Total
+            </p>
 
-              <p className="text-xl font-bold text-slate-900">
-                ₦{totalAmount.toLocaleString()}
-              </p>
-            </div>
+            <p className="font-mono text-lg font-bold text-slate-900">
+              ₦
+              {totalAmount.toLocaleString()}
+            </p>
 
             {selectedSupplier && (
-              <div className="text-right text-xs text-slate-500">
-                <p>
-                  {quantity.toLocaleString()}{" "}
-                  {product.unit}
-                </p>
-
-                <p>
-                  {selectedSupplier.supplierName}
-                </p>
-              </div>
+              <p className="mt-0.5 text-[9px] text-slate-400">
+                {
+                  selectedSupplier.supplierName
+                }
+              </p>
             )}
 
           </div>
 
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
 
             <Button
               type="button"
               variant="outline"
               onClick={onClose}
-              className="h-11 flex-1 rounded-xl"
+              className="h-11 rounded-xl px-4 text-xs font-semibold"
             >
               Cancel
             </Button>
 
             <Button
               type="button"
-              disabled={
-                !selectedSupplier ||
-                !selectedSupplier.isEligible ||
-                quantity <= 0 ||
-                !deliveryAddress.trim()
-              }
-              className="h-11 flex-[2] rounded-xl bg-blue-600 font-semibold hover:bg-blue-700"
+              disabled={!canSubmit}
+              className="h-11 rounded-xl bg-blue-600 px-6 text-xs font-bold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Submit Procurement Request
+
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
 
           </div>
 
-          <div className="mt-3 flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
+        </div>
+
+        {/* ===================================================
+            Security
+            =================================================== */}
+
+        <div className="border-t border-slate-100 bg-white px-6 py-2.5">
+
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400">
+
             <Lock className="h-3 w-3" />
-            Procurement pricing and payment are verified server-side
+
+            Procurement pricing and payment are
+            verified server-side
+
           </div>
 
         </div>
+
       </aside>
+
     </div>
   );
 }

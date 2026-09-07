@@ -20,6 +20,7 @@ export type MarketplaceSupplierSummary = {
   supplierProductId: string;
 
   supplierName: string;
+
   supplierType:
     | "importer"
     | "distributor"
@@ -40,6 +41,7 @@ export type MarketplaceSupplierSummary = {
   maxOrderQuantity: number;
 
   finalPrice: number;
+
   status:
     | "AVAILABLE"
     | "LOW_STOCK"
@@ -187,7 +189,7 @@ type AggregatedSupplierProduct = {
 
 function getSupplierDisplayName(
   supplier?: AggregatedSupplierProduct["supplier"]
-) {
+): string {
   if (!supplier) {
     return "Unknown Supplier";
   }
@@ -242,8 +244,11 @@ function normalizeMarketplaceProduct(
           supplierType:
             supplierProduct.supplierType,
 
-          state: supplier.state,
-          lga: supplier.lga,
+          state:
+            supplier.state,
+
+          lga:
+            supplier.lga,
 
           verified:
             supplier.verified === true,
@@ -346,21 +351,28 @@ function normalizeMarketplaceProduct(
 }
 
 /* =========================================================
-   DATABASE QUERY + NORMALIZATION
+   FETCH + NORMALIZE MARKETPLACE DATA
    ========================================================= */
 
 /**
- * This function performs the expensive MongoDB aggregation
- * and normalization.
+ * Expensive operation:
  *
- * IMPORTANT:
- * It is wrapped by unstable_cache below.
+ * Product
+ *   ↓
+ * SupplierProduct
+ *   ↓
+ * User
+ *   ↓
+ * Normalize
+ *
+ * This function is called only when the Next.js
+ * data cache has expired or has been invalidated.
  */
 async function fetchMarketplaceProducts(): Promise<
   MarketplaceProduct[]
 > {
   console.log(
-    "[MARKETPLACE CACHE MISS] Fetching marketplace data from MongoDB..."
+    "[MARKETPLACE] Cache miss — querying MongoDB"
   );
 
   await connectToDB();
@@ -390,6 +402,10 @@ async function fetchMarketplaceProducts(): Promise<
           },
 
           pipeline: [
+            /* -----------------------------------------------
+               MATCH SUPPLIER PRODUCTS FOR THIS PRODUCT
+            ----------------------------------------------- */
+
             {
               $match: {
                 $expr: {
@@ -401,9 +417,9 @@ async function fetchMarketplaceProducts(): Promise<
               },
             },
 
-            /* ------------------------------------------------
+            /* -----------------------------------------------
                3. RESOLVE SUPPLIER USER
-            ------------------------------------------------ */
+            ----------------------------------------------- */
 
             {
               $lookup: {
@@ -425,6 +441,7 @@ async function fetchMarketplaceProducts(): Promise<
                               "$$supplierId",
                             ],
                           },
+
                           {
                             $eq: [
                               "$role",
@@ -436,9 +453,9 @@ async function fetchMarketplaceProducts(): Promise<
                     },
                   },
 
-                  /* ------------------------------------------
-                     MARKETPLACE-SAFE USER FIELDS
-                  ------------------------------------------ */
+                  /* -----------------------------------------
+                     ONLY MARKETPLACE-SAFE USER FIELDS
+                  ----------------------------------------- */
 
                   {
                     $project: {
@@ -472,13 +489,14 @@ async function fetchMarketplaceProducts(): Promise<
             {
               $unwind: {
                 path: "$supplier",
+
                 preserveNullAndEmptyArrays: false,
               },
             },
 
-            /* ------------------------------------------------
+            /* -----------------------------------------------
                4. RETURN SUPPLIER PRODUCT FIELDS
-            ------------------------------------------------ */
+            ----------------------------------------------- */
 
             {
               $project: {
@@ -567,7 +585,7 @@ async function fetchMarketplaceProducts(): Promise<
     ])) as AggregatedMarketplaceProduct[];
 
   /* -------------------------------------------------------
-     7. NORMALIZE
+     7. NORMALIZE ONLY ON CACHE MISS
   ------------------------------------------------------- */
 
   const normalizedProducts =
@@ -575,18 +593,21 @@ async function fetchMarketplaceProducts(): Promise<
       normalizeMarketplaceProduct
     );
 
+  const supplierListingCount =
+    normalizedProducts.reduce(
+      (total, product) =>
+        total + product.supplierCount,
+      0
+    );
+
   console.log(
-    "[MARKETPLACE CACHE MISS] Marketplace data generated:",
+    "[MARKETPLACE] Fresh marketplace data generated",
     {
       masterProducts:
         normalizedProducts.length,
 
       supplierListings:
-        normalizedProducts.reduce(
-          (total, product) =>
-            total + product.supplierCount,
-          0
-        ),
+        supplierListingCount,
     }
   );
 
@@ -594,29 +615,37 @@ async function fetchMarketplaceProducts(): Promise<
 }
 
 /* =========================================================
-   CACHED MARKETPLACE DATA
+   CACHED MARKETPLACE QUERY
    ========================================================= */
 
 /**
- * Marketplace cache
+ * Marketplace cache configuration.
  *
- * Revalidates every 120 seconds (2 minutes).
+ * revalidate: 120
+ * ----------------
+ * Cache lifetime = 2 minutes.
  *
- * Cache key:
- *   marketplace-products-v1
- *
- * Cache tag:
- *   marketplace-products
+ * tags:
+ * ----------------
+ * Allows explicit invalidation when marketplace
+ * data changes.
  */
 const getCachedMarketplaceProducts =
   unstable_cache(
     async () => {
       return fetchMarketplaceProducts();
     },
-    ["marketplace-products-v1"],
+
+    [
+      "marketplace-products-v1",
+    ],
+
     {
       revalidate: 120,
-      tags: ["marketplace-products"],
+
+      tags: [
+        "marketplace-products",
+      ],
     }
   );
 
@@ -625,14 +654,23 @@ const getCachedMarketplaceProducts =
    ========================================================= */
 
 /**
- * Returns Admin-approved Master Catalogue products
- * with safe supplier summaries.
+ * Get all active marketplace products.
  *
- * CACHE:
- * - Cached for 2 minutes.
- * - Prevents unnecessary MongoDB aggregation.
- * - Prevents repeated supplier/user lookups.
- * - Prevents repeated normalization work.
+ * The returned normalized result is cached for 2 minutes.
+ *
+ * During the cache lifetime:
+ *
+ *   Buyer Request
+ *        ↓
+ *   getMarketplaceProducts()
+ *        ↓
+ *   Cached MarketplaceProduct[]
+ *
+ * MongoDB is NOT queried again until:
+ *
+ *   1. 120 seconds expires
+ *   OR
+ *   2. marketplace-products cache tag is invalidated
  */
 export async function getMarketplaceProducts(): Promise<
   MarketplaceProduct[]
@@ -641,7 +679,7 @@ export async function getMarketplaceProducts(): Promise<
     await getCachedMarketplaceProducts();
 
   console.log(
-    `[MARKETPLACE] Returning ${products.length} cached products`
+    `[MARKETPLACE] Returning ${products.length} products`
   );
 
   return products;

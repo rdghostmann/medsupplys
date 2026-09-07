@@ -7,7 +7,7 @@ import { Types } from "mongoose";
 import { connectToDB } from "@/lib/connectToDB";
 
 import { Product } from "@/models/Product";
-import {SupplierProduct} from "@/models/SupplierProduct";
+import { SupplierProduct } from "@/models/SupplierProduct";
 import { User } from "@/models/User";
 
 /* =========================================================
@@ -22,9 +22,9 @@ export type SupplierScoreBreakdown = {
   username?: string;
 
   supplierType:
-    | "IMPORTER"
-    | "DISTRIBUTOR"
-    | "RETAILER";
+  | "IMPORTER"
+  | "DISTRIBUTOR"
+  | "RETAILER";
 
   stock: number;
 
@@ -78,11 +78,11 @@ export type SupplierScoreBreakdown = {
   isFlagged: boolean;
 
   status:
-    | "AVAILABLE"
-    | "LOW_STOCK"
-    | "OUT_OF_STOCK"
-    | "ON_REQUEST"
-    | "SUSPENDED";
+  | "AVAILABLE"
+  | "LOW_STOCK"
+  | "OUT_OF_STOCK"
+  | "ON_REQUEST"
+  | "SUSPENDED";
 };
 
 /* =========================================================
@@ -96,9 +96,9 @@ type SupplierMatchingDocument = {
   supplierId: Types.ObjectId;
 
   supplierType:
-    | "importer"
-    | "distributor"
-    | "retailer";
+  | "importer"
+  | "distributor"
+  | "retailer";
 
   nafdacRegNumber: string;
 
@@ -120,11 +120,11 @@ type SupplierMatchingDocument = {
   manufacturingDate?: Date;
 
   status:
-    | "AVAILABLE"
-    | "LOW_STOCK"
-    | "OUT_OF_STOCK"
-    | "ON_REQUEST"
-    | "SUSPENDED";
+  | "AVAILABLE"
+  | "LOW_STOCK"
+  | "OUT_OF_STOCK"
+  | "ON_REQUEST"
+  | "SUSPENDED";
 
   isFlagged: boolean;
 
@@ -148,9 +148,9 @@ type SupplierMatchingDocument = {
     lga?: string;
 
     supplierType?:
-      | "importer"
-      | "distributor"
-      | "retailer";
+    | "importer"
+    | "distributor"
+    | "retailer";
 
     supplierApprovalStatus?: string;
 
@@ -572,13 +572,13 @@ function calculateDeliveryScore(
     Math.max(
       0,
       1 -
-        Math.min(
-          Math.max(
-            deliveryDays,
-            0
-          ),
-          7
-        ) / 7
+      Math.min(
+        Math.max(
+          deliveryDays,
+          0
+        ),
+        7
+      ) / 7
     );
 
   return Number(
@@ -601,7 +601,7 @@ function calculateSupplierTypeScore(
 ) {
   return (
     SUPPLIER_TYPE_SCORE[
-      supplierType
+    supplierType
     ] ?? 0
   );
 }
@@ -814,7 +814,7 @@ export async function evaluateSupplierMatches(
     supplierProducts.filter(
       (supplier) =>
         supplier.status !==
-          "SUSPENDED" &&
+        "SUSPENDED" &&
         !supplier.isFlagged &&
         supplier.finalPrice > 0
     );
@@ -843,44 +843,44 @@ export async function evaluateSupplierMatches(
         const priceScore =
           eligibility.isEligible
             ? priceScores.get(
-                supplierProduct._id.toString()
-              ) ?? 0
+              supplierProduct._id.toString()
+            ) ?? 0
             : 0;
 
         const stockScore =
           eligibility.isEligible
             ? calculateStockScore(
-                supplierProduct,
-                quantity
-              )
+              supplierProduct,
+              quantity
+            )
             : 0;
 
         const ratingScore =
           eligibility.isEligible
             ? calculateRatingScore(
-                supplierProduct.rating
-              )
+              supplierProduct.rating
+            )
             : 0;
 
         const fulfillmentScore =
           eligibility.isEligible
             ? calculateFulfillmentScore(
-                supplierProduct.fulfillmentRate
-              )
+              supplierProduct.fulfillmentRate
+            )
             : 0;
 
         const deliveryScore =
           eligibility.isEligible
             ? calculateDeliveryScore(
-                supplierProduct.estimatedDeliveryDays
-              )
+              supplierProduct.estimatedDeliveryDays
+            )
             : 0;
 
         const supplierTypeScore =
           eligibility.isEligible
             ? calculateSupplierTypeScore(
-                supplierProduct.supplierType
-              )
+              supplierProduct.supplierType
+            )
             : 0;
 
         const totalScore =
@@ -966,8 +966,8 @@ export async function evaluateSupplierMatches(
             eligibility.isEligible
               ? undefined
               : eligibility.reasons.join(
-                  " "
-                ),
+                " "
+              ),
 
           nafdacRegNumber:
             supplierProduct.nafdacRegNumber,
@@ -1112,8 +1112,638 @@ export async function evaluateSupplierMatches(
       (match) =>
         match.isEligible
     )?.supplierName ??
-      "None"
+    "None"
   );
 
   return matches;
+}
+
+export async function matchSuppliers(
+  productId: string,
+  quantity: number
+): Promise<SupplierScoreBreakdown[]> {
+  if (!productId) {
+    throw new Error("Product ID is required.");
+  }
+
+  if (!Types.ObjectId.isValid(productId)) {
+    throw new Error("Invalid product ID.");
+  }
+
+  const requestedQuantity = Math.floor(Number(quantity));
+
+  if (!Number.isFinite(requestedQuantity) || requestedQuantity <= 0) {
+    throw new Error(
+      "Procurement quantity must be greater than zero."
+    );
+  }
+
+  await connectToDB();
+
+  // ---------------------------------------------------------------------------
+  // Resolve master product
+  // ---------------------------------------------------------------------------
+
+  const product = await Product.findById(productId).lean();
+
+  if (!product) {
+    throw new Error("Product not found.");
+  }
+
+  // ---------------------------------------------------------------------------
+  // Resolve supplier listings
+  // ---------------------------------------------------------------------------
+
+  const supplierProducts = await SupplierProduct.find({
+    productId: new Types.ObjectId(productId),
+  }).lean();
+
+  if (!supplierProducts.length) {
+    return [];
+  }
+
+  // ---------------------------------------------------------------------------
+  // Resolve suppliers in ONE query
+  // ---------------------------------------------------------------------------
+
+  const supplierIds = [
+    ...new Set(
+      supplierProducts
+        .map((item) => item.supplierId.toString())
+        .filter(Boolean)
+    ),
+  ];
+
+  const suppliers = await User.find({
+    _id: {
+      $in: supplierIds.map(
+        (id) => new Types.ObjectId(id)
+      ),
+    },
+  }).lean();
+
+  const supplierMap = new Map(
+    suppliers.map((supplier) => [
+      supplier._id.toString(),
+      supplier,
+    ])
+  );
+
+  // ---------------------------------------------------------------------------
+  // Build matching records and determine eligibility FIRST
+  // ---------------------------------------------------------------------------
+
+  const records: Array<{
+    result: SupplierScoreBreakdown;
+  }> = [];
+
+  for (const listing of supplierProducts) {
+    const supplierId =
+      listing.supplierId?.toString();
+
+    const supplierProductId =
+      listing._id?.toString();
+
+    if (!supplierId || !supplierProductId) {
+      continue;
+    }
+
+    const supplier = supplierMap.get(supplierId);
+
+    const supplierName =
+      supplier?.organizationName ||
+      [
+        supplier?.firstName,
+        supplier?.lastName,
+      ]
+        .filter(Boolean)
+        .join(" ") ||
+      supplier?.username ||
+      "Unknown Supplier";
+
+    const supplierType =
+      String(
+        listing.supplierType ??
+        supplier?.supplierType ??
+        "retailer"
+      ).toUpperCase() as
+      | "IMPORTER"
+      | "DISTRIBUTOR"
+      | "RETAILER";
+
+    const stock = Math.max(
+      0,
+      Number(listing.stock ?? 0)
+    );
+
+    const moq = Math.max(
+      1,
+      Number(listing.minOrderQuantity ?? 1)
+    );
+
+    const maxOrderQuantity = Math.max(
+      moq,
+      Number(
+        listing.maxOrderQuantity ??
+        Number.MAX_SAFE_INTEGER
+      )
+    );
+
+    const rating = Math.min(
+      5,
+      Math.max(
+        0,
+        Number(listing.rating ?? 0)
+      )
+    );
+
+    const fulfillmentRate = Math.min(
+      100,
+      Math.max(
+        0,
+        Number(listing.fulfillmentRate ?? 0)
+      )
+    );
+
+    const deliveryDays = Math.max(
+      0,
+      Number(
+        listing.estimatedDeliveryDays ??
+        7
+      )
+    );
+
+    // IMPORTANT:
+    // SupplierProduct.finalPrice is the authoritative buyer price.
+    const basePrice = Math.max(
+      0,
+      Number(listing.basePrice ?? 0)
+    );
+
+    const finalPrice = Math.max(
+      0,
+      Number(listing.finalPrice ?? 0)
+    );
+
+    const commission = Math.max(
+      0,
+      Number(listing.commission ?? 0)
+    );
+
+    const commissionPercent = Math.max(
+      0,
+      Number(listing.commissionPercent ?? 0)
+    );
+
+    const status = String(
+      listing.status ?? "SUSPENDED"
+    ).toUpperCase() as
+      | "AVAILABLE"
+      | "LOW_STOCK"
+      | "OUT_OF_STOCK"
+      | "ON_REQUEST"
+      | "SUSPENDED";
+
+    const isFlagged =
+      Boolean(listing.isFlagged);
+
+    const verified =
+      Boolean(
+        supplier?.verified
+      );
+
+    const supplierApprovalStatus =
+      supplier?.supplierApprovalStatus;
+
+    const nafdacRegNumber =
+      String(
+        listing.nafdacRegNumber ?? ""
+      ).trim();
+
+    const batchNumber =
+      String(
+        listing.batchNumber ?? ""
+      ).trim();
+
+    const expiryDate =
+      listing.expiryDate
+        ? new Date(listing.expiryDate)
+        : null;
+
+    const manufacturingDate =
+      listing.manufacturingDate
+        ? new Date(listing.manufacturingDate)
+        : null;
+
+    const now = new Date();
+
+    let isEligible = true;
+    let ineligibilityReason:
+      | string
+      | undefined;
+
+    // -------------------------------------------------------------------------
+    // Eligibility validation
+    // -------------------------------------------------------------------------
+
+    if (!supplier) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier account not found.";
+    } else if (
+      String(supplier.role).toUpperCase() !==
+      "SUPPLIER"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Account is not a supplier.";
+    } else if (
+      String(supplier.status).toUpperCase() !==
+      "ACTIVE"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier account is not active.";
+    } else if (
+      supplierApprovalStatus &&
+      String(supplierApprovalStatus).toUpperCase() !==
+      "APPROVED"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier has not been approved.";
+    } else if (isFlagged) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier listing has been flagged.";
+    } else if (
+      status === "SUSPENDED"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier listing is suspended.";
+    } else if (
+      status === "OUT_OF_STOCK"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Product is out of stock.";
+    } else if (
+      status === "ON_REQUEST"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Product is available on request only.";
+    } else if (
+      requestedQuantity < moq
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        `Minimum order quantity is ${moq}.`;
+    } else if (
+      requestedQuantity > maxOrderQuantity
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        `Maximum order quantity is ${maxOrderQuantity}.`;
+    } else if (
+      stock < requestedQuantity
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        `Insufficient stock. Available stock: ${stock}.`;
+    } else if (
+      finalPrice <= 0
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier price is unavailable.";
+    } else if (!nafdacRegNumber) {
+      isEligible = false;
+      ineligibilityReason =
+        "NAFDAC registration number is missing.";
+    } else if (!batchNumber) {
+      isEligible = false;
+      ineligibilityReason =
+        "Batch number is missing.";
+    } else if (!expiryDate) {
+      isEligible = false;
+      ineligibilityReason =
+        "Expiry date is missing.";
+    } else if (
+      Number.isNaN(expiryDate.getTime())
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier expiry date is invalid.";
+    } else if (
+      expiryDate <= now
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier product has expired.";
+    } else if (
+      status !== "AVAILABLE" &&
+      status !== "LOW_STOCK"
+    ) {
+      isEligible = false;
+      ineligibilityReason =
+        "Supplier listing is not currently available.";
+    }
+
+    records.push({
+      result: {
+        supplierId,
+        supplierProductId,
+
+        supplierName,
+        username:
+          supplier?.username || undefined,
+
+        supplierType,
+
+        stock,
+        moq,
+        maxOrderQuantity,
+
+        rating,
+        fulfillmentRate,
+        deliveryDays,
+
+        basePrice,
+        commission,
+        commissionPercent,
+        finalPrice,
+
+        totalScore: 0,
+
+        scoreBreakdown: {
+          price: 0,
+          stock: 0,
+          rating: 0,
+          fulfillment: 0,
+          delivery: 0,
+          supplierType: 0,
+        },
+
+        isEligible,
+        ineligibilityReason,
+
+        nafdacRegNumber,
+        batchNumber,
+
+        expiryDate:
+          expiryDate?.toISOString() ?? "",
+
+        manufacturingDate:
+          manufacturingDate &&
+            !Number.isNaN(
+              manufacturingDate.getTime()
+            )
+            ? manufacturingDate.toISOString()
+            : undefined,
+
+        verified,
+
+        supplierApprovalStatus:
+          supplierApprovalStatus || undefined,
+
+        creditRatingTier:
+          supplier?.creditRatingTier ??
+          undefined,
+
+        isColdChainCertified:
+          Boolean(
+            supplier?.isColdChainCertified
+          ),
+
+        state:
+          supplier?.state ??
+          undefined,
+
+        lga:
+          supplier?.lga ??
+          undefined,
+
+        unit:
+          listing.unit ??
+          "",
+
+        isFlagged,
+
+        status,
+      },
+    });
+  }
+
+  // ---------------------------------------------------------------------------
+  // IMPORTANT:
+  // Only ELIGIBLE suppliers participate in price normalization.
+  // ---------------------------------------------------------------------------
+
+  const eligible = records
+    .map((record) => record.result)
+    .filter(
+      (supplier) =>
+        supplier.isEligible &&
+        supplier.finalPrice > 0
+    );
+
+  if (!eligible.length) {
+    return records.map(
+      (record) => record.result
+    );
+  }
+
+  const prices = eligible.map(
+    (supplier) => supplier.finalPrice
+  );
+
+  const minPrice = Math.min(...prices);
+  const maxPrice = Math.max(...prices);
+
+  // ---------------------------------------------------------------------------
+  // Calculate ranking scores
+  // ---------------------------------------------------------------------------
+
+  for (const record of records) {
+    const supplier = record.result;
+
+    if (!supplier.isEligible) {
+      supplier.totalScore = 0;
+      continue;
+    }
+
+    // Lower price = better score
+    const priceScore =
+      minPrice === maxPrice
+        ? 100
+        : Math.max(
+          0,
+          Math.min(
+            100,
+            ((maxPrice - supplier.finalPrice) /
+              (maxPrice - minPrice)) *
+            100
+          )
+        );
+
+    // More stock coverage = better
+    const stockCoverage =
+      supplier.stock /
+      requestedQuantity;
+
+    const stockScore =
+      stockCoverage >= 3
+        ? 100
+        : stockCoverage >= 2
+          ? 90
+          : 70;
+
+    // Rating: 0 - 5
+    const ratingScore =
+      (supplier.rating / 5) * 100;
+
+    // Already represented as percentage
+    const fulfillmentScore =
+      Math.min(
+        100,
+        Math.max(
+          0,
+          supplier.fulfillmentRate
+        )
+      );
+
+    // Lower delivery time = better
+    const deliveryScore =
+      supplier.deliveryDays <= 1
+        ? 100
+        : supplier.deliveryDays <= 2
+          ? 90
+          : supplier.deliveryDays <= 3
+            ? 80
+            : supplier.deliveryDays <= 5
+              ? 70
+              : supplier.deliveryDays <= 7
+                ? 55
+                : 30;
+
+    const supplierTypeScore =
+      supplier.supplierType === "IMPORTER"
+        ? 100
+        : supplier.supplierType === "DISTRIBUTOR"
+          ? 60
+          : 20;
+
+    // -------------------------------------------------------------------------
+    // Apply weights
+    // -------------------------------------------------------------------------
+
+    const weightedPrice =
+      (priceScore / 100) *
+      RANKING_WEIGHTS.price;
+
+    const weightedStock =
+      (stockScore / 100) *
+      RANKING_WEIGHTS.stock;
+
+    const weightedRating =
+      (ratingScore / 100) *
+      RANKING_WEIGHTS.rating;
+
+    const weightedFulfillment =
+      (fulfillmentScore / 100) *
+      RANKING_WEIGHTS.fulfillment;
+
+    const weightedDelivery =
+      (deliveryScore / 100) *
+      RANKING_WEIGHTS.delivery;
+
+    const weightedSupplierType =
+      (supplierTypeScore / 100) *
+      RANKING_WEIGHTS.supplierType;
+
+    supplier.scoreBreakdown = {
+      price: Number(
+        weightedPrice.toFixed(2)
+      ),
+      stock: Number(
+        weightedStock.toFixed(2)
+      ),
+      rating: Number(
+        weightedRating.toFixed(2)
+      ),
+      fulfillment: Number(
+        weightedFulfillment.toFixed(2)
+      ),
+      delivery: Number(
+        weightedDelivery.toFixed(2)
+      ),
+      supplierType: Number(
+        weightedSupplierType.toFixed(2)
+      ),
+    };
+
+    supplier.totalScore = Number(
+      (
+        weightedPrice +
+        weightedStock +
+        weightedRating +
+        weightedFulfillment +
+        weightedDelivery +
+        weightedSupplierType
+      ).toFixed(2)
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Final ranking
+  // ---------------------------------------------------------------------------
+
+  records.sort((a, b) => {
+    const supplierA = a.result;
+    const supplierB = b.result;
+
+    // Eligible suppliers always appear before ineligible suppliers.
+    if (
+      supplierA.isEligible !==
+      supplierB.isEligible
+    ) {
+      return supplierA.isEligible
+        ? -1
+        : 1;
+    }
+
+    // Highest score first.
+    if (
+      supplierA.totalScore !==
+      supplierB.totalScore
+    ) {
+      return (
+        supplierB.totalScore -
+        supplierA.totalScore
+      );
+    }
+
+    // Lower actual buyer price wins tie.
+    if (
+      supplierA.finalPrice !==
+      supplierB.finalPrice
+    ) {
+      return (
+        supplierA.finalPrice -
+        supplierB.finalPrice
+      );
+    }
+
+    // Higher available stock wins remaining tie.
+    return (
+      supplierB.stock -
+      supplierA.stock
+    );
+  });
+
+  return records.map(
+    ({ result }) => result
+  );
 }
