@@ -2,6 +2,7 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
@@ -23,9 +24,9 @@ export type CreditTransactionDirection =
 
 export interface ICreditTransaction
   extends Document {
-  creditAccountId: Schema.Types.ObjectId;
+  creditAccountId: Types.ObjectId;
 
-  buyerId: Schema.Types.ObjectId;
+  buyerId: Types.ObjectId;
 
   type: CreditTransactionType;
 
@@ -39,7 +40,9 @@ export interface ICreditTransaction
 
   reference: string;
 
-  orderId?: Schema.Types.ObjectId;
+  procurementId?: Types.ObjectId;
+
+  orderId?: Types.ObjectId;
 
   description: string;
 
@@ -113,6 +116,12 @@ const CreditTransactionSchema =
         index: true,
       },
 
+      procurementId: {
+        type: Schema.Types.ObjectId,
+        ref: "Procurement",
+        index: true,
+      },
+
       orderId: {
         type: Schema.Types.ObjectId,
         ref: "Order",
@@ -139,6 +148,11 @@ const CreditTransactionSchema =
 
 CreditTransactionSchema.index({
   buyerId: 1,
+  createdAt: -1,
+});
+
+CreditTransactionSchema.index({
+  procurementId: 1,
   createdAt: -1,
 });
 

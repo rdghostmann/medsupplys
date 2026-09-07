@@ -32,13 +32,20 @@ import { Input } from "@/components/ui/input";
 
 import type {
   MarketplaceProduct,
-  PaymentMethod,
   SupplierScoreBreakdown,
 } from "@/types";
+
+import type {
+  ProcurementPaymentMethod,
+} from "@/services/procurement.service";
 
 import {
   matchSuppliers,
 } from "@/services/supplier-matching.service";
+
+import {
+  createProcurement,
+} from "@/services/procurement.service";
 
 /* =========================================================
    Props
@@ -59,6 +66,12 @@ export default function SourcingDrawer({
   open,
   onClose,
 }: SourcingDrawerProps) {
+
+
+  const [isSubmitting, setIsSubmitting] =
+    useState(false);
+
+
   /* =======================================================
      Procurement State
      ======================================================= */
@@ -85,7 +98,9 @@ export default function SourcingDrawer({
      ======================================================= */
 
   const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("WALLET");
+    useState<ProcurementPaymentMethod>(
+      "WALLET"
+    );
 
   /*
    * Only the wallet portion needs to be stored.
@@ -118,25 +133,6 @@ export default function SourcingDrawer({
   const [error, setError] =
     useState<string | null>(null);
 
-  /* =======================================================
-     Match Suppliers
-     
-     IMPORTANT:
-     
-     This does NOT call:
-     
-       /api/marketplace/matching
-     
-     and does NOT use:
-     
-       services/matching.service.ts
-     
-     It invokes the canonical:
-     
-       services/supplier-matching.service.ts
-     
-     directly as a Server Action.
-     ======================================================= */
 
   useEffect(() => {
     if (!open || !product.productId) {
@@ -195,7 +191,7 @@ export default function SourcingDrawer({
 
         setSelectedSupplierProductId(
           topEligibleSupplier?.supplierProductId ??
-            null
+          null
         );
       } catch (err) {
         if (cancelled) {
@@ -417,10 +413,10 @@ export default function SourcingDrawer({
     totalAmount > 0 &&
     (
       paymentMethod !==
-        "WALLET_AND_CREDIT" ||
+      "WALLET_AND_CREDIT" ||
       paymentAllocation.walletAmount +
-        paymentAllocation.creditAmount ===
-        totalAmount
+      paymentAllocation.creditAmount ===
+      totalAmount
     );
 
   /* =======================================================
@@ -430,6 +426,75 @@ export default function SourcingDrawer({
   if (!open) {
     return null;
   }
+
+  const handleSubmitProcurement =
+    async () => {
+      if (!canSubmit || !selectedSupplier) {
+        return;
+      }
+
+      try {
+        setIsSubmitting(true);
+        setError(null);
+
+        const result =
+          await createProcurement({
+            productId:
+              product.productId,
+
+            supplierProductId:
+              selectedSupplier.supplierProductId,
+
+            quantity,
+
+            paymentMethod,
+
+            splitWalletAmount:
+              paymentMethod ===
+                "WALLET_AND_CREDIT"
+                ? paymentAllocation.walletAmount
+                : undefined,
+
+            deliveryAddress:
+              deliveryAddress.trim(),
+          });
+
+        if (result.success) {
+          /*
+           * Procurement successfully created.
+           *
+           * The server has already:
+           *
+           * - validated the buyer
+           * - validated product
+           * - re-run supplier matching
+           * - validated supplier listing
+           * - calculated authoritative price
+           * - reserved wallet funds
+           * - committed credit
+           * - created procurement
+           * - created transactions
+           * - created notifications
+           * - created audit logs
+           */
+
+          onClose();
+        }
+      } catch (err) {
+        console.error(
+          "[CREATE_PROCUREMENT]",
+          err
+        );
+
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to create procurement."
+        );
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
 
   /* =======================================================
      Render
@@ -820,7 +885,7 @@ export default function SourcingDrawer({
                                         "IMPORTER"
                                         ? "bg-emerald-100 text-emerald-800"
                                         : supplierType ===
-                                            "DISTRIBUTOR"
+                                          "DISTRIBUTOR"
                                           ? "bg-blue-100 text-blue-800"
                                           : "bg-slate-100 text-slate-700",
                                     ].join(" ")}
@@ -878,7 +943,7 @@ export default function SourcingDrawer({
 
                               <div className="flex flex-col font-mono text-xs font-bold text-slate-900">
 
-                               <span> ₦ {supplier.finalPrice.toLocaleString()}</span>
+                                <span> ₦ {supplier.finalPrice.toLocaleString()}</span>
 
                                 <span className="font-sans text-[9px] font-normal text-slate-400">
                                   /{product.unit}
@@ -905,7 +970,7 @@ export default function SourcingDrawer({
                           {/* Secondary metrics */}
 
                           <div className="mt-2 hidden flex-wrap items-center gap-1.5">
-                          {/* <div className="mt-2 flex flex-wrap items-center gap-1.5"> */}
+                            {/* <div className="mt-2 flex flex-wrap items-center gap-1.5"> */}
 
                             <span className="rounded-md bg-slate-50 px-2 py-1 text-[9px] font-medium text-slate-600">
                               Fulfilment{" "}
@@ -949,7 +1014,7 @@ export default function SourcingDrawer({
                           {isSelected &&
                             supplier.isEligible && (
                               <div className="hidden mt-2 rounded-lg border border-blue-100 bg-white/80 p-2">
-                              {/* <div className="mt-2 rounded-lg border border-blue-100 bg-white/80 p-2"> */}
+                                {/* <div className="mt-2 rounded-lg border border-blue-100 bg-white/80 p-2"> */}
 
                                 <div className="mb-1.5 flex items-center justify-between">
 
@@ -1483,12 +1548,26 @@ export default function SourcingDrawer({
 
             <Button
               type="button"
-              disabled={!canSubmit}
+              disabled={
+                !canSubmit ||
+                isSubmitting
+              }
+              onClick={
+                handleSubmitProcurement
+              }
               className="h-11 rounded-xl bg-blue-600 px-6 text-xs font-bold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Submit Procurement Request
-
-              <ArrowRight className="ml-2 h-4 w-4" />
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating Procurement...
+                </>
+              ) : (
+                <>
+                  Submit Procurement Request
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
 
           </div>

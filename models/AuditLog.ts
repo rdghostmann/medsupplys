@@ -2,39 +2,45 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
   Model,
 } from "mongoose";
 
-export interface IAuditLog
-  extends Document {
-  actorId?: Schema.Types.ObjectId;
+export type AuditAction =
+  | "PROCUREMENT_CREATED"
+  | "PROCUREMENT_UPDATED"
+  | "PROCUREMENT_CANCELLED"
+  | "PAYMENT_RESERVED"
+  | "PAYMENT_CHARGED"
+  | "PAYMENT_RELEASED"
+  | "SUPPLIER_CONTACTED"
+  | "ORDER_CREATED";
 
-  actorName?: string;
+export type AuditActorType =
+  | "BUYER"
+  | "SUPPLIER"
+  | "ADMIN"
+  | "SYSTEM";
 
-  actorRole?: string;
+export interface IAuditLog extends Document {
+  actorId?: Types.ObjectId;
 
-  action: string;
+  actorType: AuditActorType;
 
-  entity: string;
+  action: AuditAction;
 
-  entityId?: Schema.Types.ObjectId;
+  entityType: string;
 
-  previousValue?: unknown;
+  entityId: Types.ObjectId;
 
-  newValue?: unknown;
+  description: string;
 
-  details?: string;
+  metadata?: Record<string, unknown>;
 
-  ipAddress?: string;
-
-  userAgent?: string;
-
-  requestId?: string;
-
-  timestamp: Date;
+  createdAt: Date;
 }
 
 const AuditLogSchema =
@@ -46,66 +52,70 @@ const AuditLogSchema =
         index: true,
       },
 
-      actorName: String,
-
-      actorRole: String,
+      actorType: {
+        type: String,
+        enum: [
+          "BUYER",
+          "SUPPLIER",
+          "ADMIN",
+          "SYSTEM",
+        ],
+        required: true,
+      },
 
       action: {
         type: String,
+        enum: [
+          "PROCUREMENT_CREATED",
+          "PROCUREMENT_UPDATED",
+          "PROCUREMENT_CANCELLED",
+          "PAYMENT_RESERVED",
+          "PAYMENT_CHARGED",
+          "PAYMENT_RELEASED",
+          "SUPPLIER_CONTACTED",
+          "ORDER_CREATED",
+        ],
         required: true,
-        index: true,
       },
 
-      entity: {
+      entityType: {
         type: String,
         required: true,
-        index: true,
       },
 
       entityId: {
         type: Schema.Types.ObjectId,
+        required: true,
         index: true,
       },
 
-      previousValue: {
-        type: Schema.Types.Mixed,
-      },
-
-      newValue: {
-        type: Schema.Types.Mixed,
-      },
-
-      details: String,
-
-      ipAddress: String,
-
-      userAgent: String,
-
-      requestId: {
+      description: {
         type: String,
-        index: true,
+        required: true,
       },
 
-      timestamp: {
-        type: Date,
-        default: Date.now,
-        index: true,
+      metadata: {
+        type: Schema.Types.Mixed,
       },
     },
     {
+      timestamps: {
+        createdAt: true,
+        updatedAt: false,
+      },
       versionKey: false,
     }
   );
 
 AuditLogSchema.index({
-  entity: 1,
+  entityType: 1,
   entityId: 1,
-  timestamp: -1,
+  createdAt: -1,
 });
 
 AuditLogSchema.index({
   actorId: 1,
-  timestamp: -1,
+  createdAt: -1,
 });
 
 export const AuditLog: Model<IAuditLog> =

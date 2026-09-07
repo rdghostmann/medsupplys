@@ -36,7 +36,6 @@ export type WalletTransactionSource =
   | "ADMIN"
   | "SYSTEM";
 
-
 export interface IWalletTransaction
   extends Document {
   walletId: Types.ObjectId;
@@ -62,6 +61,8 @@ export interface IWalletTransaction
   source: WalletTransactionSource;
 
   paymentTransactionId?: Types.ObjectId;
+
+  procurementId?: Types.ObjectId;
 
   orderId?: Types.ObjectId;
 
@@ -148,7 +149,7 @@ const WalletTransactionSchema =
         default: "PENDING",
       },
 
-       source: {
+      source: {
         type: String,
         enum: [
           "PAYSTACK",
@@ -164,6 +165,12 @@ const WalletTransactionSchema =
       paymentTransactionId: {
         type: Schema.Types.ObjectId,
         ref: "PaymentTransaction",
+        index: true,
+      },
+
+      procurementId: {
+        type: Schema.Types.ObjectId,
+        ref: "Procurement",
         index: true,
       },
 
@@ -188,6 +195,11 @@ const WalletTransactionSchema =
 
 WalletTransactionSchema.index({
   buyerId: 1,
+  createdAt: -1,
+});
+
+WalletTransactionSchema.index({
+  procurementId: 1,
   createdAt: -1,
 });
 
