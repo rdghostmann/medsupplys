@@ -980,11 +980,9 @@ export async function createProcurement(
                             }
                         );
 
-                    const createdProcurement =
-                        procurementDocs[0];
+                    const createdProcurement = procurementDocs[0];
 
-                    const procurementId =
-                        createdProcurement._id;
+                    const procurementId = createdProcurement._id;
 
                     /* ==============================================
                        Wallet Reservation
@@ -1003,31 +1001,22 @@ export async function createProcurement(
                             await Wallet.findOneAndUpdate(
                                 {
                                     buyerId,
-
-                                    status:
-                                        "ACTIVE",
-
-                                    availableBalance:
-                                    {
-                                        $gte:
-                                            walletAmount,
+                                    status: "ACTIVE",
+                                    availableBalance: {
+                                        $gte: walletAmount,
                                     },
                                 },
                                 {
                                     $inc: {
-                                        availableBalance:
-                                            -walletAmount,
-
-                                        heldBalance:
-                                            walletAmount,
+                                        availableBalance: -walletAmount,
+                                        heldBalance: walletAmount,
                                     },
                                 },
                                 {
-                                    new: true,
+                                    returnDocument: "after",
                                     session,
                                 }
                             );
-
                         if (!wallet) {
                             throw new Error(
                                 "Insufficient wallet balance or wallet is not active."
@@ -1046,8 +1035,7 @@ export async function createProcurement(
 
                                     buyerId,
 
-                                    type:
-                                        "HOLD",
+                                    type: "HOLD",
 
                                     amount:
                                         walletAmount,

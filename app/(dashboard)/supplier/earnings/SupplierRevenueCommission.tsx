@@ -6,7 +6,6 @@ import {
   DollarSign,
   TrendingUp,
   ShieldCheck,
-  Download,
   ArrowUpRight,
   Clock,
   CheckCircle2,
@@ -28,22 +27,6 @@ import type {
 /* =========================================================
    TYPES
 ========================================================= */
-
-type OrderStatus =
-  | 'PENDING'
-  | 'PAYMENT_PENDING'
-  | 'PAYMENT_CONFIRMED'
-  | 'PROCESSING'
-  | 'READY_FOR_DISPATCH'
-  | 'VERIFICATION'
-  | 'DISPATCHED'
-  | 'IN_TRANSIT'
-  | 'DELIVERED'
-  | 'COMPLETED'
-  | 'CANCELLED'
-  | 'REFUNDED';
-
-
 
 interface SupplierMetrics {
   totalGrossRevenue: number;
@@ -112,7 +95,7 @@ export const SupplierRevenueCommission: React.FC<
 
   const supplierOrders = useMemo(
     () => orders.filter((order) => order.supplierId === user?.id),
-    [orders]
+    [orders, user?.id]
   );
 
   /* =========================================================
@@ -136,7 +119,7 @@ export const SupplierRevenueCommission: React.FC<
     );
 
     const inEscrow = supplierOrders
-      .filter((order) => isEscrowStatus(order.status as SupplierOrder['status']))
+      .filter((order) => isEscrowStatus(order.status))
       .reduce((sum, order) => sum + order.subtotal, 0);
 
     const totalPaidOut = payouts
@@ -167,7 +150,7 @@ export const SupplierRevenueCommission: React.FC<
       totalPaidOut,
       availableForPayout,
     };
-  }, []);
+  }, [payouts, supplierOrders, user?.id]);
 
   const {
     totalGrossRevenue,
@@ -187,7 +170,7 @@ export const SupplierRevenueCommission: React.FC<
       const isCompleted = ['DELIVERED', 'COMPLETED'].includes(order.status);
 
       const isProcessing = [
-        'PROCESSING',
+        'SUPPLIER_CONTACTED',
         'READY_FOR_DISPATCH',
       ].includes(order.status);
 
@@ -825,7 +808,7 @@ export const SupplierRevenueCommission: React.FC<
               <tbody className="divide-y divide-slate-100">
                 {filteredOrders.map((order) => {
                   const isCompleted = isCompletedStatus(
-                    order.status as OrderStatus
+                    order.status
                   );
 
                   const isDispatched =
@@ -1441,7 +1424,7 @@ export const SupplierRevenueCommission: React.FC<
 
                 <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
                   {isCompletedStatus(
-                    selectedVoucherOrder.status as OrderStatus
+                    selectedVoucherOrder.status
                   )
                     ? 'Escrow Released'
                     : 'In Escrow'}
