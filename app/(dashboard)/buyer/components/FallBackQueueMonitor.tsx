@@ -150,7 +150,7 @@ export const FallBackQueueMonitor: React.FC<
                 <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500" />
 
                 <h2 className="font-display text-xs **:md:text-sm font-bold uppercase tracking-wider text-slate-900">
-                  Live Procurement Sourcing & Fallback Queue (
+                  Live Procurement Sourcing (
                   {activeProcurements.length}
                   )
                 </h2>

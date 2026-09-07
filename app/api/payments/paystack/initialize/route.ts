@@ -1,3 +1,5 @@
+// /app/api/payments/paystack/initialize/route.ts
+
 import {
   NextRequest,
   NextResponse,
@@ -7,13 +9,15 @@ import {
 import {
   initializeWalletTopup,
 } from "@/services/payment.service";
+
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const session =   await authOptions();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -53,13 +57,23 @@ export async function POST(
       process.env.NEXT_PUBLIC_APP_URL;
 
     if (!appUrl) {
-      throw new Error(
-        "NEXT_PUBLIC_APP_URL is not configured"
+      console.error(
+        "[PAYSTACK_INITIALIZE] NEXT_PUBLIC_APP_URL is missing"
+      );
+
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Payment callback URL is not configured",
+        },
+        {
+          status: 500,
+        }
       );
     }
 
-    const callbackUrl =
-      `${appUrl}/dashboard/buyerwallet/topup/callback?provider=paystack`;
+    const callbackUrl =`${appUrl}/buyer/buyerwallet/topup/callback?provider=paystack`;
 
     const result =
       await initializeWalletTopup({

@@ -91,94 +91,94 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
     setLastRef(reference);
 
     try {
-     const handleContinuePayment = async () => {
-  if (!amount || amount <= 0) {
-    toast.error("Invalid amount", {
-      description:
-        "Please enter an amount greater than ₦0.",
-    });
+      const handleContinuePayment = async () => {
+        if (!amount || amount <= 0) {
+          toast.error("Invalid amount", {
+            description:
+              "Please enter an amount greater than ₦0.",
+          });
 
-    return;
-  }
+          return;
+        }
 
-  if (!currentUser?.id) {
-    toast.error("Authentication required", {
-      description:
-        "Unable to identify your wallet account.",
-    });
+        if (!currentUser?.id) {
+          toast.error("Authentication required", {
+            description:
+              "Unable to identify your wallet account.",
+          });
 
-    return;
-  }
+          return;
+        }
 
-  setIsProcessing(true);
-  setStep("PROCESSING");
+        setIsProcessing(true);
+        setStep("PROCESSING");
 
-  try {
-    const endpoint =
-      paymentMethod === "paystack"
-        ? "/api/payments/paystack/initialize"
-        : "/api/payments/flutterwave/initialize";
+        try {
+          const endpoint =
+            paymentMethod === "paystack"
+              ? "/api/payments/paystack/initialize"
+              : "/api/payments/flutterwave/initialize";
 
-    const response =
-      await fetch(endpoint, {
-        method: "POST",
+          const response =
+            await fetch(endpoint, {
+              method: "POST",
 
-        headers: {
-          "Content-Type":
-            "application/json",
-        },
+              headers: {
+                "Content-Type":
+                  "application/json",
+              },
 
-        body: JSON.stringify({
-          amount,
-        }),
-      });
+              body: JSON.stringify({
+                amount,
+              }),
+            });
 
-    const data =
-      await response.json();
+          const data =
+            await response.json();
 
-    if (
-      !response.ok ||
-      !data?.success ||
-      !data?.checkoutUrl
-    ) {
-      throw new Error(
-        data?.message ||
-          "Unable to initialize payment"
-      );
-    }
+          if (
+            !response.ok ||
+            !data?.success ||
+            !data?.checkoutUrl
+          ) {
+            throw new Error(
+              data?.message ||
+              "Unable to initialize payment"
+            );
+          }
 
-    setLastRef(
-      data.reference || ""
-    );
+          setLastRef(
+            data.reference || ""
+          );
 
-    /*
-     * The gateway now takes over.
-     *
-     * Do NOT credit the wallet here.
-     */
-    window.location.assign(
-      data.checkoutUrl
-    );
-  } catch (error: unknown) {
-    console.error(
-      "Wallet top-up initialization error:",
-      error
-    );
+          /*
+           * The gateway now takes over.
+           *
+           * Do NOT credit the wallet here.
+           */
+          window.location.assign(
+            data.checkoutUrl
+          );
+        } catch (error: unknown) {
+          console.error(
+            "Wallet top-up initialization error:",
+            error
+          );
 
-    setIsProcessing(false);
-    setStep("FORM");
+          setIsProcessing(false);
+          setStep("FORM");
 
-    toast.error(
-      "Unable to start payment",
-      {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please try again.",
-      }
-    );
-  }
-};
+          toast.error(
+            "Unable to start payment",
+            {
+              description:
+                error instanceof Error
+                  ? error.message
+                  : "Please try again.",
+            }
+          );
+        }
+      };
 
 
       toast.success("Wallet funded successfully", {
@@ -325,10 +325,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       group flex w-full items-center justify-between
                       rounded-xl border px-4 py-3
                       text-left transition cursor-pointer
-                      ${
-                        paymentMethod === "paystack"
-                          ? "border-emerald-500 bg-emerald-50/60"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ${paymentMethod === "paystack"
+                        ? "border-emerald-500 bg-emerald-50/60"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                       }
                     `}
                   >
@@ -336,10 +335,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       <div
                         className={`
                           flex h-9 w-9 items-center justify-center rounded-lg
-                          ${
-                            paymentMethod === "paystack"
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-slate-100 text-slate-500"
+                          ${paymentMethod === "paystack"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-slate-100 text-slate-500"
                           }
                         `}
                       >
@@ -361,10 +359,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       className={`
                         flex h-5 w-5 items-center justify-center
                         rounded-full border-2
-                        ${
-                          paymentMethod === "paystack"
-                            ? "border-emerald-600"
-                            : "border-slate-300"
+                        ${paymentMethod === "paystack"
+                          ? "border-emerald-600"
+                          : "border-slate-300"
                         }
                       `}
                     >
@@ -384,10 +381,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       group flex w-full items-center justify-between
                       rounded-xl border px-4 py-3
                       text-left transition cursor-pointer
-                      ${
-                        paymentMethod === "flutterwave"
-                          ? "border-emerald-500 bg-emerald-50/60"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                      ${paymentMethod === "flutterwave"
+                        ? "border-emerald-500 bg-emerald-50/60"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
                       }
                     `}
                   >
@@ -395,10 +391,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       <div
                         className={`
                           flex h-9 w-9 items-center justify-center rounded-lg
-                          ${
-                            paymentMethod === "flutterwave"
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-slate-100 text-slate-500"
+                          ${paymentMethod === "flutterwave"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-slate-100 text-slate-500"
                           }
                         `}
                       >
@@ -420,10 +415,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                       className={`
                         flex h-5 w-5 items-center justify-center
                         rounded-full border-2
-                        ${
-                          paymentMethod === "flutterwave"
-                            ? "border-emerald-600"
-                            : "border-slate-300"
+                        ${paymentMethod === "flutterwave"
+                          ? "border-emerald-600"
+                          : "border-slate-300"
                         }
                       `}
                     >
@@ -457,10 +451,9 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({
                           rounded-lg border px-2 py-2
                           text-[11px] font-semibold
                           transition cursor-pointer
-                          ${
-                            isSelected
-                              ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                              : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                          ${isSelected
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
                           }
                         `}
                       >

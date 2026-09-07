@@ -1,21 +1,22 @@
-// /app/api/payments/paystack/verify/route.ts
+// /app/api/payments/flutterwave/verify/route.ts
 
 import {
   NextRequest,
   NextResponse,
 } from "next/server";
 
+
 import {
   verifyWalletTopup,
 } from "@/services/payment.service";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/auth";
-
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const session = await authOptions();
+    const session = await getServerSession(authOptions);
 
     if (!session?.user?.id) {
       return NextResponse.json(
@@ -52,7 +53,8 @@ export async function POST(
 
     const result =
       await verifyWalletTopup(
-        reference
+        reference,
+        session.user.id
       );
 
     return NextResponse.json(
@@ -63,7 +65,7 @@ export async function POST(
     );
   } catch (error) {
     console.error(
-      "[PAYSTACK_VERIFY]",
+      "[FLUTTERWAVE_VERIFY]",
       error
     );
 

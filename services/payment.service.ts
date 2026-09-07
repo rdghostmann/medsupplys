@@ -2,22 +2,19 @@
 
 "use server";
 
-import {
-  Types,
-} from "mongoose";
+import { Types } from "mongoose";
 
 import { connectToDB } from "@/lib/connectToDB";
 
 import PaymentTransaction from "@/models/PaymentTransaction";
+import { User } from "@/models/User";
 
 import {
   creditWallet,
   getOrCreateBuyerWallet,
 } from "@/services/wallet.service";
 
-import {
-  generatePaymentReference,
-} from "@/lib/payment-reference";
+import { generatePaymentReference } from "@/lib/payment-reference";
 
 import {
   PaystackPaymentProvider,
@@ -31,14 +28,10 @@ import type {
   PaymentProvider as PaymentProviderName,
   VerifyPaymentResult,
 } from "@/services/payments/payment.types";
-import { User } from "@/models/User";
 
 const providers = {
-  PAYSTACK:
-    new PaystackPaymentProvider(),
-
-  FLUTTERWAVE:
-    new FlutterwavePaymentProvider(),
+  PAYSTACK: new PaystackPaymentProvider(),
+  FLUTTERWAVE: new FlutterwavePaymentProvider(),
 };
 
 function getProvider(
@@ -47,19 +40,13 @@ function getProvider(
   return providers[provider];
 }
 
-function assertValidAmount(
-  amount: number
-) {
+function assertValidAmount(amount: number) {
   if (!Number.isFinite(amount)) {
-    throw new Error(
-      "Invalid wallet top-up amount"
-    );
+    throw new Error("Invalid wallet top-up amount");
   }
 
   if (amount < 100) {
-    throw new Error(
-      "Minimum wallet top-up is ₦100"
-    );
+    throw new Error("Minimum wallet top-up is ₦100");
   }
 
   if (amount > 50_000_000) {
@@ -69,23 +56,36 @@ function assertValidAmount(
   }
 }
 
+function assertValidProvider(
+  provider: PaymentProviderName
+) {
+  if (
+    provider !== "PAYSTACK" &&
+    provider !== "FLUTTERWAVE"
+  ) {
+    throw new Error("Unsupported payment provider");
+  }
+}
+
+/**
+ * Initialize a wallet top-up.
+ *
+ * This creates our internal PaymentTransaction first,
+ * then initializes the external payment gateway.
+ */
 export async function initializeWalletTopup(params: {
   buyerId: string;
-
   provider: PaymentProviderName;
-
   amount: number;
-
   callbackUrl: string;
 }) {
   await connectToDB();
 
   assertValidAmount(params.amount);
+  assertValidProvider(params.provider);
 
   if (!Types.ObjectId.isValid(params.buyerId)) {
-    throw new Error(
-      "Invalid buyer ID"
-    );
+    throw new Error("Invalid buyer ID");
   }
 
   const buyer = await User.findById(
@@ -93,9 +93,7 @@ export async function initializeWalletTopup(params: {
   ).lean();
 
   if (!buyer) {
-    throw new Error(
-      "Buyer account not found"
-    );
+    throw new Error("Buyer account not found");
   }
 
   if (buyer.role !== "buyer") {
@@ -105,18 +103,19 @@ export async function initializeWalletTopup(params: {
   }
 
   if (buyer.status !== "active") {
-    throw new Error(
-      "Buyer account is not active"
-    );
+    throw new Error("Buyer account is not active");
   }
 
   const wallet =
-    await getOrCreateBuyerWallet(params.buyerId);
+    await getOrCreateBuyerWallet(
+      params.buyerId
+    );
 
-  if (
-    wallet &&
-    wallet.status !== "ACTIVE"
-  ) {
+  if (!wallet) {
+    throw new Error("Unable to create or retrieve wallet");
+  }
+
+  if (wallet.status !== "ACTIVE") {
     throw new Error(
       "Wallet is not currently available"
     );
@@ -136,28 +135,23 @@ export async function initializeWalletTopup(params: {
     await PaymentTransaction.create({
       buyerId: buyer._id,
 
-      walletId:
-        wallet?._id,
+      walletId: wallet._id,
 
       provider: paymentProvider,
 
-      purpose:
-        "wallet_topup",
+      purpose: "wallet_topup",
 
       reference,
 
-      amount:
-        params.amount,
+      amount: params.amount,
 
-      currency:
-        "NGN",
+      currency: "NGN",
 
-      status:
-        "pending",
+      status: "pending",
 
       metadata: {
-        buyerId:
-          params.buyerId,
+        buyerId: params.buyerId,
+        provider: params.provider,
       },
     });
 
@@ -168,40 +162,37 @@ export async function initializeWalletTopup(params: {
     const provider =
       getProvider(params.provider);
 
+    const buyerName =
+      `${buyer.firstName ?? ""} ${
+        buyer.lastName ?? ""
+      }`.trim() ||
+      buyer.organizationName ||
+      buyer.email;
+
     const result =
       await provider.initializePayment({
-        buyerId:
-          params.buyerId,
+        buyerId: params.buyerId,
 
-        email:
-          buyer.email,
+        email: buyer.email,
 
-        name:
-          `${buyer.firstName ?? ""} ${
-            buyer.lastName ?? ""
-          }`.trim() ||
-          buyer.organizationName ||
-          buyer.email,
+        name: buyerName,
 
-        phone:
-          buyer.phone,
+        phone: buyer.phone,
 
-        amount:
-          params.amount,
+        amount: params.amount,
 
-        currency:
-          "NGN",
+        currency: "NGN",
 
         reference,
 
-        purpose:
-          "WALLET_TOPUP",
+        purpose: "WALLET_TOPUP",
 
-        callbackUrl:
-          params.callbackUrl,
+        callbackUrl: params.callbackUrl,
 
         metadata: {
           paymentTransactionId,
+          buyerId: params.buyerId,
+          purpose: "wallet_topup",
         },
       });
 
@@ -218,13 +209,11 @@ export async function initializeWalletTopup(params: {
     return {
       success: true,
 
-      paymentTransactionId:
-        paymentTransactionId,
+      paymentTransactionId,
 
       reference,
 
-      provider:
-        params.provider,
+      provider: params.provider,
 
       checkoutUrl:
         result.checkoutUrl,
@@ -235,13 +224,22 @@ export async function initializeWalletTopup(params: {
       {
         $set: {
           status: "failed",
+        },
+        $setOnInsert: {},
+        $push: {},
+      }
+    );
 
-          metadata: {
-            error:
-              error instanceof Error
-                ? error.message
-                : "Payment initialization failed",
-          },
+    // Preserve existing metadata and add the failure reason.
+    await PaymentTransaction.findByIdAndUpdate(
+      paymentTransactionId,
+      {
+        $set: {
+          status: "failed",
+          "metadata.initializationError":
+            error instanceof Error
+              ? error.message
+              : "Payment initialization failed",
         },
       }
     );
@@ -251,13 +249,16 @@ export async function initializeWalletTopup(params: {
 }
 
 /**
- * Resolve the gateway transaction and
- * complete the wallet top-up.
+ * Verify a wallet top-up.
  *
- * `buyerId` is optional because:
+ * Browser:
+ *   verifyWalletTopup(reference, authenticatedBuyerId)
  *
- * - Browser callback => authenticated buyer ID is supplied.
- * - Gateway webhook => no user session exists.
+ * Webhook:
+ *   verifyWalletTopup(reference)
+ *
+ * The browser path enforces buyer ownership.
+ * The webhook path does not require a user session.
  */
 export async function verifyWalletTopup(
   reference: string,
@@ -286,21 +287,15 @@ export async function verifyWalletTopup(
   }
 
   if (
-    payment.purpose !==
-    "wallet_topup"
+    payment.purpose !== "wallet_topup"
   ) {
     throw new Error(
       "Invalid payment purpose"
     );
   }
 
-  /*
-   * SECURITY:
-   *
-   * When called from an authenticated browser request,
-   * make sure the payment belongs to that buyer.
-   *
-   * Webhooks omit buyerId because they are server-to-server.
+  /**
+   * Browser ownership protection.
    */
   if (buyerId) {
     if (
@@ -321,45 +316,30 @@ export async function verifyWalletTopup(
     }
   }
 
-  /*
-   * IDEMPOTENCY
-   *
-   * A successful payment must never be credited twice.
+  /**
+   * Idempotency.
    */
   if (
-    payment.status ===
-    "successful"
+    payment.status === "successful"
   ) {
     return {
       success: true,
-
       alreadyProcessed: true,
-
       status: "SUCCESS" as const,
-
-      reference:
-        payment.reference,
-
-      amount:
-        payment.amount,
-
-      provider:
-        payment.provider,
+      reference: payment.reference,
+      amount: payment.amount,
+      provider: payment.provider,
     };
   }
 
-  let verification:
-    VerifyPaymentResult;
+  let verification: VerifyPaymentResult;
 
-  /*
-   * FLUTTERWAVE
-   *
-   * Flutterwave verification requires the
-   * provider transaction ID.
+  /**
+   * Flutterwave verification requires
+   * the Flutterwave transaction ID.
    */
   if (
-    payment.provider ===
-    "flutterwave"
+    payment.provider === "flutterwave"
   ) {
     if (!payment.providerReference) {
       throw new Error(
@@ -375,13 +355,13 @@ export async function verifyWalletTopup(
       );
   }
 
-  /*
-   * PAYSTACK
-   *
-   * Paystack verifies directly using
-   * the transaction reference.
+  /**
+   * Paystack verifies using our internal
+   * Paystack reference.
    */
-  else {
+  else if (
+    payment.provider === "paystack"
+  ) {
     verification =
       await getProvider(
         "PAYSTACK"
@@ -390,22 +370,29 @@ export async function verifyWalletTopup(
       );
   }
 
-  /*
-   * Payment isn't successful yet.
+  else {
+    throw new Error(
+      "Unsupported payment provider"
+    );
+  }
+
+  /**
+   * Payment is not successful.
    */
   if (
-    verification.status !==
-    "SUCCESS"
+    verification.status !== "SUCCESS"
   ) {
     await PaymentTransaction.findByIdAndUpdate(
       payment._id,
       {
         $set: {
           status:
-            verification.status ===
-            "FAILED"
+            verification.status === "FAILED"
               ? "failed"
               : "pending",
+
+          gatewayResponse:
+            verification.raw,
         },
       }
     );
@@ -413,8 +400,7 @@ export async function verifyWalletTopup(
     return {
       success: false,
 
-      status:
-        verification.status,
+      status: verification.status,
 
       reference:
         payment.reference,
@@ -427,11 +413,12 @@ export async function verifyWalletTopup(
     };
   }
 
-  /*
-   * NEVER trust only the gateway's
-   * success status.
+  /**
+   * Never trust gateway SUCCESS alone.
+   *
+   * Validate our internal transaction
+   * against the verified gateway response.
    */
-
   if (
     verification.reference !==
     payment.reference
@@ -466,18 +453,32 @@ export async function verifyWalletTopup(
 }
 
 /**
- * Final wallet top-up fulfillment.
+ * Final wallet fulfillment.
  *
- * This function is deliberately centralized
- * so both callbacks and webhooks eventually
- * follow the same fulfillment path.
+ * Gateway payment:
+ *     verified SUCCESS
+ *
+ * Internal wallet:
+ *     creditWallet()
+ *
+ * Ledger:
+ *     immutable SUCCESS transaction
  */
 export async function finalizeWalletTopup(
   paymentTransactionId: string,
-
   verification: VerifyPaymentResult
 ) {
   await connectToDB();
+
+  if (
+    !Types.ObjectId.isValid(
+      paymentTransactionId
+    )
+  ) {
+    throw new Error(
+      "Invalid payment transaction ID"
+    );
+  }
 
   const payment =
     await PaymentTransaction.findById(
@@ -490,19 +491,18 @@ export async function finalizeWalletTopup(
     );
   }
 
+  /**
+   * Idempotency.
+   */
   if (
     payment.status === "successful"
   ) {
     return {
       success: true,
-
       alreadyProcessed: true,
-
-      reference:
-        payment.reference,
-
-      amount:
-        payment.amount,
+      reference: payment.reference,
+      amount: payment.amount,
+      provider: payment.provider,
     };
   }
 
@@ -515,12 +515,10 @@ export async function finalizeWalletTopup(
   }
 
   /**
-   * Revalidate transaction data before
-   * delivering wallet value.
+   * Revalidate the verified gateway data.
    */
   if (
-    verification.status !==
-    "SUCCESS"
+    verification.status !== "SUCCESS"
   ) {
     throw new Error(
       "Payment is not successful"
@@ -554,44 +552,61 @@ export async function finalizeWalletTopup(
     );
   }
 
+  /**
+   * Keep providerReference synchronized with
+   * the verified gateway response.
+   */
+  if (
+    verification.providerReference
+  ) {
+    await PaymentTransaction.findByIdAndUpdate(
+      payment._id,
+      {
+        $set: {
+          providerReference:
+            verification.providerReference,
+        },
+      }
+    );
+  }
+
+  /**
+   * This reference must be unique.
+   *
+   * creditWallet() should enforce uniqueness
+   * at the wallet-ledger level as well.
+   */
   const walletReference =
     `WALLET-TOPUP-${payment.reference}`;
 
-  try {
-    await creditWallet({
-      buyerId:
-        payment.buyerId.toString(),
+  await creditWallet({
+    buyerId:
+      payment.buyerId.toString(),
 
-      amount:
-        payment.amount,
+    amount:
+      payment.amount,
 
-      reference:
-        walletReference,
+    reference:
+      walletReference,
 
-      description:
-        `Wallet top-up via ${payment.provider}`,
+    description:
+      `Wallet top-up via ${payment.provider}`,
 
-      source:
-        payment.provider === "paystack"
-          ? "PAYSTACK"
-          : "FLUTTERWAVE",
+    source:
+      payment.provider === "paystack"
+        ? "PAYSTACK"
+        : "FLUTTERWAVE",
 
-      paymentTransactionId:
-        payment._id.toString(),
-    });
-  } catch (error) {
-    /**
-     * Do NOT silently mark the gateway payment
-     * as failed here.
-     *
-     * The gateway payment succeeded.
-     *
-     * The ledger operation is independently
-     * idempotent and should be retried/reconciled.
-     */
-    throw error;
-  }
+    paymentTransactionId:
+      payment._id.toString(),
+  });
 
+  /**
+   * Only mark PaymentTransaction successful
+   * after the wallet ledger operation succeeds.
+   *
+   * The update is conditional on pending status.
+   */
   await PaymentTransaction.findOneAndUpdate(
     {
       _id: payment._id,
@@ -600,10 +615,15 @@ export async function finalizeWalletTopup(
     {
       $set: {
         status: "successful",
+
         providerReference:
-          verification.providerReference,
+          verification.providerReference ??
+          payment.providerReference,
+
         verifiedAt: new Date(),
-        gatewayResponse: verification.raw,
+
+        gatewayResponse:
+          verification.raw,
       },
     }
   );
@@ -618,5 +638,8 @@ export async function finalizeWalletTopup(
 
     amount:
       payment.amount,
+
+    provider:
+      payment.provider,
   };
 }

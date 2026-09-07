@@ -10,13 +10,13 @@ import {
 } from "@/services/payment.service";
 
 import { authOptions } from "@/auth";
+import { getServerSession } from "next-auth/next";
 
 export async function POST(
   request: NextRequest
 ) {
   try {
-    const session = await authOptions();
-
+    const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
       return NextResponse.json(
         {
