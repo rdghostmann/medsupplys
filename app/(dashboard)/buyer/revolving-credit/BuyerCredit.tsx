@@ -236,7 +236,8 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
 
             <span>
               Terms: Net{" "}
-              {creditAccount.terms || "30 Days"}
+              {"30 Days"}
+              {/* {creditAccount.terms || "30 Days"} */}
             </span>
           </div>
         </div>

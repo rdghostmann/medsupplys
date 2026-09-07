@@ -43,7 +43,15 @@ export interface CurrentBuyerWallet {
   buyerName: string;
   balance: number;
   currency: "NGN";
-  status: "ACTIVE" | "FROZEN" | "SUSPENDED" | "CLOSED";
+  status: "ACTIVE" | "SUSPENDED" | "LOCKED";
+  // Credit facility
+  creditAllowance?: number;
+  creditUsed?: number;
+  creditAvailable?: number;
+  creditStatus?: "ACTIVE" | "SUSPENDED" | "EXPIRED" | "UNAVAILABLE";
+
+  // Derived purchasing capacity
+  purchasingPower?: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -316,7 +324,7 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
         "_id",
         "buyerId",
         "buyerName",
-        "balance",
+        "availableBalance",
         "currency",
         "status",
         "createdAt",
@@ -345,8 +353,7 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
         buyerName:
           wallet.buyerName,
 
-        balance:
-          Number(wallet.balance || 0),
+        balance: Number(wallet.availableBalance || 0),
 
         currency:
           wallet.currency,
@@ -384,7 +391,8 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
         ? (transaction.type as CurrentBuyerWalletTransaction["type"])
         : "ADJUSTMENT",
       amount: Number(transaction.amount || 0),
-      direction: transaction.direction,
+      direction:
+        transaction.direction === "CREDIT" ? "CREDIT" : "DEBIT",
       balanceBefore: Number(transaction.balanceBefore || 0),
       balanceAfter: Number(transaction.balanceAfter || 0),
       reference: transaction.reference,

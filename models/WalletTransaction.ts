@@ -28,6 +28,15 @@ export type WalletTransactionStatus =
   | "FAILED"
   | "REVERSED";
 
+export type WalletTransactionSource =
+  | "PAYSTACK"
+  | "FLUTTERWAVE"
+  | "ORDER"
+  | "REFUND"
+  | "ADMIN"
+  | "SYSTEM";
+
+
 export interface IWalletTransaction
   extends Document {
   walletId: Types.ObjectId;
@@ -49,6 +58,10 @@ export interface IWalletTransaction
   description: string;
 
   status: WalletTransactionStatus;
+
+  source: WalletTransactionSource;
+
+  paymentTransactionId?: Types.ObjectId;
 
   orderId?: Types.ObjectId;
 
@@ -133,6 +146,25 @@ const WalletTransactionSchema =
           "REVERSED",
         ],
         default: "PENDING",
+      },
+
+       source: {
+        type: String,
+        enum: [
+          "PAYSTACK",
+          "FLUTTERWAVE",
+          "ORDER",
+          "REFUND",
+          "ADMIN",
+          "SYSTEM",
+        ],
+        required: true,
+      },
+
+      paymentTransactionId: {
+        type: Schema.Types.ObjectId,
+        ref: "PaymentTransaction",
+        index: true,
       },
 
       orderId: {

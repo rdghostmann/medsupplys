@@ -1,3 +1,4 @@
+
 // /models/Wallet.ts
 
 import {
@@ -11,18 +12,27 @@ import {
 
 export type WalletStatus =
   | "ACTIVE"
-  | "FROZEN"
   | "SUSPENDED"
-  | "CLOSED";
+  | "LOCKED";
 
 export interface IWallet extends Document {
   buyerId: Types.ObjectId;
 
   buyerName: string;
 
-  balance: number;
-
   currency: "NGN";
+
+  availableBalance: number;
+
+heldBalance: number;
+
+  totalDeposited: number;
+
+  totalSpent: number;
+
+  totalRefunded: number;
+
+  totalReversed: number;
 
   status: WalletStatus;
 
@@ -46,28 +56,58 @@ const WalletSchema = new Schema<IWallet>(
       required: true,
     },
 
-    balance: {
-      type: Number,
-      required: true,
-      min: 0,
-      default: 0,
-    },
-
     currency: {
       type: String,
       enum: ["NGN"],
       default: "NGN",
+      required: true,
+    },
+
+    availableBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    heldBalance: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalDeposited: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalSpent: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalRefunded: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    totalReversed: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
 
     status: {
       type: String,
       enum: [
         "ACTIVE",
-        "FROZEN",
         "SUSPENDED",
-        "CLOSED",
+        "LOCKED",
       ],
       default: "ACTIVE",
+      index: true,
     },
   },
   {
@@ -75,6 +115,11 @@ const WalletSchema = new Schema<IWallet>(
     versionKey: false,
   }
 );
+
+WalletSchema.index({
+  buyerId: 1,
+  status: 1,
+});
 
 export const Wallet: Model<IWallet> =
   models.Wallet ||

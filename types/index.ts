@@ -872,3 +872,61 @@ export interface PlatformConfig {
   maxCreditApprovalLimit: number;
   autoAdvanceSupplierTimeoutSeconds: number;
 }
+
+export type PaymentProvider =
+  | "PAYSTACK"
+  | "FLUTTERWAVE";
+
+export type PaymentPurpose =
+  | "WALLET_TOPUP";
+
+export interface InitializePaymentParams {
+  buyerId: string;
+
+  email: string;
+
+  name: string;
+
+  amount: number;
+
+  currency: "NGN";
+
+  reference: string;
+
+  purpose: PaymentPurpose;
+
+  callbackUrl: string;
+
+  metadata?: Record<string, unknown>;
+}
+
+export interface InitializePaymentResult {
+  success: boolean;
+
+  provider: PaymentProvider;
+
+  reference: string;
+
+  checkoutUrl: string;
+
+  providerReference?: string;
+}
+
+export interface VerifyPaymentResult {
+  success: boolean;
+
+  provider: PaymentProvider;
+
+  reference: string;
+
+  providerReference?: string;
+
+  amount: number;
+
+  currency: string;
+
+  status:
+    | "SUCCESS"
+    | "FAILED"
+    | "PENDING";
+}

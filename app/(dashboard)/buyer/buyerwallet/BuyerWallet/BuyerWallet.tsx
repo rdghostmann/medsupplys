@@ -1,5 +1,4 @@
 // BuyerWallet.tsx
-// BuyerWallet.tsx
 
 "use client";
 
@@ -19,13 +18,7 @@ import type {
   CurrentBuyerWalletTransaction,
 } from "@/controllers/buyer.actions";
 
-/* -------------------------------------------------------------------------- */
-/* Types                                                                      */
-/* -------------------------------------------------------------------------- */
-
-/* -------------------------------------------------------------------------- */
-/* Wallet                                                                     */
-/* -------------------------------------------------------------------------- */
+import TopUpModal from "./TopUpModal";
 
 type BuyerWalletData = CurrentBuyerWallet;
 
@@ -36,26 +29,26 @@ type BuyerWalletData = CurrentBuyerWallet;
 /* -------------------------------------------------------------------------- */
 
 const mockWalletTransactions: WalletTransaction[] = [
-  {
-    id: "tx_001",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "TOPUP",
-    amount: 500000,
-    direction: "CREDIT",
-    balanceBefore: 347500,
-    balanceAfter: 847500,
-    reference: "MS-TOP-260905-001",
-    description:
-      "Institutional wallet funding via Paystack",
-    status: "SUCCESS",
-    metadata: {
-      paymentMethod: "Paystack",
-      channel: "bank_transfer",
-      gatewayReference: "PSK-884729102",
-    },
-    createdAt: "2026-09-05T09:15:00",
-  },
+  // {
+  //   id: "tx_001",
+  //   walletId: "wallet_buyer_001",
+  //   buyerId: "buyer_001",
+  //   type: "TOPUP",
+  //   amount: 500000,
+  //   direction: "CREDIT",
+  //   balanceBefore: 347500,
+  //   balanceAfter: 847500,
+  //   reference: "MS-TOP-260905-001",
+  //   description:
+  //     "Institutional wallet funding via Paystack",
+  //   status: "SUCCESS",
+  //   metadata: {
+  //     paymentMethod: "Paystack",
+  //     channel: "bank_transfer",
+  //     gatewayReference: "PSK-884729102",
+  //   },
+  //   createdAt: "2026-09-05T09:15:00",
+  // },
 
   {
     id: "tx_002",
@@ -229,7 +222,8 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 }) => {
   void mockWalletTransactions;
 
-  const [walletState] = useState<BuyerWalletData | null>(wallet);
+  const [walletState] =
+    useState<BuyerWalletData | null>(wallet);
 
   const [transactions, setTransactions] =
     useState<WalletTransaction[]>(initialTransactions);
@@ -237,35 +231,11 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
   const [isRefreshing, setIsRefreshing] =
     useState(false);
 
+  const [isTopUpModalOpen, setIsTopUpModalOpen] =
+    useState(false);
   /* ------------------------------------------------------------------------ */
   /* Totals                                                                   */
   /* ------------------------------------------------------------------------ */
-
-  const totalDeposits = useMemo(() => {
-    return transactions
-      .filter(
-        (tx) =>
-          tx.direction === "CREDIT" &&
-          tx.status === "SUCCESS"
-      )
-      .reduce(
-        (sum, tx) => sum + tx.amount,
-        0
-      );
-  }, [transactions]);
-
-  const totalDebits = useMemo(() => {
-    return transactions
-      .filter(
-        (tx) =>
-          tx.direction === "DEBIT" &&
-          tx.status === "SUCCESS"
-      )
-      .reduce(
-        (sum, tx) => sum + tx.amount,
-        0
-      );
-  }, [transactions]);
 
   /* ------------------------------------------------------------------------ */
   /* Actions                                                                   */
@@ -285,11 +255,6 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
     toast.success("Wallet ledger refreshed");
   };
 
-  const fundWallet = () => {
-    toast.info(
-      "Paystack wallet funding will be connected here."
-    );
-  };
 
   /* ------------------------------------------------------------------------ */
   /* UI                                                                        */
@@ -313,18 +278,31 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 
         <button
           type="button"
-          onClick={fundWallet}
-          className="flex cursor-pointer items-center gap-1.5 self-start rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
+          onClick={() => setIsTopUpModalOpen(true)}
+          className="
+    flex cursor-pointer
+    items-center gap-1.5
+    self-start
+    rounded-xl
+    bg-emerald-600
+    px-4 py-2
+    text-xs font-bold
+    text-white
+    shadow-md
+    shadow-emerald-600/20
+    transition
+    hover:bg-emerald-700
+  "
         >
           <WalletIcon className="h-4 w-4" />
 
-          <span>Fund Wallet via Paystack</span>
+          <span>Top-Up Wallet</span>
         </button>
       </div>
 
       {/* Balance Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* Available Balance */}
+        {/* Available Institutional Balance */}
         <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-900 to-slate-900 p-6 text-white shadow-lg">
           <div className="mb-1 text-xs font-bold uppercase tracking-wider text-blue-200">
             Available Institutional Balance
@@ -336,58 +314,74 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
 
           <div className="mt-4 flex items-center gap-2 text-[11px] text-blue-200/80">
             <span
-              className={`h-2 w-2 rounded-full ${
-                walletState?.status === "ACTIVE"
-                  ? "bg-emerald-400"
-                  : "bg-red-400"
-              }`}
+              className={`h-2 w-2 animate-pulse rounded-full ${walletState?.status === "ACTIVE"
+                ? "bg-emerald-400"
+                : "bg-red-400"
+                }`}
             />
 
             <span>
-              Status: {walletState?.status || "UNAVAILABLE"} 
-              {" "}
-             
-             {/* {" "}  •  {wallet.currency}{" "}
-              (Nigerian Naira) */}
+              {walletState?.status || "UNAVAILABLE"}
+
+              <span className="text-blue-200/80">
+                {" "}
+                • {wallet?.currency || "NGN"} (Nigerian Naira)
+              </span>
             </span>
           </div>
         </div>
 
-        {/* Total Deposits */}
-        <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        {/* Credit Allowance */}
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-200 bg-linear-to-br from-amber-50 via-white to-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Total Deposits Funded
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-amber-700">
+              Credit Allowance
             </div>
 
-            <div className="mt-1 font-mono text-lg font-bold text-emerald-700">
-              {formatCurrency(totalDeposits)}
+            <div className="mt-1 font-mono text-2xl font-bold text-slate-900">
+              {formatCurrency(wallet?.creditAllowance || 0)}
             </div>
+
+            <p className="mt-1 text-[11px] text-slate-500">
+              Approved procurement credit facility
+            </p>
           </div>
 
-          <div className="mt-3 flex items-center gap-1 border-t border-slate-100 pt-3 text-[11px] text-slate-400">
-            <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
+          <div className="mt-4 flex items-center gap-1 border-t border-amber-100 pt-3 text-[11px] text-slate-400">
+            <ShieldCheck className="h-3.5 w-3.5 text-amber-600" />
 
-            <span>Paystack Webhook Verified</span>
+            <span>
+              {wallet?.creditStatus === "ACTIVE"
+                ? "Credit facility active"
+                : "Credit facility available"}
+            </span>
           </div>
         </div>
 
-        {/* Total Debits */}
-        <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
+        {/* Available Purchasing Power */}
+        <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
-              Total Sourcing Debits
+            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-emerald-700">
+              Available Purchasing Power
             </div>
 
-            <div className="mt-1 font-mono text-lg font-bold text-slate-900">
-              {formatCurrency(totalDebits)}
+            <div className="mt-1 font-mono text-2xl font-bold text-emerald-700">
+              {/* Available Purchasing Power */}
+              <div className="font-mono text-2xl font-bold text-emerald-700">
+                {formatCurrency(wallet?.purchasingPower || 0)}
+              </div>
+
             </div>
+
+            <p className="mt-1 text-[11px] text-slate-500">
+              Wallet balance + available credit
+            </p>
           </div>
 
-          <div className="mt-3 flex items-center gap-1 border-t border-slate-100 pt-3 text-[11px] text-slate-400">
-            <Lock className="h-3.5 w-3.5 text-blue-600" />
+          <div className="mt-4 flex items-center gap-1 border-t border-emerald-100 pt-3 text-[11px] text-slate-400">
+            <WalletIcon className="h-3.5 w-3.5 text-emerald-600" />
 
-            <span>Atomic Transaction Locks</span>
+            <span>Available for procurement</span>
           </div>
         </div>
       </div>
@@ -398,7 +392,25 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
         isRefreshing={isRefreshing}
         onRefresh={refreshAll}
       />
+
+      <TopUpModal
+        isOpen={isTopUpModalOpen}
+        onClose={() => setIsTopUpModalOpen(false)}
+        currentUser={
+          walletState?.buyerId
+            ? {
+              id: walletState.buyerId,
+            }
+            : null
+        }
+        onSuccess={async () => {
+          await refreshAll();
+        }}
+      />
     </div>
+
+
+
   );
 };
 
