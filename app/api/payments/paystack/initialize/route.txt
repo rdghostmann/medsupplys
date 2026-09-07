@@ -14,7 +14,7 @@ export async function POST(
   request: NextRequest
 ) {
   try {
-    const session = await authOptions();
+    const session = authOptions();
 
     if (!session?.user?.id) {
       return NextResponse.json(

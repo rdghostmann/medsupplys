@@ -161,7 +161,7 @@ const SeedBuyerWallet: React.FC = () => {
               Initial Balance
             </div>
 
-            <p className="text-2xl font-bold text-emerald-700">
+            <p className="hidden text-2xl font-bold text-emerald-700">
               ₦1,450,000
             </p>
 
