@@ -1,7 +1,10 @@
+// /app/buyer/buyerwallet/topup/callback/page.tsx
+
 "use client";
 
 import React, {
   useEffect,
+  useRef,
   useState,
 } from "react";
 
@@ -12,7 +15,10 @@ import {
   ArrowLeft,
 } from "lucide-react";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 
 import { toast } from "sonner";
 
@@ -21,12 +27,27 @@ type CallbackStatus =
   | "SUCCESS"
   | "FAILED";
 
+type PaymentProvider =
+  | "paystack"
+  | "flutterwave";
+
+interface VerifyResponse {
+  success?: boolean;
+  message?: string;
+  amount?: number;
+  reference?: string;
+  provider?: PaymentProvider;
+  status?: string;
+}
+
 export default function WalletTopupCallbackPage() {
-  const router =
-    useRouter();
+  const router = useRouter();
 
   const searchParams =
     useSearchParams();
+
+  const verificationStarted =
+    useRef(false);
 
   const [status, setStatus] =
     useState<CallbackStatus>(
@@ -39,47 +60,58 @@ export default function WalletTopupCallbackPage() {
     );
 
   const [amount, setAmount] =
-    useState<number | null>(
-      null
-    );
+    useState<number | null>(null);
 
   const [reference, setReference] =
     useState("");
 
   useEffect(() => {
+    /*
+     * React Strict Mode can execute effects
+     * twice during development.
+     *
+     * Prevent duplicate verification requests.
+     */
+    if (verificationStarted.current) {
+      return;
+    }
+
+    verificationStarted.current = true;
+
     let cancelled = false;
 
-    const verify = async () => {
+    const verifyPayment = async () => {
       try {
-        const provider =
+        const providerParam =
           searchParams.get(
             "provider"
           );
 
+        const provider =
+          providerParam as
+            | PaymentProvider
+            | null;
+
         /*
-         * Paystack:
+         * Paystack callback:
          *
-         * ?reference=TOPUP...
+         * ?provider=paystack
+         * &reference=TOPUP-...
          *
-         * Flutterwave:
+         * Flutterwave callback:
          *
-         * ?tx_ref=TOPUP...
-         * ?transaction_id=...
-         * ?status=successful
+         * ?provider=flutterwave
+         * &tx_ref=TOPUP-...
+         * &transaction_id=...
+         * &status=successful
          */
-        const reference =
+        const paymentReference =
           searchParams.get(
             "reference"
           ) ||
           searchParams.get(
             "tx_ref"
           );
-
-        if (!reference) {
-          throw new Error(
-            "Payment reference was not provided."
-          );
-        }
 
         if (!provider) {
           throw new Error(
@@ -88,13 +120,17 @@ export default function WalletTopupCallbackPage() {
         }
 
         if (
-          provider !==
-            "paystack" &&
-          provider !==
-            "flutterwave"
+          provider !== "paystack" &&
+          provider !== "flutterwave"
         ) {
           throw new Error(
             "Unsupported payment provider."
+          );
+        }
+
+        if (!paymentReference) {
+          throw new Error(
+            "Payment reference was not provided."
           );
         }
 
@@ -103,7 +139,7 @@ export default function WalletTopupCallbackPage() {
         }
 
         setReference(
-          reference
+          paymentReference
         );
 
         const endpoint =
@@ -122,14 +158,33 @@ export default function WalletTopupCallbackPage() {
                   "application/json",
               },
 
+              /*
+               * IMPORTANT:
+               *
+               * Only send the internal payment
+               * reference to our server.
+               *
+               * The server authenticates the buyer
+               * and independently verifies the
+               * transaction with Paystack/Flutterwave.
+               */
               body: JSON.stringify({
-                reference,
+                reference:
+                  paymentReference,
               }),
             }
           );
 
-        const data =
-          await response.json();
+        let data: VerifyResponse;
+
+        try {
+          data =
+            (await response.json()) as VerifyResponse;
+        } catch {
+          throw new Error(
+            "Invalid response from payment verification service."
+          );
+        }
 
         if (
           !response.ok ||
@@ -145,8 +200,17 @@ export default function WalletTopupCallbackPage() {
           return;
         }
 
+        const verifiedAmount =
+          Number(
+            data.amount ?? 0
+          );
+
         setAmount(
-          Number(data.amount || 0)
+          Number.isFinite(
+            verifiedAmount
+          )
+            ? verifiedAmount
+            : null
         );
 
         setStatus(
@@ -186,7 +250,7 @@ export default function WalletTopupCallbackPage() {
       }
     };
 
-    verify();
+    void verifyPayment();
 
     return () => {
       cancelled = true;
@@ -194,9 +258,7 @@ export default function WalletTopupCallbackPage() {
   }, [searchParams]);
 
   const returnToWallet = () => {
-    router.push(
-      "/dashboard/buyer/wallet"
-    );
+    router.push("/buyer/buyerwallet");
 
     router.refresh();
   };
@@ -205,8 +267,11 @@ export default function WalletTopupCallbackPage() {
     <main className="min-h-screen bg-slate-50 px-4 py-12">
       <div className="mx-auto w-full max-w-md">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-          {status ===
-            "VERIFYING" && (
+
+          {/* =========================================================
+              VERIFYING
+          ========================================================= */}
+          {status === "VERIFYING" && (
             <div className="px-6 py-14 text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50">
                 <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
@@ -216,7 +281,7 @@ export default function WalletTopupCallbackPage() {
                 Verifying Payment
               </h1>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
                 Please wait while we verify
                 your payment and update your
                 institutional wallet.
@@ -224,7 +289,7 @@ export default function WalletTopupCallbackPage() {
 
               {reference && (
                 <div className="mt-5 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
                     Transaction Reference
                   </p>
 
@@ -236,8 +301,10 @@ export default function WalletTopupCallbackPage() {
             </div>
           )}
 
-          {status ===
-            "SUCCESS" && (
+          {/* =========================================================
+              SUCCESS
+          ========================================================= */}
+          {status === "SUCCESS" && (
             <div className="px-6 py-12 text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                 <CheckCircle2 className="h-9 w-9" />
@@ -247,14 +314,14 @@ export default function WalletTopupCallbackPage() {
                 Wallet Funded
               </h1>
 
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-2 text-sm leading-relaxed text-slate-500">
                 {message}
               </p>
 
               {amount !== null &&
                 amount > 0 && (
                   <div className="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-                    <p className="text-xs text-emerald-700">
+                    <p className="text-xs font-medium text-emerald-700">
                       Amount Credited
                     </p>
 
@@ -269,7 +336,7 @@ export default function WalletTopupCallbackPage() {
 
               {reference && (
                 <div className="mt-4 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
                     Transaction Reference
                   </p>
 
@@ -293,8 +360,10 @@ export default function WalletTopupCallbackPage() {
             </div>
           )}
 
-          {status ===
-            "FAILED" && (
+          {/* =========================================================
+              FAILED
+          ========================================================= */}
+          {status === "FAILED" && (
             <div className="px-6 py-12 text-center">
               <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-red-50 text-red-600">
                 <XCircle className="h-9 w-9" />
@@ -310,7 +379,7 @@ export default function WalletTopupCallbackPage() {
 
               {reference && (
                 <div className="mt-5 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] text-slate-400">
+                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
                     Transaction Reference
                   </p>
 

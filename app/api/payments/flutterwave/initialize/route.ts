@@ -60,8 +60,7 @@ export async function POST(
       );
     }
 
-    const callbackUrl =
-      `${appUrl}/dashboard/buyer/wallet/topup/callback?provider=flutterwave`;
+   const callbackUrl =  `${appUrl}/buyer/buyerwallet/topup/callback?provider=flutterwave`;
 
     const result =
       await initializeWalletTopup({
