@@ -847,246 +847,430 @@ export async function createProcurement(
     try {
         const createdProcurement =
             await session.withTransaction(
-            async () => {
-                /* ==============================================
-                   Create Procurement
-                   ============================================== */
+                async () => {
+                    /* ==============================================
+                       Create Procurement
+                       ============================================== */
 
-                const procurementDocs =
-                    await Procurement.create(
-                        [
-                            {
-                                procurementNumber,
+                    const procurementDocs =
+                        await Procurement.create(
+                            [
+                                {
+                                    procurementNumber,
 
-                                buyerId,
+                                    buyerId,
 
-                                buyerName,
+                                    buyerName,
 
-                                items: [
-                                    {
-                                        productId,
+                                    items: [
+                                        {
+                                            productId,
 
-                                        productName:
-                                            product.name,
+                                            productName:
+                                                product.name,
 
-                                        supplierProductId,
+                                            supplierProductId,
 
-                                        supplierId,
+                                            supplierId,
 
-                                        supplierName:
-                                            selectedSupplier.supplierName,
+                                            supplierName:
+                                                selectedSupplier.supplierName,
 
-                                        supplierType:
-                                            selectedSupplier.supplierType,
+                                            supplierType:
+                                                selectedSupplier.supplierType,
 
-                                        quantity,
+                                            quantity,
 
-                                        unit:
-                                            supplierProduct.unit ??
-                                            product.unit,
+                                            unit:
+                                                supplierProduct.unit ??
+                                                product.unit,
 
-                                        unitPrice,
-
-                                        totalPrice:
-                                            totalAmount,
-
-                                        preferredSupplierType:
-                                            selectedSupplier.supplierType,
-                                    },
-                                ],
-
-                                /*
-                                 * Supplier has been selected
-                                 * and is being contacted.
-                                 */
-                                status:
-                                    "SUPPLIER_CONTACTED",
-
-                                supplierCandidates,
-
-                                currentSupplierIndex:
-                                    selectedIndex,
-
-                                currentSupplierId:
-                                    supplierId,
-
-                                currentSupplierName:
-                                    selectedSupplier.supplierName,
-
-                                attemptHistory: [
-                                    {
-                                        attemptNumber:
-                                            1,
-
-                                        supplierId,
-
-                                        supplierName:
-                                            selectedSupplier.supplierName,
-
-                                        supplierType:
-                                            selectedSupplier.supplierType,
-
-                                        offeredPrice:
                                             unitPrice,
 
-                                        status:
-                                            "CONTACTED",
+                                            totalPrice:
+                                                totalAmount,
 
-                                        contactedAt:
-                                            new Date(),
+                                            preferredSupplierType:
+                                                selectedSupplier.supplierType,
+                                        },
+                                    ],
+
+                                    /*
+                                     * Supplier has been selected
+                                     * and is being contacted.
+                                     */
+                                    status:
+                                        "SUPPLIER_CONTACTED",
+
+                                    supplierCandidates,
+
+                                    currentSupplierIndex:
+                                        selectedIndex,
+
+                                    currentSupplierId:
+                                        supplierId,
+
+                                    currentSupplierName:
+                                        selectedSupplier.supplierName,
+
+                                    attemptHistory: [
+                                        {
+                                            attemptNumber:
+                                                1,
+
+                                            supplierId,
+
+                                            supplierName:
+                                                selectedSupplier.supplierName,
+
+                                            supplierType:
+                                                selectedSupplier.supplierType,
+
+                                            offeredPrice:
+                                                unitPrice,
+
+                                            status:
+                                                "CONTACTED",
+
+                                            contactedAt:
+                                                new Date(),
+                                        },
+                                    ],
+
+                                    deliveryAddress,
+
+                                    notes:
+                                        input.notes
+                                            ?.trim() ||
+                                        undefined,
+
+                                    /*
+                                     * Snapshot the exact weights
+                                     * used by the matching engine.
+                                     */
+                                    matchingWeightsSnapshot:
+                                        MATCHING_WEIGHTS,
+
+                                    /*
+                                     * Financial snapshot.
+                                     */
+                                    financials: {
+                                        paymentMethod:
+                                            input.paymentMethod,
+
+                                        totalAmount,
+
+                                        walletAmount,
+
+                                        creditAmount,
+
+                                        currency:
+                                            "NGN",
                                     },
-                                ],
 
-                                deliveryAddress,
+                                    expiresAt:
+                                        new Date(
+                                            Date.now() +
+                                            PROCUREMENT_EXPIRY_MS
+                                        ),
+                                },
+                            ],
+                            {
+                                session,
+                            }
+                        );
 
-                                notes:
-                                    input.notes
-                                        ?.trim() ||
-                                    undefined,
+                    const createdProcurement =
+                        procurementDocs[0];
 
-                                /*
-                                 * Snapshot the exact weights
-                                 * used by the matching engine.
-                                 */
-                                matchingWeightsSnapshot:
-                                    MATCHING_WEIGHTS,
+                    const procurementId =
+                        createdProcurement._id;
 
-                                /*
-                                 * Financial snapshot.
-                                 */
-                                financials: {
-                                    paymentMethod:
-                                        input.paymentMethod,
+                    /* ==============================================
+                       Wallet Reservation
+                       ============================================== */
+
+                    if (
+                        walletAmount > 0
+                    ) {
+                        /*
+                         * Atomic balance check + update.
+                         *
+                         * This prevents two simultaneous procurement
+                         * requests from spending the same wallet balance.
+                         */
+                        const wallet =
+                            await Wallet.findOneAndUpdate(
+                                {
+                                    buyerId,
+
+                                    status:
+                                        "ACTIVE",
+
+                                    availableBalance:
+                                    {
+                                        $gte:
+                                            walletAmount,
+                                    },
+                                },
+                                {
+                                    $inc: {
+                                        availableBalance:
+                                            -walletAmount,
+
+                                        heldBalance:
+                                            walletAmount,
+                                    },
+                                },
+                                {
+                                    new: true,
+                                    session,
+                                }
+                            );
+
+                        if (!wallet) {
+                            throw new Error(
+                                "Insufficient wallet balance or wallet is not active."
+                            );
+                        }
+
+                        const balanceBefore =
+                            wallet.availableBalance +
+                            walletAmount;
+
+                        await WalletTransaction.create(
+                            [
+                                {
+                                    walletId:
+                                        wallet._id,
+
+                                    buyerId,
+
+                                    type:
+                                        "HOLD",
+
+                                    amount:
+                                        walletAmount,
+
+                                    direction:
+                                        "DEBIT",
+
+                                    balanceBefore,
+
+                                    balanceAfter:
+                                        wallet.availableBalance,
+
+                                    reference:
+                                        generateReference(
+                                            "WALLET-HOLD"
+                                        ),
+
+                                    description:
+                                        `Wallet funds reserved for procurement ${procurementNumber}`,
+
+                                    status:
+                                        "SUCCESS",
+
+                                    source:
+                                        "ORDER",
+
+                                    procurementId,
+
+                                    metadata: {
+                                        procurementNumber,
+
+                                        productId:
+                                            productId.toString(),
+
+                                        supplierProductId:
+                                            supplierProductId.toString(),
+
+                                        heldBalance:
+                                            wallet.heldBalance,
+                                    },
+                                },
+                            ],
+                            {
+                                session,
+                            }
+                        );
+                    }
+
+                    /* ==============================================
+                       Credit Commitment
+                       ============================================== */
+
+                    if (
+                        creditAmount > 0
+                    ) {
+                        /*
+                         * Atomic credit availability check + update.
+                         */
+                        const creditAccount =
+                            await CreditAccount.findOneAndUpdate(
+                                {
+                                    buyerId,
+
+                                    status:
+                                        "ACTIVE",
+
+                                    availableCredit:
+                                    {
+                                        $gte:
+                                            creditAmount,
+                                    },
+                                },
+                                {
+                                    $inc: {
+                                        availableCredit:
+                                            -creditAmount,
+
+                                        creditUsed:
+                                            creditAmount,
+
+                                        outstandingBalance:
+                                            creditAmount,
+                                    },
+                                },
+                                {
+                                    new: true,
+                                    session,
+                                }
+                            );
+
+                        if (
+                            !creditAccount
+                        ) {
+                            throw new Error(
+                                "Insufficient available credit or credit facility is not active."
+                            );
+                        }
+
+                        const balanceBefore =
+                            creditAccount.availableCredit +
+                            creditAmount;
+
+                        await CreditTransaction.create(
+                            [
+                                {
+                                    creditAccountId:
+                                        creditAccount._id,
+
+                                    buyerId,
+
+                                    type:
+                                        "CREDIT_PURCHASE",
+
+                                    amount:
+                                        creditAmount,
+
+                                    direction:
+                                        "CHARGE",
+
+                                    balanceBefore,
+
+                                    balanceAfter:
+                                        creditAccount.availableCredit,
+
+                                    reference:
+                                        generateReference(
+                                            "CREDIT-CHARGE"
+                                        ),
+
+                                    procurementId,
+
+                                    description:
+                                        `Credit facility committed for procurement ${procurementNumber}`,
+
+                                    metadata: {
+                                        procurementNumber,
+
+                                        productId:
+                                            productId.toString(),
+
+                                        supplierProductId:
+                                            supplierProductId.toString(),
+                                    },
+                                },
+                            ],
+                            {
+                                session,
+                            }
+                        );
+                    }
+
+                    /* ==============================================
+                     Buyer Notification
+                     ============================================== */
+
+
+
+                    /* ==============================================
+                       Supplier Notification
+                       ============================================== */
+
+                    /* ==============================================
+                       Audit Log — Procurement Created
+                       ============================================== */
+
+                    await AuditLog.create(
+                        [
+                            {
+                                actorId:
+                                    buyerId,
+
+                                actorType:
+                                    "BUYER",
+
+                                action:
+                                    "PROCUREMENT_CREATED",
+
+                                entityType:
+                                    "Procurement",
+
+                                entityId:
+                                    procurementId,
+
+                                description:
+                                    `Buyer created procurement ${procurementNumber}.`,
+
+                                metadata: {
+                                    procurementNumber,
+
+                                    productId:
+                                        productId.toString(),
+
+                                    productName:
+                                        product.name,
+
+                                    supplierId:
+                                        supplierId.toString(),
+
+                                    supplierProductId:
+                                        supplierProductId.toString(),
+
+                                    supplierName:
+                                        selectedSupplier.supplierName,
+
+                                    supplierType:
+                                        selectedSupplier.supplierType,
+
+                                    quantity,
+
+                                    unit:
+                                        supplierProduct.unit ??
+                                        product.unit,
+
+                                    unitPrice,
 
                                     totalAmount,
 
+                                    paymentMethod:
+                                        input.paymentMethod,
+
                                     walletAmount,
 
                                     creditAmount,
-
-                                    currency:
-                                        "NGN",
-                                },
-
-                                expiresAt:
-                                    new Date(
-                                        Date.now() +
-                                        PROCUREMENT_EXPIRY_MS
-                                    ),
-                            },
-                        ],
-                        {
-                            session,
-                        }
-                    );
-
-                const createdProcurement =
-                    procurementDocs[0];
-
-                const procurementId =
-                    createdProcurement._id;
-
-                /* ==============================================
-                   Wallet Reservation
-                   ============================================== */
-
-                if (
-                    walletAmount > 0
-                ) {
-                    /*
-                     * Atomic balance check + update.
-                     *
-                     * This prevents two simultaneous procurement
-                     * requests from spending the same wallet balance.
-                     */
-                    const wallet =
-                        await Wallet.findOneAndUpdate(
-                            {
-                                buyerId,
-
-                                status:
-                                    "ACTIVE",
-
-                                availableBalance:
-                                {
-                                    $gte:
-                                        walletAmount,
-                                },
-                            },
-                            {
-                                $inc: {
-                                    availableBalance:
-                                        -walletAmount,
-
-                                    heldBalance:
-                                        walletAmount,
-                                },
-                            },
-                            {
-                                new: true,
-                                session,
-                            }
-                        );
-
-                    if (!wallet) {
-                        throw new Error(
-                            "Insufficient wallet balance or wallet is not active."
-                        );
-                    }
-
-                    const balanceBefore =
-                        wallet.availableBalance +
-                        walletAmount;
-
-                    await WalletTransaction.create(
-                        [
-                            {
-                                walletId:
-                                    wallet._id,
-
-                                buyerId,
-
-                                type:
-                                    "HOLD",
-
-                                amount:
-                                    walletAmount,
-
-                                direction:
-                                    "DEBIT",
-
-                                balanceBefore,
-
-                                balanceAfter:
-                                    wallet.availableBalance,
-
-                                reference:
-                                    generateReference(
-                                        "WALLET-HOLD"
-                                    ),
-
-                                description:
-                                    `Wallet funds reserved for procurement ${procurementNumber}`,
-
-                                status:
-                                    "SUCCESS",
-
-                                source:
-                                    "ORDER",
-
-                                procurementId,
-
-                                metadata: {
-                                    procurementNumber,
-
-                                    productId:
-                                        productId.toString(),
-
-                                    supplierProductId:
-                                        supplierProductId.toString(),
-
-                                    heldBalance:
-                                        wallet.heldBalance,
                                 },
                             },
                         ],
@@ -1094,102 +1278,144 @@ export async function createProcurement(
                             session,
                         }
                     );
-                }
 
-                /* ==============================================
-                   Credit Commitment
-                   ============================================== */
-
-                if (
-                    creditAmount > 0
-                ) {
-                    /*
-                     * Atomic credit availability check + update.
-                     */
-                    const creditAccount =
-                        await CreditAccount.findOneAndUpdate(
-                            {
-                                buyerId,
-
-                                status:
-                                    "ACTIVE",
-
-                                availableCredit:
-                                {
-                                    $gte:
-                                        creditAmount,
-                                },
-                            },
-                            {
-                                $inc: {
-                                    availableCredit:
-                                        -creditAmount,
-
-                                    creditUsed:
-                                        creditAmount,
-
-                                    outstandingBalance:
-                                        creditAmount,
-                                },
-                            },
-                            {
-                                new: true,
-                                session,
-                            }
-                        );
+                    /* ==============================================
+                       Audit Log — Wallet Reservation
+                       ============================================== */
 
                     if (
-                        !creditAccount
+                        walletAmount > 0
                     ) {
-                        throw new Error(
-                            "Insufficient available credit or credit facility is not active."
+                        await AuditLog.create(
+                            [
+                                {
+                                    actorId:
+                                        buyerId,
+
+                                    actorType:
+                                        "BUYER",
+
+                                    action:
+                                        "PAYMENT_RESERVED",
+
+                                    entityType:
+                                        "Procurement",
+
+                                    entityId:
+                                        procurementId,
+
+                                    description:
+                                        `₦${walletAmount.toLocaleString()} wallet funds reserved for procurement ${procurementNumber}.`,
+
+                                    metadata: {
+                                        procurementNumber,
+
+                                        paymentMethod:
+                                            input.paymentMethod,
+
+                                        walletAmount,
+
+                                        creditAmount,
+                                    },
+                                },
+                            ],
+                            {
+                                session,
+                            }
                         );
                     }
 
-                    const balanceBefore =
-                        creditAccount.availableCredit +
-                        creditAmount;
+                    /* ==============================================
+                       Audit Log — Credit Commitment
+                       ============================================== */
 
-                    await CreditTransaction.create(
+                    if (
+                        creditAmount > 0
+                    ) {
+                        await AuditLog.create(
+                            [
+                                {
+                                    actorId:
+                                        buyerId,
+
+                                    actorType:
+                                        "BUYER",
+
+                                    action:
+                                        "PAYMENT_CHARGED",
+
+                                    entityType:
+                                        "Procurement",
+
+                                    entityId:
+                                        procurementId,
+
+                                    description:
+                                        `₦${creditAmount.toLocaleString()} credit facility committed to procurement ${procurementNumber}.`,
+
+                                    metadata: {
+                                        procurementNumber,
+
+                                        paymentMethod:
+                                            input.paymentMethod,
+
+                                        walletAmount,
+
+                                        creditAmount,
+                                    },
+                                },
+                            ],
+                            {
+                                session,
+                            }
+                        );
+                    }
+
+                    /* ==============================================
+                       Audit Log — Supplier Contact
+                       ============================================== */
+
+                    await AuditLog.create(
                         [
                             {
-                                creditAccountId:
-                                    creditAccount._id,
+                                actorId:
+                                    buyerId,
 
-                                buyerId,
+                                actorType:
+                                    "BUYER",
 
-                                type:
-                                    "CREDIT_PURCHASE",
+                                action:
+                                    "SUPPLIER_CONTACTED",
 
-                                amount:
-                                    creditAmount,
+                                entityType:
+                                    "Procurement",
 
-                                direction:
-                                    "CHARGE",
-
-                                balanceBefore,
-
-                                balanceAfter:
-                                    creditAccount.availableCredit,
-
-                                reference:
-                                    generateReference(
-                                        "CREDIT-CHARGE"
-                                    ),
-
-                                procurementId,
+                                entityId:
+                                    procurementId,
 
                                 description:
-                                    `Credit facility committed for procurement ${procurementNumber}`,
+                                    `Supplier ${selectedSupplier.supplierName} was selected and contacted for procurement ${procurementNumber}.`,
 
                                 metadata: {
                                     procurementNumber,
 
-                                    productId:
-                                        productId.toString(),
+                                    supplierId:
+                                        supplierId.toString(),
 
                                     supplierProductId:
                                         supplierProductId.toString(),
+
+                                    supplierName:
+                                        selectedSupplier.supplierName,
+
+                                    supplierType:
+                                        selectedSupplier.supplierType,
+
+                                    rank:
+                                        selectedIndex + 1,
+
+                                    score:
+                                        selectedSupplier.totalScore,
                                 },
                             },
                         ],
@@ -1197,286 +1423,10 @@ export async function createProcurement(
                             session,
                         }
                     );
+
+                    return createdProcurement;
                 }
-
-                /* ==============================================
-                 Buyer Notification
-                 ============================================== */
-
-                await Notification.create(
-                    [
-                        {
-                            recipientId: buyerId,
-
-                            recipientRole: "buyer",
-
-                            title: "Procurement request created",
-
-                            message:
-                                `Procurement ${procurementNumber} has been created for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. ${selectedSupplier.supplierName} is currently being contacted.`,
-
-                            type: "ORDER",
-
-                            isRead: false,
-
-                            entityType: "Procurement",
-
-                            entityId: procurementId,
-                        },
-                    ],
-                    {
-                        session,
-                    }
-                );
-
-                /* ==============================================
-                   Supplier Notification
-                   ============================================== */
-
-                await Notification.create(
-                    [
-                        {
-                            recipientId: supplierId,
-
-                            recipientRole: "supplier",
-
-                            title: "New procurement request",
-
-                            message:
-                                `You have received procurement ${procurementNumber} for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. Please review and respond.`,
-
-                            type: "SUPPLIER",
-
-                            isRead: false,
-
-                            entityType: "Procurement",
-
-                            entityId: procurementId,
-                        },
-                    ],
-                    {
-                        session,
-                    }
-                );
-
-                /* ==============================================
-                   Audit Log — Procurement Created
-                   ============================================== */
-
-                await AuditLog.create(
-                    [
-                        {
-                            actorId:
-                                buyerId,
-
-                            actorType:
-                                "BUYER",
-
-                            action:
-                                "PROCUREMENT_CREATED",
-
-                            entityType:
-                                "Procurement",
-
-                            entityId:
-                                procurementId,
-
-                            description:
-                                `Buyer created procurement ${procurementNumber}.`,
-
-                            metadata: {
-                                procurementNumber,
-
-                                productId:
-                                    productId.toString(),
-
-                                productName:
-                                    product.name,
-
-                                supplierId:
-                                    supplierId.toString(),
-
-                                supplierProductId:
-                                    supplierProductId.toString(),
-
-                                supplierName:
-                                    selectedSupplier.supplierName,
-
-                                supplierType:
-                                    selectedSupplier.supplierType,
-
-                                quantity,
-
-                                unit:
-                                    supplierProduct.unit ??
-                                    product.unit,
-
-                                unitPrice,
-
-                                totalAmount,
-
-                                paymentMethod:
-                                    input.paymentMethod,
-
-                                walletAmount,
-
-                                creditAmount,
-                            },
-                        },
-                    ],
-                    {
-                        session,
-                    }
-                );
-
-                /* ==============================================
-                   Audit Log — Wallet Reservation
-                   ============================================== */
-
-                if (
-                    walletAmount > 0
-                ) {
-                    await AuditLog.create(
-                        [
-                            {
-                                actorId:
-                                    buyerId,
-
-                                actorType:
-                                    "BUYER",
-
-                                action:
-                                    "PAYMENT_RESERVED",
-
-                                entityType:
-                                    "Procurement",
-
-                                entityId:
-                                    procurementId,
-
-                                description:
-                                    `₦${walletAmount.toLocaleString()} wallet funds reserved for procurement ${procurementNumber}.`,
-
-                                metadata: {
-                                    procurementNumber,
-
-                                    paymentMethod:
-                                        input.paymentMethod,
-
-                                    walletAmount,
-
-                                    creditAmount,
-                                },
-                            },
-                        ],
-                        {
-                            session,
-                        }
-                    );
-                }
-
-                /* ==============================================
-                   Audit Log — Credit Commitment
-                   ============================================== */
-
-                if (
-                    creditAmount > 0
-                ) {
-                    await AuditLog.create(
-                        [
-                            {
-                                actorId:
-                                    buyerId,
-
-                                actorType:
-                                    "BUYER",
-
-                                action:
-                                    "PAYMENT_CHARGED",
-
-                                entityType:
-                                    "Procurement",
-
-                                entityId:
-                                    procurementId,
-
-                                description:
-                                    `₦${creditAmount.toLocaleString()} credit facility committed to procurement ${procurementNumber}.`,
-
-                                metadata: {
-                                    procurementNumber,
-
-                                    paymentMethod:
-                                        input.paymentMethod,
-
-                                    walletAmount,
-
-                                    creditAmount,
-                                },
-                            },
-                        ],
-                        {
-                            session,
-                        }
-                    );
-                }
-
-                /* ==============================================
-                   Audit Log — Supplier Contact
-                   ============================================== */
-
-                await AuditLog.create(
-                    [
-                        {
-                            actorId:
-                                buyerId,
-
-                            actorType:
-                                "BUYER",
-
-                            action:
-                                "SUPPLIER_CONTACTED",
-
-                            entityType:
-                                "Procurement",
-
-                            entityId:
-                                procurementId,
-
-                            description:
-                                `Supplier ${selectedSupplier.supplierName} was selected and contacted for procurement ${procurementNumber}.`,
-
-                            metadata: {
-                                procurementNumber,
-
-                                supplierId:
-                                    supplierId.toString(),
-
-                                supplierProductId:
-                                    supplierProductId.toString(),
-
-                                supplierName:
-                                    selectedSupplier.supplierName,
-
-                                supplierType:
-                                    selectedSupplier.supplierType,
-
-                                rank:
-                                    selectedIndex + 1,
-
-                                score:
-                                    selectedSupplier.totalScore,
-                            },
-                        },
-                    ],
-                    {
-                        session,
-                    }
-                );
-
-                return createdProcurement;
-            }
-        );
+            );
 
         /* =====================================================
            Transaction Completed
@@ -1486,35 +1436,35 @@ export async function createProcurement(
            Safe Client Response
            ===================================================== */
 
-      return {
-    success: true,
+        return {
+            success: true,
 
-    procurement: {
-        id: createdProcurement._id.toString(),
+            procurement: {
+                id: createdProcurement._id.toString(),
 
-        procurementNumber:
-            createdProcurement.procurementNumber,
+                procurementNumber:
+                    createdProcurement.procurementNumber,
 
-        status:
-            createdProcurement.status,
+                status:
+                    createdProcurement.status,
 
-        totalAmount,
+                totalAmount,
 
-        walletAmount,
+                walletAmount,
 
-        creditAmount,
+                creditAmount,
 
-        supplierName:
-            selectedSupplier.supplierName,
+                supplierName:
+                    selectedSupplier.supplierName,
 
-        supplierType:
-            selectedSupplier.supplierType,
+                supplierType:
+                    selectedSupplier.supplierType,
 
-        quantity,
+                quantity,
 
-        unitPrice,
-    },
-};
+                unitPrice,
+            },
+        };
     } finally {
         await session.endSession();
     }

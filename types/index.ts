@@ -893,14 +893,40 @@ export interface AuditLog {
 }
 export interface Notification {
     id: string;
+
     recipientId: string;
-    recipientRole: UserRole | 'ALL';
+
+    recipientRole:
+        | "buyer"
+        | "supplier"
+        | "pharmacist"
+        | "admin";
+
     title: string;
+
     message: string;
-    type: 'ORDER' | 'WALLET' | 'CREDIT' | 'VERIFICATION' | 'SUPPLIER' | 'SYSTEM';
+
+    type:
+        | "ORDER"
+        | "SUPPLIER"
+        | "VERIFICATION"
+        | "PAYMENT"
+        | "WALLET"
+        | "CREDIT"
+        | "KYC"
+        | "SYSTEM";
+
     isRead: boolean;
-    link?: string;
+
+    readAt?: string;
+
+    entityType?: string;
+
+    entityId?: string;
+
     createdAt: string;
+
+    expiresAt?: string;
 }
 
 export interface SupplierPayout {
