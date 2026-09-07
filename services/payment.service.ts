@@ -219,16 +219,6 @@ export async function initializeWalletTopup(params: {
         result.checkoutUrl,
     };
   } catch (error) {
-    await PaymentTransaction.findByIdAndUpdate(
-      paymentTransactionId,
-      {
-        $set: {
-          status: "failed",
-        },
-        $setOnInsert: {},
-        $push: {},
-      }
-    );
 
     // Preserve existing metadata and add the failure reason.
     await PaymentTransaction.findByIdAndUpdate(
@@ -463,6 +453,19 @@ export async function verifyWalletTopup(
  *
  * Ledger:
  *     immutable SUCCESS transaction
+ *
+ * PaymentTransaction:
+ *     pending -> successful
+ *
+ * The wallet ledger reference is idempotent:
+ *
+ *     WALLET-TOPUP-{payment.reference}
+ *
+ * This protects against:
+ * - browser callback + webhook arriving together
+ * - duplicate webhook deliveries
+ * - user refreshing the callback page
+ * - repeated verification requests
  */
 export async function finalizeWalletTopup(
   paymentTransactionId: string,
@@ -480,6 +483,9 @@ export async function finalizeWalletTopup(
     );
   }
 
+  /**
+   * Load the internal payment transaction.
+   */
   const payment =
     await PaymentTransaction.findById(
       paymentTransactionId
@@ -492,7 +498,12 @@ export async function finalizeWalletTopup(
   }
 
   /**
-   * Idempotency.
+   * ---------------------------------------------------------
+   * 1. IDEMPOTENCY
+   * ---------------------------------------------------------
+   *
+   * If another callback/webhook already finalized
+   * this PaymentTransaction, nothing else needs to happen.
    */
   if (
     payment.status === "successful"
@@ -506,6 +517,9 @@ export async function finalizeWalletTopup(
     };
   }
 
+  /**
+   * A failed/cancelled payment cannot be finalized.
+   */
   if (
     payment.status !== "pending"
   ) {
@@ -515,7 +529,14 @@ export async function finalizeWalletTopup(
   }
 
   /**
-   * Revalidate the verified gateway data.
+   * ---------------------------------------------------------
+   * 2. VALIDATE VERIFIED GATEWAY RESPONSE
+   * ---------------------------------------------------------
+   *
+   * Never trust the fact that the gateway reported SUCCESS.
+   *
+   * The verified gateway response must match our own
+   * PaymentTransaction exactly.
    */
   if (
     verification.status !== "SUCCESS"
@@ -553,93 +574,194 @@ export async function finalizeWalletTopup(
   }
 
   /**
-   * Keep providerReference synchronized with
-   * the verified gateway response.
+   * ---------------------------------------------------------
+   * 3. SYNCHRONIZE PROVIDER REFERENCE
+   * ---------------------------------------------------------
    */
   if (
-    verification.providerReference
+    verification.providerReference &&
+    payment.providerReference !==
+      verification.providerReference
   ) {
-    await PaymentTransaction.findByIdAndUpdate(
-      payment._id,
-      {
-        $set: {
-          providerReference:
-            verification.providerReference,
-        },
-      }
-    );
+    payment.providerReference =
+      verification.providerReference;
   }
 
   /**
-   * This reference must be unique.
+   * ---------------------------------------------------------
+   * 4. IDEMPOTENT WALLET REFERENCE
+   * ---------------------------------------------------------
    *
-   * creditWallet() should enforce uniqueness
-   * at the wallet-ledger level as well.
+   * This reference is deterministic.
+   *
+   * The same gateway payment can therefore never create
+   * multiple successful wallet credits.
    */
   const walletReference =
     `WALLET-TOPUP-${payment.reference}`;
 
-  await creditWallet({
-    buyerId:
-      payment.buyerId.toString(),
+  /**
+   * ---------------------------------------------------------
+   * 5. CREDIT WALLET
+   * ---------------------------------------------------------
+   *
+   * creditWallet() is responsible for:
+   *
+   * - wallet balance mutation
+   * - immutable wallet ledger entry
+   * - ledger uniqueness
+   * - concurrent duplicate protection
+   *
+   * If browser callback and webhook arrive simultaneously,
+   * only one request will actually create the wallet credit.
+   */
+  const walletResult =
+    await creditWallet({
+      buyerId:
+        payment.buyerId.toString(),
 
-    amount:
-      payment.amount,
+      amount:
+        payment.amount,
 
-    reference:
-      walletReference,
+      reference:
+        walletReference,
 
-    description:
-      `Wallet top-up via ${payment.provider}`,
+      description:
+        `Wallet top-up via ${payment.provider}`,
 
-    source:
-      payment.provider === "paystack"
-        ? "PAYSTACK"
-        : "FLUTTERWAVE",
+      source:
+        payment.provider === "paystack"
+          ? "PAYSTACK"
+          : "FLUTTERWAVE",
 
-    paymentTransactionId:
-      payment._id.toString(),
-  });
+      paymentTransactionId:
+        payment._id.toString(),
+    });
 
   /**
-   * Only mark PaymentTransaction successful
-   * after the wallet ledger operation succeeds.
-   *
-   * The update is conditional on pending status.
+   * A successful wallet operation is required before
+   * the payment can be marked successful.
    */
-  await PaymentTransaction.findOneAndUpdate(
-    {
-      _id: payment._id,
-      status: "pending",
-    },
-    {
-      $set: {
-        status: "successful",
+  if (!walletResult.success) {
+    throw new Error(
+      walletResult.message ??
+        "Wallet top-up could not be completed"
+    );
+  }
 
-        providerReference:
-          verification.providerReference ??
-          payment.providerReference,
+  /**
+   * ---------------------------------------------------------
+   * 6. ATOMIC PAYMENT STATE TRANSITION
+   * ---------------------------------------------------------
+   *
+   * This is the important hardening.
+   *
+   * Only a PaymentTransaction that is STILL pending
+   * may transition to successful.
+   *
+   * If two requests arrive simultaneously:
+   *
+   * Request A:
+   *   pending -> successful  ✅
+   *
+   * Request B:
+   *   pending -> successful  ❌
+   *
+   * Request B will not overwrite the already-finalized
+   * transaction because of the status predicate.
+   */
+  const finalizedPayment =
+    await PaymentTransaction.findOneAndUpdate(
+      {
+        _id: payment._id,
 
-        verifiedAt: new Date(),
-
-        gatewayResponse:
-          verification.raw,
+        status: "pending",
       },
-    }
-  );
+      {
+        $set: {
+          status: "successful",
 
+          providerReference:
+            verification.providerReference ??
+            payment.providerReference,
+
+          verifiedAt:
+            new Date(),
+
+          gatewayResponse:
+            verification.raw,
+        },
+      },
+      {
+        new: true,
+      }
+    );
+
+  /**
+   * ---------------------------------------------------------
+   * 7. HANDLE CONCURRENT FINALIZATION
+   * ---------------------------------------------------------
+   *
+   * If this request lost the race, the wallet credit was
+   * already safely handled by creditWallet() and another
+   * request has changed PaymentTransaction to successful.
+   *
+   * We therefore re-read the payment and treat the operation
+   * as already processed.
+   */
+  if (!finalizedPayment) {
+    const currentPayment =
+      await PaymentTransaction.findById(
+        payment._id
+      ).lean();
+
+    if (
+      currentPayment?.status ===
+      "successful"
+    ) {
+      return {
+        success: true,
+        alreadyProcessed: true,
+        reference:
+          currentPayment.reference,
+        amount:
+          currentPayment.amount,
+        provider:
+          currentPayment.provider,
+      };
+    }
+
+    /**
+     * This is an unexpected state:
+     *
+     * wallet credit succeeded, but the payment could not
+     * transition from pending -> successful.
+     *
+     * Do not pretend the operation failed silently.
+     */
+    throw new Error(
+      "Wallet was credited, but payment finalization could not be completed"
+    );
+  }
+
+  /**
+   * ---------------------------------------------------------
+   * 8. SUCCESS
+   * ---------------------------------------------------------
+   */
   return {
     success: true,
 
-    alreadyProcessed: false,
+    alreadyProcessed:
+      walletResult.alreadyProcessed,
 
     reference:
-      payment.reference,
+      finalizedPayment.reference,
 
     amount:
-      payment.amount,
+      finalizedPayment.amount,
 
     provider:
-      payment.provider,
+      finalizedPayment.provider,
   };
 }
