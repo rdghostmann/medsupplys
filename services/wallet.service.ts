@@ -352,10 +352,16 @@ export async function creditWallet(
     params.type ?? "TOPUP";
 
   /*
-   * Fast idempotency check.
+   * ---------------------------------------------------------
+   * FAST IDEMPOTENCY CHECK
+   * ---------------------------------------------------------
    *
-   * The unique reference index remains the
-   * final database-level protection.
+   * This handles the common case where the same
+   * wallet operation has already completed.
+   *
+   * The unique WalletTransaction.reference index
+   * remains the database-level protection against
+   * concurrent duplicate requests.
    */
   const existingTransaction =
     await findExistingTransaction(
@@ -375,6 +381,14 @@ export async function creditWallet(
     };
   }
 
+  /*
+   * ---------------------------------------------------------
+   * MONGODB TRANSACTION
+   * ---------------------------------------------------------
+   *
+   * Wallet balance update and ledger creation must
+   * succeed or fail together.
+   */
   const session =
     params.session ??
     (await Wallet.startSession());
@@ -387,6 +401,42 @@ export async function creditWallet(
       session.startTransaction();
     }
 
+    /*
+     * Re-check idempotency INSIDE the transaction.
+     *
+     * This closes the gap between the initial
+     * fast check and the actual wallet mutation.
+     */
+    const transactionInSession =
+      await WalletTransaction.findOne({
+        reference:
+          params.reference,
+      })
+        .session(session)
+        .lean();
+
+    if (transactionInSession) {
+      if (ownsSession) {
+        await session.commitTransaction();
+      }
+
+      return {
+        success:
+          transactionInSession.status ===
+          "SUCCESS",
+
+        alreadyProcessed: true,
+
+        transaction:
+          transactionInSession,
+      };
+    }
+
+    /*
+     * -------------------------------------------------------
+     * LOAD WALLET
+     * -------------------------------------------------------
+     */
     const wallet =
       await Wallet.findOne({
         buyerId,
@@ -398,12 +448,19 @@ export async function creditWallet(
       );
     }
 
-    if (wallet.status !== "ACTIVE") {
+    if (
+      wallet.status !== "ACTIVE"
+    ) {
       throw new Error(
         "Wallet is not active."
       );
     }
 
+    /*
+     * -------------------------------------------------------
+     * BALANCE CALCULATION
+     * -------------------------------------------------------
+     */
     const balanceBefore =
       wallet.availableBalance;
 
@@ -417,6 +474,11 @@ export async function creditWallet(
     const heldBalanceAfter =
       heldBalanceBefore;
 
+    /*
+     * -------------------------------------------------------
+     * UPDATE WALLET
+     * -------------------------------------------------------
+     */
     wallet.availableBalance =
       balanceAfter;
 
@@ -444,6 +506,17 @@ export async function creditWallet(
       session,
     });
 
+    /*
+     * -------------------------------------------------------
+     * CREATE IMMUTABLE LEDGER ENTRY
+     * -------------------------------------------------------
+     *
+     * reference has a UNIQUE database index.
+     *
+     * Therefore two simultaneous requests using
+     * the same reference cannot both create a
+     * successful ledger entry.
+     */
     const transaction =
       await WalletTransaction.create(
         [
@@ -502,9 +575,11 @@ export async function creditWallet(
                   availableBalanceAfter:
                     balanceAfter,
 
-                  heldBalanceBefore,
+                  heldBalanceBefore:
+                    heldBalanceBefore,
 
-                  heldBalanceAfter,
+                  heldBalanceAfter:
+                    heldBalanceAfter,
                 }
               ),
           },
@@ -514,6 +589,11 @@ export async function creditWallet(
         }
       );
 
+    /*
+     * -------------------------------------------------------
+     * COMMIT
+     * -------------------------------------------------------
+     */
     if (ownsSession) {
       await session.commitTransaction();
     }
@@ -528,9 +608,53 @@ export async function creditWallet(
       transaction:
         transaction[0],
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    /*
+     * -------------------------------------------------------
+     * ABORT
+     * -------------------------------------------------------
+     */
     if (ownsSession) {
       await session.abortTransaction();
+    }
+
+    /*
+     * -------------------------------------------------------
+     * CONCURRENT IDEMPOTENCY
+     * -------------------------------------------------------
+     *
+     * If another request won the race and created
+     * the same WalletTransaction.reference, MongoDB
+     * can raise a duplicate-key error.
+     *
+     * In that situation, retrieve the already-created
+     * ledger entry and return it as already processed.
+     */
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: number })
+        .code === 11000
+    ) {
+      const existingTransaction =
+        await WalletTransaction.findOne({
+          reference:
+            params.reference,
+        }).lean();
+
+      if (existingTransaction) {
+        return {
+          success:
+            existingTransaction.status ===
+            "SUCCESS",
+
+          alreadyProcessed: true,
+
+          transaction:
+            existingTransaction,
+        };
+      }
     }
 
     throw error;

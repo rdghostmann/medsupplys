@@ -89,8 +89,8 @@ export default function WalletTopupCallbackPage() {
 
         const provider =
           providerParam as
-            | PaymentProvider
-            | null;
+          | PaymentProvider
+          | null;
 
         /*
          * Paystack callback:
@@ -106,12 +106,9 @@ export default function WalletTopupCallbackPage() {
          * &status=successful
          */
         const paymentReference =
-          searchParams.get(
-            "reference"
-          ) ||
-          searchParams.get(
-            "tx_ref"
-          );
+          searchParams.get("reference") ||
+          searchParams.get("trxref") ||
+          searchParams.get("tx_ref");
 
         if (!provider) {
           throw new Error(
@@ -192,7 +189,7 @@ export default function WalletTopupCallbackPage() {
         ) {
           throw new Error(
             data?.message ||
-              "Payment verification failed."
+            "Payment verification failed."
           );
         }
 
