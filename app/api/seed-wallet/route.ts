@@ -1,81 +1,35 @@
-// /app/api/admin/seed-wallet/route.ts
+// /app/api/admin/seed-credit-account/route.ts
 
 import { NextResponse } from "next/server";
-import { Types } from "mongoose";
 import { connectToDB } from "@/lib/connectToDB";
-import { Wallet, type IWallet } from "@/models/Wallet";
+import { CreditAccount } from "@/models/CreditAccount";
 import { User } from "@/models/User";
+import { Types } from "mongoose";
 
 const SEEDED_BUYER = {
   buyerId: "6a9cb82d853e785e43c110b8",
   buyerName: "Lagos University Teaching Hospital (LUTH)",
 
-  currency: "NGN" as const,
+  creditLimit: 10_000_000,
 
-  availableBalance: 2_000_000,
-  heldBalance: 0,
+  availableCredit: 10_000_000,
 
-  totalDeposited: 5_000_000,
-  totalSpent: 3_000_000,
+  creditUsed: 0,
 
-  totalRefunded: 0,
-  totalReversed: 0,
+  outstandingBalance: 0,
 
   status: "ACTIVE" as const,
+
+  ratingTier: "A" as const,
+
+  terms: "Net 30 days",
+
+  interestRatePercent: 0,
 };
 
-type WalletForSerialization = Pick<
-  IWallet,
-  | "_id"
-  | "buyerId"
-  | "buyerName"
-  | "currency"
-  | "availableBalance"
-  | "heldBalance"
-  | "totalDeposited"
-  | "totalSpent"
-  | "totalRefunded"
-  | "totalReversed"
-  | "status"
-  | "createdAt"
-  | "updatedAt"
->;
-
-function serializeWallet(
-  wallet: WalletForSerialization
-) {
-  return {
-    _id: wallet._id?.toString(),
-
-    buyerId: wallet.buyerId?.toString(),
-
-    buyerName: String(wallet.buyerName ?? ""),
-
-    currency: String(wallet.currency ?? "NGN"),
-
-    availableBalance: Number(wallet.availableBalance ?? 0),
-
-    heldBalance: Number(wallet.heldBalance ?? 0),
-
-    totalDeposited: Number(wallet.totalDeposited ?? 0),
-
-    totalSpent: Number(wallet.totalSpent ?? 0),
-
-    totalRefunded: Number(wallet.totalRefunded ?? 0),
-
-    totalReversed: Number(wallet.totalReversed ?? 0),
-
-    status: wallet.status,
-
-    createdAt: wallet.createdAt
-      ? new Date(wallet.createdAt).toISOString()
-      : null,
-
-    updatedAt: wallet.updatedAt
-      ? new Date(wallet.updatedAt).toISOString()
-      : null,
-  };
-}
+const buyerObjectId = new Types.ObjectId(
+  SEEDED_BUYER.buyerId
+);
 
 export async function POST() {
   try {
@@ -96,12 +50,8 @@ export async function POST() {
       );
     }
 
-    const buyerObjectId = new Types.ObjectId(
-      SEEDED_BUYER.buyerId
-    );
-
     // ---------------------------------------------------------
-    // 2. Verify Buyer
+    // 2. Verify Buyer Exists
     // ---------------------------------------------------------
 
     const buyer = await User.findById(buyerObjectId).select(
@@ -119,7 +69,10 @@ export async function POST() {
       );
     }
 
-    // Your User model uses lowercase roles.
+    // ---------------------------------------------------------
+    // 3. Verify User Is a Buyer
+    // ---------------------------------------------------------
+
     if (buyer.role !== "buyer") {
       return NextResponse.json(
         {
@@ -133,65 +86,114 @@ export async function POST() {
     }
 
     // ---------------------------------------------------------
-    // 3. Check Existing Wallet
+    // 4. Check Existing Credit Account
     // ---------------------------------------------------------
 
-    const existingWallet = await Wallet.findOne({
-      buyerId: buyerObjectId,
-    }).lean();
+    const existingCreditAccount =
+      await CreditAccount.findOne()
+        .where("buyerId")
+        .equals(buyerObjectId)
+        .lean();
 
-    if (existingWallet) {
-      const serializedWallet =
-        serializeWallet(existingWallet);
+    if (existingCreditAccount) {
+      return NextResponse.json(
+        {
+          success: true,
+          seeded: false,
+          alreadyExists: true,
 
-      return NextResponse.json({
-        success: true,
-        seeded: false,
-        alreadyExists: true,
-        message: "Buyer wallet already exists.",
-        wallet: serializedWallet,
-      });
+          message:
+            "Buyer credit account already exists.",
+
+          creditAccount: {
+            _id:
+              existingCreditAccount._id?.toString(),
+
+            buyerId:
+              existingCreditAccount.buyerId?.toString(),
+
+            buyerName:
+              existingCreditAccount.buyerName,
+
+            creditLimit: Number(
+              existingCreditAccount.creditLimit ?? 0
+            ),
+
+            availableCredit: Number(
+              existingCreditAccount.availableCredit ?? 0
+            ),
+
+            creditUsed: Number(
+              existingCreditAccount.creditUsed ?? 0
+            ),
+
+            outstandingBalance: Number(
+              existingCreditAccount.outstandingBalance ?? 0
+            ),
+
+            status:
+              existingCreditAccount.status,
+
+            ratingTier:
+              existingCreditAccount.ratingTier,
+
+            approvedBy:
+              existingCreditAccount.approvedBy?.toString(),
+
+            approvedAt:
+              existingCreditAccount.approvedAt,
+
+            dueDate:
+              existingCreditAccount.dueDate,
+
+            terms:
+              existingCreditAccount.terms,
+
+            interestRatePercent: Number(
+              existingCreditAccount.interestRatePercent ?? 0
+            ),
+
+            createdAt:
+              existingCreditAccount.createdAt,
+
+            updatedAt:
+              existingCreditAccount.updatedAt,
+          },
+        },
+        { status: 200 }
+      );
     }
 
     // ---------------------------------------------------------
-    // 4. Validate Wallet Arithmetic
+    // 5. Validate Credit Configuration
     // ---------------------------------------------------------
 
-    const calculatedAvailableBalance =
-      SEEDED_BUYER.totalDeposited -
-      SEEDED_BUYER.totalSpent +
-      SEEDED_BUYER.totalRefunded +
-      SEEDED_BUYER.totalReversed -
-      SEEDED_BUYER.heldBalance;
+    const calculatedAvailableCredit =
+      SEEDED_BUYER.creditLimit -
+      SEEDED_BUYER.creditUsed;
 
     if (
-      calculatedAvailableBalance !==
-      SEEDED_BUYER.availableBalance
+      calculatedAvailableCredit !==
+      SEEDED_BUYER.availableCredit
     ) {
       return NextResponse.json(
         {
           success: false,
-          message: "Invalid wallet seed configuration.",
+
+          message:
+            "Invalid credit account configuration.",
 
           calculation: {
-            totalDeposited:
-              SEEDED_BUYER.totalDeposited,
+            creditLimit:
+              SEEDED_BUYER.creditLimit,
 
-            totalSpent:
-              SEEDED_BUYER.totalSpent,
+            creditUsed:
+              SEEDED_BUYER.creditUsed,
 
-            totalRefunded:
-              SEEDED_BUYER.totalRefunded,
+            calculatedAvailableCredit,
 
-            totalReversed:
-              SEEDED_BUYER.totalReversed,
-
-            heldBalance:
-              SEEDED_BUYER.heldBalance,
-
-            calculatedAvailableBalance,
-            configuredAvailableBalance:
-              SEEDED_BUYER.availableBalance,
+            configuredAvailableCredit:
+              SEEDED_BUYER.availableCredit,
           },
         },
         { status: 400 }
@@ -199,61 +201,121 @@ export async function POST() {
     }
 
     // ---------------------------------------------------------
-    // 5. Create Wallet
+    // 6. Create Credit Account
     // ---------------------------------------------------------
 
-    const wallet = await Wallet.create({
-      buyerId: buyerObjectId,
+    const creditAccount =
+      await CreditAccount.create({
+        buyerId: buyerObjectId,
 
-      buyerName: SEEDED_BUYER.buyerName,
+        buyerName: SEEDED_BUYER.buyerName,
 
-      currency: SEEDED_BUYER.currency,
+        creditLimit:
+          Number(SEEDED_BUYER.creditLimit),
 
-      availableBalance:
-        Number(SEEDED_BUYER.availableBalance),
+        availableCredit:
+          Number(SEEDED_BUYER.availableCredit),
 
-      heldBalance:
-        Number(SEEDED_BUYER.heldBalance),
+        creditUsed:
+          Number(SEEDED_BUYER.creditUsed),
 
-      totalDeposited:
-        Number(SEEDED_BUYER.totalDeposited),
+        outstandingBalance:
+          Number(SEEDED_BUYER.outstandingBalance),
 
-      totalSpent:
-        Number(SEEDED_BUYER.totalSpent),
+        status:
+          SEEDED_BUYER.status,
 
-      totalRefunded:
-        Number(SEEDED_BUYER.totalRefunded),
+        ratingTier:
+          SEEDED_BUYER.ratingTier,
 
-      totalReversed:
-        Number(SEEDED_BUYER.totalReversed),
+        terms:
+          SEEDED_BUYER.terms,
 
-      status: SEEDED_BUYER.status,
-    });
+        interestRatePercent:
+          Number(
+            SEEDED_BUYER.interestRatePercent
+          ),
+      });
 
     // ---------------------------------------------------------
-    // 6. Re-fetch as Plain Object
+    // 7. Re-fetch as Plain Object
     // ---------------------------------------------------------
 
-    const createdWallet = await Wallet.findById(
-      wallet._id
-    ).lean();
+    const createdCreditAccount =  await CreditAccount.findById(creditAccount._id).lean();
 
-    if (!createdWallet) {
+    if (!createdCreditAccount) {
       return NextResponse.json(
         {
           success: false,
+
           message:
-            "Wallet was created but could not be retrieved.",
+            "Credit account was created but could not be retrieved.",
         },
         { status: 500 }
       );
     }
 
-    const serializedWallet =
-      serializeWallet(createdWallet);
+    // ---------------------------------------------------------
+    // 8. Serialize Response
+    // ---------------------------------------------------------
+
+    const serializedCreditAccount = {
+      _id:
+        createdCreditAccount._id?.toString(),
+
+      buyerId:
+        createdCreditAccount.buyerId?.toString(),
+
+      buyerName:
+        createdCreditAccount.buyerName,
+
+      creditLimit: Number(
+        createdCreditAccount.creditLimit ?? 0
+      ),
+
+      availableCredit: Number(
+        createdCreditAccount.availableCredit ?? 0
+      ),
+
+      creditUsed: Number(
+        createdCreditAccount.creditUsed ?? 0
+      ),
+
+      outstandingBalance: Number(
+        createdCreditAccount.outstandingBalance ?? 0
+      ),
+
+      status:
+        createdCreditAccount.status,
+
+      ratingTier:
+        createdCreditAccount.ratingTier,
+
+      approvedBy:
+        createdCreditAccount.approvedBy?.toString(),
+
+      approvedAt:
+        createdCreditAccount.approvedAt,
+
+      dueDate:
+        createdCreditAccount.dueDate,
+
+      terms:
+        createdCreditAccount.terms,
+
+      interestRatePercent: Number(
+        createdCreditAccount.interestRatePercent ?? 0
+      ),
+
+      createdAt:
+        createdCreditAccount.createdAt,
+
+      updatedAt:
+        createdCreditAccount.updatedAt,
+    };
 
     // ---------------------------------------------------------
-    // 7. Final Response
+    // 9. Return Response
     // ---------------------------------------------------------
 
     return NextResponse.json(
@@ -265,30 +327,34 @@ export async function POST() {
         alreadyExists: false,
 
         message:
-          "Buyer wallet seeded successfully.",
+          "Buyer credit account seeded successfully.",
 
-        wallet: serializedWallet,
+        creditAccount:
+          serializedCreditAccount,
       },
       { status: 201 }
     );
   } catch (error: unknown) {
     console.error(
-      "SEED_WALLET_ERROR:",
+      "SEED_CREDIT_ACCOUNT_ERROR:",
       error
     );
 
-    // Duplicate buyer wallet
+    // ---------------------------------------------------------
+    // Handle Duplicate Credit Account
+    // ---------------------------------------------------------
+
     if (
       typeof error === "object" &&
       error !== null &&
       "code" in error &&
       error.code === 11000
     ) {
-      const existingWallet = await Wallet.findOne({
-        buyerId: new Types.ObjectId(
-          SEEDED_BUYER.buyerId
-        ),
-      }).lean();
+      const existingCreditAccount =
+        await CreditAccount.findOne()
+          .where("buyerId")
+          .equals(buyerObjectId)
+          .lean();
 
       return NextResponse.json(
         {
@@ -299,11 +365,50 @@ export async function POST() {
           alreadyExists: true,
 
           message:
-            "A wallet already exists for this buyer.",
+            "A credit account already exists for this buyer.",
 
-          wallet: existingWallet
-            ? serializeWallet(existingWallet)
-            : null,
+          creditAccount:
+            existingCreditAccount
+              ? {
+                  _id:
+                    existingCreditAccount._id?.toString(),
+
+                  buyerId:
+                    existingCreditAccount.buyerId?.toString(),
+
+                  buyerName:
+                    existingCreditAccount.buyerName,
+
+                  creditLimit: Number(
+                    existingCreditAccount.creditLimit ?? 0
+                  ),
+
+                  availableCredit: Number(
+                    existingCreditAccount.availableCredit ?? 0
+                  ),
+
+                  creditUsed: Number(
+                    existingCreditAccount.creditUsed ?? 0
+                  ),
+
+                  outstandingBalance: Number(
+                    existingCreditAccount.outstandingBalance ?? 0
+                  ),
+
+                  status:
+                    existingCreditAccount.status,
+
+                  ratingTier:
+                    existingCreditAccount.ratingTier,
+
+                  terms:
+                    existingCreditAccount.terms,
+
+                  interestRatePercent: Number(
+                    existingCreditAccount.interestRatePercent ?? 0
+                  ),
+                }
+              : null,
         },
         { status: 200 }
       );
@@ -314,7 +419,7 @@ export async function POST() {
         success: false,
 
         message:
-          "Failed to seed buyer wallet.",
+          "Failed to seed buyer credit account.",
 
         error:
           error instanceof Error

@@ -11,6 +11,7 @@ import { connectToDB } from "@/lib/connectToDB";
 
 import { User } from "@/models/User";
 import { Wallet } from "@/models/Wallet";
+
 import {
   WalletTransaction,
   WalletTransactionType,
@@ -44,6 +45,18 @@ interface WalletMutationParams {
   session?: ClientSession;
 }
 
+interface WalletResult {
+  success: boolean;
+
+  alreadyProcessed?: boolean;
+
+  wallet?: unknown;
+
+  transaction?: unknown;
+
+  message?: string;
+}
+
 /* =========================================================
    HELPERS
 ========================================================= */
@@ -51,14 +64,30 @@ interface WalletMutationParams {
 function toObjectId(
   value: string | Types.ObjectId
 ): Types.ObjectId {
-  return value instanceof Types.ObjectId
-    ? value
-    : new Types.ObjectId(value);
+  if (value instanceof Types.ObjectId) {
+    return value;
+  }
+
+  if (!Types.ObjectId.isValid(value)) {
+    throw new Error(
+      "Invalid MongoDB ObjectId."
+    );
+  }
+
+  return new Types.ObjectId(value);
 }
 
+/**
+ * Financial amounts are stored in NGN at application level.
+ *
+ * Gateway-specific conversion, e.g. NGN -> kobo for Paystack,
+ * happens at the payment-provider boundary.
+ */
 function validateAmount(amount: number) {
   if (!Number.isFinite(amount)) {
-    throw new Error("Invalid wallet amount.");
+    throw new Error(
+      "Invalid wallet amount."
+    );
   }
 
   if (amount <= 0) {
@@ -67,16 +96,46 @@ function validateAmount(amount: number) {
     );
   }
 
-  // Keep financial values to 2 decimal places.
-  if (
-    Math.round((amount + Number.EPSILON) * 100) /
-      100 !==
-    amount
-  ) {
+  const rounded =
+    Math.round(
+      (amount + Number.EPSILON) * 100
+    ) / 100;
+
+  if (rounded !== amount) {
     throw new Error(
       "Wallet amount cannot contain more than 2 decimal places."
     );
   }
+}
+
+function mergeMetadata(
+  metadata: Record<string, unknown> | undefined,
+  financialMetadata: Record<string, unknown>
+) {
+  return {
+    ...(metadata ?? {}),
+    ...financialMetadata,
+  };
+}
+
+/* =========================================================
+   EXISTING TRANSACTION / IDEMPOTENCY
+========================================================= */
+
+async function findExistingTransaction(
+  reference: string,
+  session?: ClientSession
+) {
+  const query =
+    WalletTransaction.findOne({
+      reference,
+    });
+
+  if (session) {
+    query.session(session);
+  }
+
+  return query.lean();
 }
 
 /* =========================================================
@@ -88,16 +147,21 @@ export async function getOrCreateBuyerWallet(
 ) {
   await connectToDB();
 
-  const buyerObjectId = toObjectId(buyerId);
+  const buyerObjectId =
+    toObjectId(buyerId);
 
   const buyer = await User.findById(
     buyerObjectId
   )
-    .select("_id role status")
+    .select(
+      "_id role status firstName lastName organizationName"
+    )
     .lean();
 
   if (!buyer) {
-    throw new Error("Buyer account not found.");
+    throw new Error(
+      "Buyer account not found."
+    );
   }
 
   if (buyer.role !== "buyer") {
@@ -108,25 +172,64 @@ export async function getOrCreateBuyerWallet(
 
   if (buyer.status !== "active") {
     throw new Error(
-      "Your account is not active."
+      "Buyer account is not active."
     );
   }
 
-  let wallet = await Wallet.findOne({
-    buyerId: buyerObjectId,
-  });
+  let wallet =
+    await Wallet.findOne({
+      buyerId: buyerObjectId,
+    });
 
   if (!wallet) {
-    wallet = await Wallet.create({
-      buyerId: buyerObjectId,
-      currency: "NGN",
-      availableBalance: 0,
-      totalDeposited: 0,
-      totalSpent: 0,
-      totalRefunded: 0,
-      totalReversed: 0,
-      status: "ACTIVE",
-    });
+    const buyerName =
+      `${buyer.firstName ?? ""} ${
+        buyer.lastName ?? ""
+      }`.trim() ||
+      buyer.organizationName ||
+      "Buyer";
+
+    try {
+      wallet =
+        await Wallet.create({
+          buyerId:
+            buyerObjectId,
+
+          buyerName,
+
+          currency: "NGN",
+
+          availableBalance: 0,
+
+          heldBalance: 0,
+
+          totalDeposited: 0,
+
+          totalSpent: 0,
+
+          totalRefunded: 0,
+
+          totalReversed: 0,
+
+          status: "ACTIVE",
+        });
+    } catch (error: unknown) {
+      /**
+       * buyerId is unique.
+       *
+       * If two requests attempted wallet creation
+       * simultaneously, retrieve the wallet created
+       * by the competing request.
+       */
+      wallet =
+        await Wallet.findOne({
+          buyerId: buyerObjectId,
+        });
+
+      if (!wallet) {
+        throw error;
+      }
+    }
   }
 
   return wallet;
@@ -141,41 +244,82 @@ export async function getBuyerWallet(
 ) {
   await connectToDB();
 
-  const buyerObjectId = toObjectId(buyerId);
+  const buyerObjectId =
+    toObjectId(buyerId);
 
-  const wallet = await Wallet.findOne({
-    buyerId: buyerObjectId,
-  }).lean();
+  const wallet =
+    await Wallet.findOne({
+      buyerId: buyerObjectId,
+    }).lean();
 
-  if (!wallet) {
-    return null;
-  }
-
-  return wallet;
+  return wallet ?? null;
 }
 
 /* =========================================================
-   GET BALANCE
+   GET WALLET BALANCE
 ========================================================= */
 
 export async function getBuyerWalletBalance(
   buyerId: string | Types.ObjectId
 ) {
   const wallet =
-    await getBuyerWallet(buyerId);
+    await getBuyerWallet(
+      buyerId
+    );
 
   if (!wallet) {
     return {
       balance: 0,
+
+      availableBalance: 0,
+
+      heldBalance: 0,
+
+      totalDeposited: 0,
+
+      totalSpent: 0,
+
+      totalRefunded: 0,
+
+      totalReversed: 0,
+
       currency: "NGN" as const,
+
       status: "ACTIVE" as const,
     };
   }
 
   return {
-    balance: wallet.availableBalance,
-    currency: wallet.currency,
-    status: wallet.status,
+    /**
+     * `balance` retained for compatibility
+     * with existing UI components.
+     */
+    balance:
+      wallet.availableBalance,
+
+    availableBalance:
+      wallet.availableBalance,
+
+    heldBalance:
+      wallet.heldBalance,
+
+    totalDeposited:
+      wallet.totalDeposited,
+
+    totalSpent:
+      wallet.totalSpent,
+
+    totalRefunded:
+      wallet.totalRefunded,
+
+    totalReversed:
+      wallet.totalReversed,
+
+    currency:
+      wallet.currency,
+
+    status:
+      wallet.status,
   };
 }
 
@@ -188,27 +332,35 @@ export async function creditWallet(
     WalletMutationParams,
     "type"
   > & {
-    type?: "TOPUP" | "REFUND" | "REVERSAL" | "ADJUSTMENT";
+    type?:
+      | "TOPUP"
+      | "REFUND"
+      | "REVERSAL"
+      | "ADJUSTMENT";
   }
-) {
+): Promise<WalletResult> {
   await connectToDB();
 
-  validateAmount(params.amount);
-
-  const buyerId = toObjectId(
-    params.buyerId
+  validateAmount(
+    params.amount
   );
 
+  const buyerId =
+    toObjectId(params.buyerId);
+
+  const transactionType =
+    params.type ?? "TOPUP";
+
   /*
-   * Idempotency check.
+   * Fast idempotency check.
    *
-   * A reference can only produce one successful
-   * wallet ledger entry.
+   * The unique reference index remains the
+   * final database-level protection.
    */
   const existingTransaction =
-    await WalletTransaction.findOne({
-      reference: params.reference,
-    }).lean();
+    await findExistingTransaction(
+      params.reference
+    );
 
   if (existingTransaction) {
     return {
@@ -225,9 +377,10 @@ export async function creditWallet(
 
   const session =
     params.session ??
-    await Wallet.startSession();
+    (await Wallet.startSession());
 
-  const ownsSession = !params.session;
+  const ownsSession =
+    !params.session;
 
   try {
     if (ownsSession) {
@@ -255,46 +408,56 @@ export async function creditWallet(
       wallet.availableBalance;
 
     const balanceAfter =
-      balanceBefore + params.amount;
+      balanceBefore +
+      params.amount;
+
+    const heldBalanceBefore =
+      wallet.heldBalance;
+
+    const heldBalanceAfter =
+      heldBalanceBefore;
 
     wallet.availableBalance =
       balanceAfter;
 
-    /*
-     * TOPUP contributes to deposited funds.
-     */
-    if (
-      params.type === undefined ||
-      params.type === "TOPUP"
-    ) {
-      wallet.totalDeposited +=
-        params.amount;
+    switch (transactionType) {
+      case "TOPUP":
+        wallet.totalDeposited +=
+          params.amount;
+        break;
+
+      case "REFUND":
+        wallet.totalRefunded +=
+          params.amount;
+        break;
+
+      case "REVERSAL":
+        wallet.totalReversed +=
+          params.amount;
+        break;
+
+      case "ADJUSTMENT":
+        break;
     }
 
-    if (params.type === "REFUND") {
-      wallet.totalRefunded +=
-        params.amount;
-    }
-
-    if (params.type === "REVERSAL") {
-      wallet.totalReversed +=
-        params.amount;
-    }
-
-    await wallet.save({ session });
+    await wallet.save({
+      session,
+    });
 
     const transaction =
       await WalletTransaction.create(
         [
           {
-            walletId: wallet._id,
+            walletId:
+              wallet._id,
 
             buyerId,
 
             type:
-              params.type ?? "TOPUP",
+              transactionType,
 
-            amount: params.amount,
+            amount:
+              params.amount,
 
             direction:
               "CREDIT" as WalletTransactionDirection,
@@ -309,9 +472,11 @@ export async function creditWallet(
             description:
               params.description,
 
-            status: "SUCCESS",
+            status:
+              "SUCCESS",
 
-            source: params.source,
+            source:
+              params.source,
 
             paymentTransactionId:
               params.paymentTransactionId
@@ -328,10 +493,25 @@ export async function creditWallet(
                 : undefined,
 
             metadata:
-              params.metadata,
+              mergeMetadata(
+                params.metadata,
+                {
+                  availableBalanceBefore:
+                    balanceBefore,
+
+                  availableBalanceAfter:
+                    balanceAfter,
+
+                  heldBalanceBefore,
+
+                  heldBalanceAfter,
+                }
+              ),
           },
         ],
-        { session }
+        {
+          session,
+        }
       );
 
     if (ownsSession) {
@@ -370,24 +550,27 @@ export async function debitWallet(
     WalletMutationParams,
     "type"
   > & {
-    type?: "PURCHASE" | "ADJUSTMENT";
+    type?:
+      | "PURCHASE"
+      | "ADJUSTMENT";
   }
-) {
+): Promise<WalletResult> {
   await connectToDB();
 
-  validateAmount(params.amount);
-
-  const buyerId = toObjectId(
-    params.buyerId
+  validateAmount(
+    params.amount
   );
 
-  /*
-   * Prevent duplicate debit.
-   */
+  const buyerId =
+    toObjectId(params.buyerId);
+
+  const transactionType =
+    params.type ?? "PURCHASE";
+
   const existingTransaction =
-    await WalletTransaction.findOne({
-      reference: params.reference,
-    }).lean();
+    await findExistingTransaction(
+      params.reference
+    );
 
   if (existingTransaction) {
     return {
@@ -404,9 +587,10 @@ export async function debitWallet(
 
   const session =
     params.session ??
-    await Wallet.startSession();
+    (await Wallet.startSession());
 
-  const ownsSession = !params.session;
+  const ownsSession =
+    !params.session;
 
   try {
     if (ownsSession) {
@@ -443,33 +627,44 @@ export async function debitWallet(
       wallet.availableBalance;
 
     const balanceAfter =
-      balanceBefore - params.amount;
+      balanceBefore -
+      params.amount;
+
+    const heldBalanceBefore =
+      wallet.heldBalance;
+
+    const heldBalanceAfter =
+      heldBalanceBefore;
 
     wallet.availableBalance =
       balanceAfter;
 
     if (
-      params.type === undefined ||
-      params.type === "PURCHASE"
+      transactionType ===
+      "PURCHASE"
     ) {
       wallet.totalSpent +=
         params.amount;
     }
 
-    await wallet.save({ session });
+    await wallet.save({
+      session,
+    });
 
     const transaction =
       await WalletTransaction.create(
         [
           {
-            walletId: wallet._id,
+            walletId:
+              wallet._id,
 
             buyerId,
 
             type:
-              params.type ?? "PURCHASE",
+              transactionType,
 
-            amount: params.amount,
+            amount:
+              params.amount,
 
             direction:
               "DEBIT" as WalletTransactionDirection,
@@ -484,9 +679,11 @@ export async function debitWallet(
             description:
               params.description,
 
-            status: "SUCCESS",
+            status:
+              "SUCCESS",
 
-            source: params.source,
+            source:
+              params.source,
 
             paymentTransactionId:
               params.paymentTransactionId
@@ -503,10 +700,25 @@ export async function debitWallet(
                 : undefined,
 
             metadata:
-              params.metadata,
+              mergeMetadata(
+                params.metadata,
+                {
+                  availableBalanceBefore:
+                    balanceBefore,
+
+                  availableBalanceAfter:
+                    balanceAfter,
+
+                  heldBalanceBefore,
+
+                  heldBalanceAfter,
+                }
+              ),
           },
         ],
-        { session }
+        {
+          session,
+        }
       );
 
     if (ownsSession) {
@@ -540,69 +752,668 @@ export async function debitWallet(
    HOLD WALLET FUNDS
 ========================================================= */
 
+/**
+ * Moves money:
+ *
+ * availableBalance
+ *       ↓
+ * heldBalance
+ *
+ * No money is considered spent yet.
+ */
 export async function holdWalletFunds(
   params: Omit<
     WalletMutationParams,
     "type"
   >
-) {
-  return debitWallet({
-    ...params,
+): Promise<WalletResult> {
+  await connectToDB();
 
-    type: "PURCHASE",
+  validateAmount(
+    params.amount
+  );
 
-    description:
-      params.description ||
-      "Wallet funds held for order",
-  });
+  const buyerId =
+    toObjectId(params.buyerId);
+
+  const existingTransaction =
+    await findExistingTransaction(
+      params.reference
+    );
+
+  if (existingTransaction) {
+    return {
+      success:
+        existingTransaction.status ===
+        "SUCCESS",
+
+      alreadyProcessed: true,
+
+      transaction:
+        existingTransaction,
+    };
+  }
+
+  const session =
+    params.session ??
+    (await Wallet.startSession());
+
+  const ownsSession =
+    !params.session;
+
+  try {
+    if (ownsSession) {
+      session.startTransaction();
+    }
+
+    const wallet =
+      await Wallet.findOne({
+        buyerId,
+      }).session(session);
+
+    if (!wallet) {
+      throw new Error(
+        "Buyer wallet not found."
+      );
+    }
+
+    if (wallet.status !== "ACTIVE") {
+      throw new Error(
+        "Wallet is not active."
+      );
+    }
+
+    if (
+      wallet.availableBalance <
+      params.amount
+    ) {
+      throw new Error(
+        "Insufficient available wallet balance."
+      );
+    }
+
+    const availableBefore =
+      wallet.availableBalance;
+
+    const availableAfter =
+      availableBefore -
+      params.amount;
+
+    const heldBefore =
+      wallet.heldBalance;
+
+    const heldAfter =
+      heldBefore +
+      params.amount;
+
+    /*
+     * HOLD:
+     *
+     * Available ↓
+     * Held ↑
+     *
+     * Total wallet value remains unchanged.
+     */
+    wallet.availableBalance =
+      availableAfter;
+
+    wallet.heldBalance =
+      heldAfter;
+
+    await wallet.save({
+      session,
+    });
+
+    const transaction =
+      await WalletTransaction.create(
+        [
+          {
+            walletId:
+              wallet._id,
+
+            buyerId,
+
+            type:
+              "HOLD",
+
+            amount:
+              params.amount,
+
+            direction:
+              "DEBIT" as WalletTransactionDirection,
+
+            /*
+             * Existing ledger contract:
+             *
+             * balanceBefore / balanceAfter
+             * represent AVAILABLE balance.
+             */
+            balanceBefore:
+              availableBefore,
+
+            balanceAfter:
+              availableAfter,
+
+            reference:
+              params.reference,
+
+            description:
+              params.description ||
+              "Wallet funds held for order",
+
+            status:
+              "SUCCESS",
+
+            source:
+              params.source,
+
+            paymentTransactionId:
+              params.paymentTransactionId
+                ? toObjectId(
+                    params.paymentTransactionId
+                  )
+                : undefined,
+
+            orderId:
+              params.orderId
+                ? toObjectId(
+                    params.orderId
+                  )
+                : undefined,
+
+            metadata:
+              mergeMetadata(
+                params.metadata,
+                {
+                  operation:
+                    "HOLD",
+
+                  availableBalanceBefore:
+                    availableBefore,
+
+                  availableBalanceAfter:
+                    availableAfter,
+
+                  heldBalanceBefore:
+                    heldBefore,
+
+                  heldBalanceAfter:
+                    heldAfter,
+                }
+              ),
+          },
+        ],
+        {
+          session,
+        }
+      );
+
+    if (ownsSession) {
+      await session.commitTransaction();
+    }
+
+    return {
+      success: true,
+
+      alreadyProcessed: false,
+
+      wallet,
+
+      transaction:
+        transaction[0],
+    };
+  } catch (error) {
+    if (ownsSession) {
+      await session.abortTransaction();
+    }
+
+    throw error;
+  } finally {
+    if (ownsSession) {
+      await session.endSession();
+    }
+  }
 }
 
 /* =========================================================
    RELEASE WALLET HOLD
 ========================================================= */
 
+/**
+ * Moves money:
+ *
+ * heldBalance
+ *       ↓
+ * availableBalance
+ *
+ * This happens when an order is cancelled,
+ * rejected, expired, or otherwise no longer
+ * requires the reserved wallet funds.
+ */
 export async function releaseWalletHold(
   params: Omit<
     WalletMutationParams,
     "type"
   >
-) {
-  return creditWallet({
-    ...params,
+): Promise<WalletResult> {
+  await connectToDB();
 
-    type: "REVERSAL",
+  validateAmount(
+    params.amount
+  );
 
-    description:
-      params.description ||
-      "Wallet funds released",
-  });
+  const buyerId =
+    toObjectId(params.buyerId);
+
+  const existingTransaction =
+    await findExistingTransaction(
+      params.reference
+    );
+
+  if (existingTransaction) {
+    return {
+      success:
+        existingTransaction.status ===
+        "SUCCESS",
+
+      alreadyProcessed: true,
+
+      transaction:
+        existingTransaction,
+    };
+  }
+
+  const session =
+    params.session ??
+    (await Wallet.startSession());
+
+  const ownsSession =
+    !params.session;
+
+  try {
+    if (ownsSession) {
+      session.startTransaction();
+    }
+
+    const wallet =
+      await Wallet.findOne({
+        buyerId,
+      }).session(session);
+
+    if (!wallet) {
+      throw new Error(
+        "Buyer wallet not found."
+      );
+    }
+
+    if (wallet.status !== "ACTIVE") {
+      throw new Error(
+        "Wallet is not active."
+      );
+    }
+
+    if (
+      wallet.heldBalance <
+      params.amount
+    ) {
+      throw new Error(
+        "Insufficient held wallet balance."
+      );
+    }
+
+    const availableBefore =
+      wallet.availableBalance;
+
+    const availableAfter =
+      availableBefore +
+      params.amount;
+
+    const heldBefore =
+      wallet.heldBalance;
+
+    const heldAfter =
+      heldBefore -
+      params.amount;
+
+    wallet.availableBalance =
+      availableAfter;
+
+    wallet.heldBalance =
+      heldAfter;
+
+    await wallet.save({
+      session,
+    });
+
+    const transaction =
+      await WalletTransaction.create(
+        [
+          {
+            walletId:
+              wallet._id,
+
+            buyerId,
+
+            type:
+              "RELEASE",
+
+            amount:
+              params.amount,
+
+            direction:
+              "CREDIT" as WalletTransactionDirection,
+
+            balanceBefore:
+              availableBefore,
+
+            balanceAfter:
+              availableAfter,
+
+            reference:
+              params.reference,
+
+            description:
+              params.description ||
+              "Wallet funds released",
+
+            status:
+              "SUCCESS",
+
+            source:
+              params.source,
+
+            paymentTransactionId:
+              params.paymentTransactionId
+                ? toObjectId(
+                    params.paymentTransactionId
+                  )
+                : undefined,
+
+            orderId:
+              params.orderId
+                ? toObjectId(
+                    params.orderId
+                  )
+                : undefined,
+
+            metadata:
+              mergeMetadata(
+                params.metadata,
+                {
+                  operation:
+                    "RELEASE",
+
+                  availableBalanceBefore:
+                    availableBefore,
+
+                  availableBalanceAfter:
+                    availableAfter,
+
+                  heldBalanceBefore:
+                    heldBefore,
+
+                  heldBalanceAfter:
+                    heldAfter,
+                }
+              ),
+          },
+        ],
+        {
+          session,
+        }
+      );
+
+    if (ownsSession) {
+      await session.commitTransaction();
+    }
+
+    return {
+      success: true,
+
+      alreadyProcessed: false,
+
+      wallet,
+
+      transaction:
+        transaction[0],
+    };
+  } catch (error) {
+    if (ownsSession) {
+      await session.abortTransaction();
+    }
+
+    throw error;
+  } finally {
+    if (ownsSession) {
+      await session.endSession();
+    }
+  }
 }
 
 /* =========================================================
    CAPTURE WALLET HOLD
 ========================================================= */
 
+/**
+ * Converts held money into an actual purchase.
+ *
+ * IMPORTANT:
+ *
+ * The original HOLD already removed the amount
+ * from availableBalance.
+ *
+ * Therefore CAPTURE must NOT debit availableBalance
+ * again.
+ *
+ * Instead:
+ *
+ * heldBalance ↓
+ * totalSpent ↑
+ */
 export async function captureWalletHold(
   params: Omit<
     WalletMutationParams,
     "type"
   >
-) {
-  /*
-   * The debit has already occurred when the
-   * funds were held.
-   *
-   * Therefore capture does NOT debit again.
-   *
-   * This method exists as a domain operation so
-   * the order-payment workflow can explicitly
-   * mark the hold as captured later.
-   */
-  return {
-    success: true,
-    captured: true,
-    reference: params.reference,
-  };
+): Promise<WalletResult> {
+  await connectToDB();
+
+  validateAmount(
+    params.amount
+  );
+
+  const buyerId =
+    toObjectId(params.buyerId);
+
+  const existingTransaction =
+    await findExistingTransaction(
+      params.reference
+    );
+
+  if (existingTransaction) {
+    return {
+      success:
+        existingTransaction.status ===
+        "SUCCESS",
+
+      alreadyProcessed: true,
+
+      transaction:
+        existingTransaction,
+    };
+  }
+
+  const session =
+    params.session ??
+    (await Wallet.startSession());
+
+  const ownsSession =
+    !params.session;
+
+  try {
+    if (ownsSession) {
+      session.startTransaction();
+    }
+
+    const wallet =
+      await Wallet.findOne({
+        buyerId,
+      }).session(session);
+
+    if (!wallet) {
+      throw new Error(
+        "Buyer wallet not found."
+      );
+    }
+
+    if (wallet.status !== "ACTIVE") {
+      throw new Error(
+        "Wallet is not active."
+      );
+    }
+
+    if (
+      wallet.heldBalance <
+      params.amount
+    ) {
+      throw new Error(
+        "Insufficient held wallet balance."
+      );
+    }
+
+    const availableBefore =
+      wallet.availableBalance;
+
+    const availableAfter =
+      availableBefore;
+
+    const heldBefore =
+      wallet.heldBalance;
+
+    const heldAfter =
+      heldBefore -
+      params.amount;
+
+    wallet.heldBalance =
+      heldAfter;
+
+    wallet.totalSpent +=
+      params.amount;
+
+    await wallet.save({
+      session,
+    });
+
+    const transaction =
+      await WalletTransaction.create(
+        [
+          {
+            walletId:
+              wallet._id,
+
+            buyerId,
+
+            type:
+              "PURCHASE",
+
+            amount:
+              params.amount,
+
+            /**
+             * The actual money was removed from
+             * availableBalance at HOLD time.
+             *
+             * CAPTURE therefore does not create
+             * another available-balance debit.
+             */
+            direction:
+              "DEBIT" as WalletTransactionDirection,
+
+            balanceBefore:
+              availableBefore,
+
+            balanceAfter:
+              availableAfter,
+
+            reference:
+              params.reference,
+
+            description:
+              params.description ||
+              "Wallet-held funds captured for order",
+
+            status:
+              "SUCCESS",
+
+            source:
+              params.source,
+
+            paymentTransactionId:
+              params.paymentTransactionId
+                ? toObjectId(
+                    params.paymentTransactionId
+                  )
+                : undefined,
+
+            orderId:
+              params.orderId
+                ? toObjectId(
+                    params.orderId
+                  )
+                : undefined,
+
+            metadata:
+              mergeMetadata(
+                params.metadata,
+                {
+                  operation:
+                    "CAPTURE",
+
+                  availableBalanceBefore:
+                    availableBefore,
+
+                  availableBalanceAfter:
+                    availableAfter,
+
+                  heldBalanceBefore:
+                    heldBefore,
+
+                  heldBalanceAfter:
+                    heldAfter,
+                }
+              ),
+          },
+        ],
+        {
+          session,
+        }
+      );
+
+    if (ownsSession) {
+      await session.commitTransaction();
+    }
+
+    return {
+      success: true,
+
+      alreadyProcessed: false,
+
+      wallet,
+
+      transaction:
+        transaction[0],
+    };
+  } catch (error) {
+    if (ownsSession) {
+      await session.abortTransaction();
+    }
+
+    throw error;
+  } finally {
+    if (ownsSession) {
+      await session.endSession();
+    }
+  }
 }
 
 /* =========================================================
@@ -614,7 +1425,7 @@ export async function refundWallet(
     WalletMutationParams,
     "type"
   >
-) {
+): Promise<WalletResult> {
   return creditWallet({
     ...params,
 
@@ -634,9 +1445,16 @@ export async function getWalletTransactions(
   buyerId: string | Types.ObjectId,
   options?: {
     page?: number;
+
     limit?: number;
+
     type?: WalletTransactionType;
+
     status?: string;
+
+    source?: WalletTransactionSource;
+
+    orderId?: string | Types.ObjectId;
   }
 ) {
   await connectToDB();
@@ -650,7 +1468,10 @@ export async function getWalletTransactions(
   );
 
   const limit = Math.min(
-    Math.max(options?.limit ?? 20, 1),
+    Math.max(
+      options?.limit ?? 20,
+      1
+    ),
     100
   );
 
@@ -661,22 +1482,39 @@ export async function getWalletTransactions(
     string,
     unknown
   > = {
-    buyerId: buyerObjectId,
+    buyerId:
+      buyerObjectId,
   };
 
   if (options?.type) {
-    filter.type = options.type;
+    filter.type =
+      options.type;
   }
 
   if (options?.status) {
-    filter.status = options.status;
+    filter.status =
+      options.status;
+  }
+
+  if (options?.source) {
+    filter.source =
+      options.source;
+  }
+
+  if (options?.orderId) {
+    filter.orderId =
+      toObjectId(
+        options.orderId
+      );
   }
 
   const [
     transactions,
     total,
   ] = await Promise.all([
-    WalletTransaction.find(filter)
+    WalletTransaction.find(
+      filter
+    )
       .sort({
         createdAt: -1,
       })

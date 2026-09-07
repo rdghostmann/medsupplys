@@ -156,13 +156,7 @@ export const FallBackQueueMonitor: React.FC<
                 </h2>
               </div>
 
-              <button
-                type="button"
-                onClick={onViewQueue}
-                className="hidden shrink-0 cursor-pointer text-xs font-semibold text-blue-600 hover:underline"
-              >
-                Full Queue Details →
-              </button>
+            
 
               <Link
                 href="/buyer/procurement-sourcing"

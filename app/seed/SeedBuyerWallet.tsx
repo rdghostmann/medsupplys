@@ -2,131 +2,174 @@
 
 import React, { useState } from "react";
 import {
-  Wallet,
+  CreditCard,
+  UserRound,
   Database,
   CheckCircle2,
   AlertCircle,
   Loader2,
-  UserRound,
   RefreshCw,
+  ShieldCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 
-interface SeededWallet {
+interface CreditAccount {
   _id: string;
   buyerId: string;
   buyerName: string;
-  currency: string;
-  availableBalance: number;
-  heldBalance: number;
-  totalDeposited: number;
-  totalSpent: number;
-  totalRefunded: number;
-  totalReversed: number;
-  status: "ACTIVE" | "SUSPENDED" | "LOCKED";
+
+  creditLimit: number;
+  availableCredit: number;
+  creditUsed: number;
+  outstandingBalance: number;
+
+  status:
+    | "PENDING"
+    | "ACTIVE"
+    | "SUSPENDED"
+    | "EXPIRED"
+    | "CLOSED";
+
+  ratingTier:
+    | "A"
+    | "B"
+    | "C"
+    | "UNRATED";
+
+  approvedBy?: string;
+  approvedAt?: string;
+  dueDate?: string;
+
+  terms: string;
+  interestRatePercent: number;
+
   createdAt: string;
   updatedAt: string;
 }
 
-interface SeedWalletResponse {
+interface SeedResponse {
   success: boolean;
   seeded?: boolean;
   alreadyExists?: boolean;
   message: string;
-  wallet?: SeededWallet;
-  buyerId?: string;
-  role?: string;
+  creditAccount?: CreditAccount;
 }
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (
+  amount: number | string | null | undefined
+) => {
+  const value = Number(amount ?? 0);
+
+  if (!Number.isFinite(value)) {
+    return "₦0";
+  }
+
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(value);
 };
 
-const SeedBuyerWallet: React.FC = () => {
+const SeedBuyerCreditAccount: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [wallet, setWallet] = useState<SeededWallet | null>(null);
+
+  const [creditAccount, setCreditAccount] =
+    useState<CreditAccount | null>(null);
+
   const [status, setStatus] = useState<
     "idle" | "success" | "exists" | "error"
   >("idle");
 
-  const seedWallet = async () => {
+  const seedCreditAccount = async () => {
     try {
       setIsLoading(true);
       setStatus("idle");
 
-      const response = await fetch("/api/seed-wallet", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        "/api/seed-wallet",
+        {
+          method: "POST",
 
-      const data: SeedWalletResponse = await response.json();
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data: SeedResponse =
+        await response.json();
 
       if (!response.ok || !data.success) {
         throw new Error(
-          data.message || "Failed to seed buyer wallet."
+          data.message ||
+            "Failed to seed credit account."
         );
       }
 
-      if (data.wallet) {
-        setWallet(data.wallet);
+      if (data.creditAccount) {
+        setCreditAccount(data.creditAccount);
       }
 
       if (data.alreadyExists) {
         setStatus("exists");
 
-        toast.info("Wallet already exists", {
-          description: data.message,
-        });
+        toast.info(
+          "Credit account already exists",
+          {
+            description: data.message,
+          }
+        );
 
         return;
       }
 
       setStatus("success");
 
-      toast.success("Buyer wallet seeded", {
-        description: `₦${data.wallet?.availableBalance.toLocaleString(
-          "en-NG"
-        )} available balance created.`,
-      });
+      toast.success(
+        "Credit account seeded successfully",
+        {
+          description:
+            "₦10,000,000 credit facility is now available.",
+        }
+      );
     } catch (error) {
       console.error(error);
 
       setStatus("error");
 
-      toast.error("Wallet seeding failed", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Unable to seed buyer wallet.",
-      });
+      toast.error(
+        "Credit account seeding failed",
+        {
+          description:
+            error instanceof Error
+              ? error.message
+              : "Unable to seed credit account.",
+        }
+      );
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
       {/* Header */}
       <div className="border-b border-slate-200 bg-slate-50 px-6 py-5">
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-100">
-              <Wallet className="h-5 w-5 text-emerald-700" />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-100">
+              <CreditCard className="h-5 w-5 text-blue-700" />
             </div>
 
             <div>
               <h2 className="text-lg font-semibold text-slate-900">
-                Seed Buyer Wallet
+                Seed Buyer Credit Account
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Create the initial wallet for the seeded LUTH buyer.
+                Create the initial credit facility for the
+                LUTH buyer.
               </p>
             </div>
           </div>
@@ -137,9 +180,10 @@ const SeedBuyerWallet: React.FC = () => {
         </div>
       </div>
 
-      {/* Buyer Information */}
       <div className="p-6">
+        {/* Buyer + Credit Limit */}
         <div className="grid gap-4 md:grid-cols-2">
+          {/* Buyer */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
               <UserRound className="h-4 w-4" />
@@ -147,7 +191,8 @@ const SeedBuyerWallet: React.FC = () => {
             </div>
 
             <p className="font-semibold text-slate-900">
-              Lagos University Teaching Hospital (LUTH)
+              Lagos University Teaching Hospital
+              (LUTH)
             </p>
 
             <p className="mt-1 break-all font-mono text-xs text-slate-500">
@@ -155,44 +200,82 @@ const SeedBuyerWallet: React.FC = () => {
             </p>
           </div>
 
+          {/* Credit Limit */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
             <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
               <Database className="h-4 w-4" />
-              Initial Balance
+              Credit Limit
             </div>
 
-            <p className="hidden text-2xl font-bold text-emerald-700">
-              ₦1,450,000
+            <p className="text-2xl font-bold text-blue-700">
+              ₦10,000,000
             </p>
 
             <p className="mt-1 text-xs text-slate-500">
-              NGN wallet balance
+              Initial approved credit facility
             </p>
           </div>
         </div>
 
-        {/* Action */}
+        {/* Credit Terms */}
+        <div className="mt-4 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 p-4">
+            <p className="text-xs text-slate-500">
+              Rating
+            </p>
+
+            <div className="mt-1 flex items-center gap-2">
+              <ShieldCheck className="h-4 w-4 text-emerald-600" />
+
+              <span className="font-semibold text-slate-900">
+                Tier A
+              </span>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 p-4">
+            <p className="text-xs text-slate-500">
+              Terms
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              Net 30 days
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 p-4">
+            <p className="text-xs text-slate-500">
+              Interest
+            </p>
+
+            <p className="mt-1 font-semibold text-slate-900">
+              0%
+            </p>
+          </div>
+        </div>
+
+        {/* Seed Button */}
         <div className="mt-6">
           <button
             type="button"
-            onClick={seedWallet}
+            onClick={seedCreditAccount}
             disabled={isLoading}
             className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isLoading ? (
               <>
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Seeding Wallet...
+                Seeding Credit Account...
               </>
-            ) : wallet ? (
+            ) : creditAccount ? (
               <>
                 <RefreshCw className="h-4 w-4" />
-                Check Wallet Again
+                Check Credit Account Again
               </>
             ) : (
               <>
-                <Wallet className="h-4 w-4" />
-                Seed Buyer Wallet
+                <CreditCard className="h-4 w-4" />
+                Seed Credit Account
               </>
             )}
           </button>
@@ -207,12 +290,13 @@ const SeedBuyerWallet: React.FC = () => {
 
                 <div>
                   <p className="font-semibold text-emerald-900">
-                    Wallet seeded successfully
+                    Credit account seeded
+                    successfully
                   </p>
 
                   <p className="mt-1 text-sm text-emerald-700">
-                    The buyer wallet is now active and ready for
-                    transactions.
+                    The buyer now has an active
+                    ₦10,000,000 credit facility.
                   </p>
                 </div>
               </div>
@@ -224,12 +308,12 @@ const SeedBuyerWallet: React.FC = () => {
 
                 <div>
                   <p className="font-semibold text-blue-900">
-                    Wallet already exists
+                    Credit account already exists
                   </p>
 
                   <p className="mt-1 text-sm text-blue-700">
-                    No duplicate wallet was created because each
-                    buyer can only have one wallet.
+                    No duplicate credit account was
+                    created.
                   </p>
                 </div>
               </div>
@@ -241,11 +325,12 @@ const SeedBuyerWallet: React.FC = () => {
 
                 <div>
                   <p className="font-semibold text-red-900">
-                    Wallet seeding failed
+                    Credit account seeding failed
                   </p>
 
                   <p className="mt-1 text-sm text-red-700">
-                    Check the server logs for more details.
+                    Check the server logs for more
+                    details.
                   </p>
                 </div>
               </div>
@@ -253,26 +338,21 @@ const SeedBuyerWallet: React.FC = () => {
           </div>
         )}
 
-        {/* Wallet Result */}
-        {wallet && (
-          <div className="mt-6 rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-slate-900">
-                  Wallet Record
-                </h3>
+        {/* Credit Account Record */}
+        {creditAccount && (
+          <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
+              <h3 className="font-semibold text-slate-900">
+                Credit Account
+              </h3>
 
-                <span
-                  className={[
-                    "rounded-full px-3 py-1 text-xs font-semibold",
-                    wallet.status === "ACTIVE"
-                      ? "bg-emerald-100 text-emerald-700"
-                      : wallet.status === "SUSPENDED"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-red-100 text-red-700",
-                  ].join(" ")}
-                >
-                  {wallet.status}
+              <div className="flex items-center gap-2">
+                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  {creditAccount.status}
+                </span>
+
+                <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                  TIER {creditAccount.ratingTier}
                 </span>
               </div>
             </div>
@@ -280,11 +360,11 @@ const SeedBuyerWallet: React.FC = () => {
             <div className="divide-y divide-slate-100">
               <div className="flex items-center justify-between gap-4 px-5 py-3">
                 <span className="text-sm text-slate-500">
-                  Wallet ID
+                  Credit Account ID
                 </span>
 
                 <span className="break-all font-mono text-xs text-slate-700">
-                  {wallet._id}
+                  {creditAccount._id}
                 </span>
               </div>
 
@@ -294,37 +374,75 @@ const SeedBuyerWallet: React.FC = () => {
                 </span>
 
                 <span className="text-right text-sm font-medium text-slate-900">
-                  {wallet.buyerName}
+                  {creditAccount.buyerName}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
                 <span className="text-sm text-slate-500">
-                  Available Balance
+                  Credit Limit
+                </span>
+
+                <span className="text-sm font-bold text-blue-700">
+                  {formatCurrency(
+                    creditAccount.creditLimit
+                  )}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-5 py-3">
+                <span className="text-sm text-slate-500">
+                  Available Credit
                 </span>
 
                 <span className="text-sm font-bold text-emerald-700">
-                  {formatCurrency(wallet.availableBalance)}
+                  {formatCurrency(
+                    creditAccount.availableCredit
+                  )}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
                 <span className="text-sm text-slate-500">
-                  Total Deposited
+                  Credit Used
                 </span>
 
                 <span className="text-sm font-semibold text-slate-900">
-                  {formatCurrency(wallet.totalDeposited)}
+                  {formatCurrency(
+                    creditAccount.creditUsed
+                  )}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
                 <span className="text-sm text-slate-500">
-                  Held Balance
+                  Outstanding Balance
                 </span>
 
                 <span className="text-sm font-semibold text-slate-900">
-                  {formatCurrency(wallet.heldBalance)}
+                  {formatCurrency(
+                    creditAccount.outstandingBalance
+                  )}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-5 py-3">
+                <span className="text-sm text-slate-500">
+                  Payment Terms
+                </span>
+
+                <span className="text-sm font-medium text-slate-900">
+                  {creditAccount.terms}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 px-5 py-3">
+                <span className="text-sm text-slate-500">
+                  Interest Rate
+                </span>
+
+                <span className="text-sm font-medium text-slate-900">
+                  {creditAccount.interestRatePercent}%
                 </span>
               </div>
             </div>
@@ -335,4 +453,4 @@ const SeedBuyerWallet: React.FC = () => {
   );
 };
 
-export default SeedBuyerWallet;
+export default SeedBuyerCreditAccount;

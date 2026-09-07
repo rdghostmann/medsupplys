@@ -2,7 +2,7 @@
 
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   Wallet as WalletIcon,
   ShieldCheck,
@@ -22,164 +22,6 @@ import TopUpModal from "./TopUpModal";
 
 type BuyerWalletData = CurrentBuyerWallet;
 
-
-
-/* -------------------------------------------------------------------------- */
-/* Mock Transactions                                                          */
-/* -------------------------------------------------------------------------- */
-
-const mockWalletTransactions: WalletTransaction[] = [
-
-
-  {
-    id: "tx_002",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "PURCHASE",
-    amount: 278000,
-    direction: "DEBIT",
-    balanceBefore: 625500,
-    balanceAfter: 347500,
-    reference: "MS-ORD-2026-000165",
-    description:
-      "Procurement payment for Vitamin C 1000mg",
-    status: "SUCCESS",
-    metadata: {
-      orderId: "ord_003",
-      orderNumber: "MS-2026-000165",
-      supplierId: "sup_emzor",
-      supplierName:
-        "Emzor Pharmaceutical Industries Ltd",
-    },
-    createdAt: "2026-08-26T09:10:00",
-  },
-
-  {
-    id: "tx_003",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "TOPUP",
-    amount: 750000,
-    direction: "CREDIT",
-    balanceBefore: 0,
-    balanceAfter: 750000,
-    reference: "MS-TOP-260826-001",
-    description:
-      "Institutional wallet funding via Paystack",
-    status: "SUCCESS",
-    metadata: {
-      paymentMethod: "Paystack",
-      channel: "card",
-      gatewayReference: "PSK-772619304",
-    },
-    createdAt: "2026-08-26T08:30:00",
-  },
-
-  {
-    id: "tx_004",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "PURCHASE",
-    amount: 510000,
-    direction: "DEBIT",
-    balanceBefore: 510000,
-    balanceAfter: 0,
-    reference: "MS-ORD-2026-000181",
-    description:
-      "Procurement payment for Amoxicillin 500mg",
-    status: "SUCCESS",
-    metadata: {
-      orderId: "ord_002",
-      orderNumber: "MS-2026-000181",
-      supplierId: "sup_fidson",
-      supplierName: "Fidson Healthcare Plc",
-    },
-    createdAt: "2026-08-25T15:20:00",
-  },
-
-  {
-    id: "tx_005",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "TOPUP",
-    amount: 510000,
-    direction: "CREDIT",
-    balanceBefore: 0,
-    balanceAfter: 510000,
-    reference: "MS-TOP-260825-001",
-    description:
-      "Institutional wallet funding via Paystack",
-    status: "SUCCESS",
-    metadata: {
-      paymentMethod: "Paystack",
-      channel: "bank_transfer",
-      gatewayReference: "PSK-663829104",
-    },
-    createdAt: "2026-08-25T14:40:00",
-  },
-
-  {
-    id: "tx_006",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "CREDIT_PURCHASE",
-    amount: 615000,
-    direction: "DEBIT",
-    balanceBefore: 0,
-    balanceAfter: 0,
-    reference: "MS-CRD-2026-000184",
-    description:
-      "Credit-funded procurement for Paracetamol 500mg",
-    status: "SUCCESS",
-    metadata: {
-      orderId: "ord_001",
-      orderNumber: "MS-2026-000184",
-      supplierId: "sup_maybaker",
-      supplierName: "May & Baker Nigeria Plc",
-      creditTermDays: 30,
-    },
-    createdAt: "2026-08-24T10:25:00",
-  },
-
-  {
-    id: "tx_007",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "CREDIT_REPAYMENT",
-    amount: 300000,
-    direction: "CREDIT",
-    balanceBefore: 0,
-    balanceAfter: 300000,
-    reference: "MS-REP-260820-001",
-    description: "Credit facility repayment",
-    status: "SUCCESS",
-    metadata: {
-      paymentMethod: "Bank Transfer",
-      creditReference: "CRD-2026-000184",
-    },
-    createdAt: "2026-08-20T12:10:00",
-  },
-
-  {
-    id: "tx_008",
-    walletId: "wallet_buyer_001",
-    buyerId: "buyer_001",
-    type: "REFUND",
-    amount: 97500,
-    direction: "CREDIT",
-    balanceBefore: 250000,
-    balanceAfter: 347500,
-    reference: "MS-REF-260818-001",
-    description:
-      "Procurement adjustment refund for rejected line item",
-    status: "SUCCESS",
-    metadata: {
-      orderId: "ord_001",
-      reason: "Line item price adjustment",
-    },
-    createdAt: "2026-08-18T16:45:00",
-  },
-];
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
@@ -202,10 +44,9 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
   walletTransactions: initialTransactions,
 }) => {
 
-  
-  void mockWalletTransactions;
 
-  const [walletState] =    useState<BuyerWalletData | null>(wallet);
+
+  const [walletState] = useState<BuyerWalletData | null>(wallet);
 
   const [transactions, setTransactions] =
     useState<WalletTransaction[]>(initialTransactions);

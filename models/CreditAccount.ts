@@ -2,6 +2,7 @@
 
 import {
   Schema,
+  Types,
   model,
   models,
   Document,
@@ -23,7 +24,7 @@ export type CreditRatingTier =
 
 export interface ICreditAccount
   extends Document {
-  buyerId: Schema.Types.ObjectId;
+  buyerId: Types.ObjectId;
 
   buyerName: string;
 
@@ -39,7 +40,7 @@ export interface ICreditAccount
 
   ratingTier: CreditRatingTier;
 
-  approvedBy?: Schema.Types.ObjectId;
+  approvedBy?: Types.ObjectId;
 
   approvedAt?: Date;
 

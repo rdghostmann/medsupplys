@@ -342,33 +342,6 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
    * passed from a Server Component to a Client Component.
    */
 
-  const currentWallet: CurrentBuyerWallet | null =
-    wallet
-      ? {
-        id: wallet._id.toString(),
-
-        buyerId:
-          wallet.buyerId.toString(),
-
-        buyerName:
-          wallet.buyerName,
-
-        balance: Number(wallet.availableBalance || 0),
-
-        currency:
-          wallet.currency,
-
-        status:
-          wallet.status,
-
-        createdAt:
-          wallet.createdAt.toISOString(),
-
-        updatedAt:
-          wallet.updatedAt.toISOString(),
-      }
-      : null;
-
   const walletTransactions = await WalletTransaction.find()
     .where("buyerId")
     .equals(user._id.toString())
@@ -448,6 +421,32 @@ export async function getCurrentBuyerDashboard(): Promise<BuyerDashboardData> {
         ),
         createdAt: creditAccount.createdAt.toISOString(),
         updatedAt: creditAccount.updatedAt.toISOString(),
+      }
+      : null;
+
+  const currentWallet: CurrentBuyerWallet | null =
+    wallet
+      ? {
+        id: wallet._id.toString(),
+        buyerId: wallet.buyerId.toString(),
+        buyerName: wallet.buyerName,
+        balance: Number(wallet.availableBalance || 0),
+        currency: wallet.currency,
+        status: wallet.status,
+        creditAllowance: currentCreditAccount?.creditLimit,
+        creditUsed: currentCreditAccount?.creditUsed,
+        creditAvailable: currentCreditAccount?.availableCredit,
+        creditStatus:
+          currentCreditAccount?.status === "ACTIVE"
+            ? "ACTIVE"
+            : currentCreditAccount
+              ? "SUSPENDED"
+              : "UNAVAILABLE",
+        purchasingPower:
+          Number(wallet.availableBalance || 0) +
+          Number(currentCreditAccount?.availableCredit || 0),
+        createdAt: wallet.createdAt.toISOString(),
+        updatedAt: wallet.updatedAt.toISOString(),
       }
       : null;
 
