@@ -25,6 +25,7 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,8 @@ export default function SourcingDrawer({
   const [isSubmitting, setIsSubmitting] =
     useState(false);
 
+  const [submitError, setSubmitError] =
+    useState<string | null>(null);
 
   /* =======================================================
      Procurement State
@@ -429,12 +432,17 @@ export default function SourcingDrawer({
 
   const handleSubmitProcurement =
     async () => {
-      if (!canSubmit || !selectedSupplier) {
+      if (
+        !canSubmit ||
+        isSubmitting ||
+        !selectedSupplier
+      ) {
         return;
       }
 
       try {
         setIsSubmitting(true);
+        setSubmitError(null);
         setError(null);
 
         const result =
@@ -452,50 +460,50 @@ export default function SourcingDrawer({
             splitWalletAmount:
               paymentMethod ===
                 "WALLET_AND_CREDIT"
-                ? paymentAllocation.walletAmount
+                ? splitWalletAmount
                 : undefined,
 
             deliveryAddress:
               deliveryAddress.trim(),
           });
 
-        if (result.success) {
-          /*
-           * Procurement successfully created.
-           *
-           * The server has already:
-           *
-           * - validated the buyer
-           * - validated product
-           * - re-run supplier matching
-           * - validated supplier listing
-           * - calculated authoritative price
-           * - reserved wallet funds
-           * - committed credit
-           * - created procurement
-           * - created transactions
-           * - created notifications
-           * - created audit logs
-           */
-
-          onClose();
+        if (
+          !result.success
+        ) {
+          throw new Error(
+            "Unable to create procurement."
+          );
         }
+
+        toast.success(
+          `Procurement ${result.procurement.procurementNumber} created successfully.`
+        );
+
+        onClose();
       } catch (err) {
         console.error(
           "[CREATE_PROCUREMENT]",
           err
         );
 
-        setError(
+        const message =
           err instanceof Error
             ? err.message
-            : "Unable to create procurement."
+            : "Unable to submit procurement request.";
+
+        setSubmitError(
+          message
+        );
+
+        toast.error(
+          message
         );
       } finally {
-        setIsSubmitting(false);
+        setIsSubmitting(
+          false
+        );
       }
     };
-
   /* =======================================================
      Render
      ======================================================= */
@@ -1511,7 +1519,11 @@ export default function SourcingDrawer({
         {/* ===================================================
             Footer
             =================================================== */}
-
+        {submitError && (
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {submitError}
+          </div>
+        )}
         <div className="flex items-center justify-between gap-4 border-t border-slate-200 bg-slate-50 p-6">
 
           <div>
@@ -1555,7 +1567,6 @@ export default function SourcingDrawer({
               onClick={
                 handleSubmitProcurement
               }
-              className="h-11 rounded-xl bg-blue-600 px-6 text-xs font-bold shadow-md shadow-blue-600/20 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {isSubmitting ? (
                 <>

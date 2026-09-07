@@ -6,13 +6,17 @@ import crypto from "crypto";
 import { Types } from "mongoose";
 
 import { connectToDB } from "@/lib/connectToDB";
-import { getCurrentUser } from "@/auth";
-
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/auth";
 import { Product } from "@/models/Product";
 import { SupplierProduct } from "@/models/SupplierProduct";
 import { User } from "@/models/User";
 
-import { Procurement } from "@/models/Procurement";
+import {
+    Procurement,
+    type SupplierCandidateStatus,
+} from "@/models/Procurement";
+
 
 import { Wallet } from "@/models/Wallet";
 import { WalletTransaction } from "@/models/WalletTransaction";
@@ -28,6 +32,8 @@ import {
     type SupplierScoreBreakdown,
 } from "@/services/supplier-matching.service";
 
+
+
 /* =========================================================
    Types
    ========================================================= */
@@ -39,17 +45,11 @@ export type ProcurementPaymentMethod =
 
 export interface CreateProcurementInput {
     productId: string;
-
     supplierProductId: string;
-
     quantity: number;
-
     paymentMethod: ProcurementPaymentMethod;
-
     splitWalletAmount?: number;
-
     deliveryAddress: string;
-
     notes?: string;
 }
 
@@ -60,11 +60,14 @@ export interface CreateProcurementResult {
         id: string;
         procurementNumber: string;
         status: string;
+
         totalAmount: number;
         walletAmount: number;
         creditAmount: number;
+
         supplierName: string;
         supplierType: string;
+
         quantity: number;
         unitPrice: number;
     };
@@ -106,12 +109,6 @@ function generateReference(
     return `${prefix}-${Date.now()}-${random}`;
 }
 
-function normalizeId(
-    value: unknown
-): string {
-    return String(value);
-}
-
 function assertObjectId(
     value: string,
     field: string
@@ -125,6 +122,20 @@ function assertObjectId(
     return new Types.ObjectId(value);
 }
 
+function normalizeId(
+    value: unknown
+): string {
+    return String(value);
+}
+
+function normalizeString(
+    value: unknown
+): string {
+    return String(value ?? "")
+        .trim()
+        .toLowerCase();
+}
+
 /* =========================================================
    Main Service
    ========================================================= */
@@ -136,7 +147,9 @@ export async function createProcurement(
        Authentication
        ======================================================= */
 
-    const currentUser = await getCurrentUser();
+    const authSession = await getServerSession(authOptions);
+
+    const currentUser = authSession?.user;
 
     if (!currentUser?.id) {
         throw new Error(
@@ -178,7 +191,7 @@ export async function createProcurement(
     }
 
     const deliveryAddress =
-        input.deliveryAddress.trim();
+        String(input.deliveryAddress ?? "").trim();
 
     if (!deliveryAddress) {
         throw new Error(
@@ -186,12 +199,16 @@ export async function createProcurement(
         );
     }
 
+    const paymentMethods: ProcurementPaymentMethod[] = [
+        "WALLET",
+        "CREDIT",
+        "WALLET_AND_CREDIT",
+    ];
+
     if (
-        ![
-            "WALLET",
-            "CREDIT",
-            "WALLET_AND_CREDIT",
-        ].includes(input.paymentMethod)
+        !paymentMethods.includes(
+            input.paymentMethod
+        )
     ) {
         throw new Error(
             "Invalid procurement payment method."
@@ -210,7 +227,16 @@ export async function createProcurement(
 
     const buyer = await User.findById(
         buyerId
-    ).lean();
+    )
+        .select({
+            _id: 1,
+            role: 1,
+            status: 1,
+            fullName: 1,
+            organizationName: 1,
+            name: 1,
+        })
+        .lean();
 
     if (!buyer) {
         throw new Error(
@@ -219,28 +245,30 @@ export async function createProcurement(
     }
 
     if (
-        String(
-            (buyer as { role?: string }).role ?? ""
-        ).toLowerCase() !== "buyer"
+        normalizeString(
+            buyer.role
+        ) !== "buyer"
     ) {
         throw new Error(
             "Only buyer accounts can create procurements."
         );
     }
 
+    if (
+        buyer.status &&
+        normalizeString(
+            buyer.status
+        ) !== "active"
+    ) {
+        throw new Error(
+            "Buyer account is not active."
+        );
+    }
+
     const buyerName =
         String(
-            (buyer as {
-                fullName?: string;
-                organizationName?: string;
-                name?: string;
-            }).organizationName ??
-            (buyer as {
-                fullName?: string;
-            }).fullName ??
-            (buyer as {
-                name?: string;
-            }).name ??
+            buyer.organizationName ??
+            buyer.firstName ??
             "Buyer"
         ).trim();
 
@@ -269,14 +297,12 @@ export async function createProcurement(
     /* =======================================================
        Re-run Matching Engine
        
-       IMPORTANT:
-       Never trust the SupplierScoreBreakdown sent by
-       the browser.
+       The browser selection is advisory only.
        ======================================================= */
 
     const matches =
         await matchSuppliers(
-            input.productId,
+            productId.toString(),
             quantity
         );
 
@@ -288,9 +314,7 @@ export async function createProcurement(
                 normalizeId(
                     supplier.supplierProductId
                 ) ===
-                normalizeId(
-                    supplierProductId
-                ) &&
+                supplierProductId.toString() &&
                 supplier.isEligible
         );
 
@@ -299,6 +323,62 @@ export async function createProcurement(
             "The selected supplier is no longer eligible for this quantity."
         );
     }
+
+    const supplierCandidates: IProcurementSupplierCandidate[] =
+    eligibleMatches.map(
+        (
+            match,
+            index
+        ) => ({
+            supplierId:
+                assertObjectId(
+                    match.supplierId,
+                    "supplier"
+                ),
+
+            supplierName:
+                match.supplierName,
+
+            supplierType:
+                match.supplierType,
+
+            supplierProductId:
+                assertObjectId(
+                    match.supplierProductId,
+                    "supplier listing"
+                ),
+
+            unitPrice:
+                Number(
+                    match.finalPrice
+                ),
+
+            totalPrice:
+                Math.round(
+                    Number(
+                        match.finalPrice
+                    ) *
+                    quantity
+                ),
+
+            stock:
+                match.stock,
+
+            rank:
+                index + 1,
+
+            score:
+                Math.round(
+                    match.totalScore *
+                    100
+                ) / 100,
+
+            status:
+                index === selectedIndex
+                    ? "CONTACTED"
+                    : "QUEUED",
+        })
+    );
 
     /* =======================================================
        Authoritative SupplierProduct
@@ -316,12 +396,84 @@ export async function createProcurement(
         );
     }
 
+    /* =======================================================
+       Authoritative Supplier
+       ======================================================= */
+
+    const supplierId = assertObjectId(
+        selectedSupplier.supplierId,
+        "supplier"
+    );
+
+    const supplier =
+        await User.findById(
+            supplierId
+        )
+            .select({
+                _id: 1,
+                role: 1,
+                status: 1,
+                supplierApprovalStatus: 1,
+                organizationName: 1,
+                fullName: 1,
+                name: 1,
+            })
+            .lean();
+
+    if (!supplier) {
+        throw new Error(
+            "The selected supplier account no longer exists."
+        );
+    }
+
     if (
-        supplierProduct.finalPrice !==
-        selectedSupplier.finalPrice
+        normalizeString(
+            supplier.role
+        ) !== "supplier"
     ) {
         throw new Error(
-            "Supplier pricing changed. Please refresh the supplier pool and try again."
+            "The selected account is not a valid supplier."
+        );
+    }
+
+    if (
+        normalizeString(
+            supplier.status
+        ) !== "active"
+    ) {
+        throw new Error(
+            "The selected supplier is not active."
+        );
+    }
+
+    if (
+        normalizeString(
+            supplier.supplierApprovalStatus
+        ) !== "approved"
+    ) {
+        throw new Error(
+            "The selected supplier is not approved."
+        );
+    }
+
+    /* =======================================================
+       Authoritative Listing Validation
+       ======================================================= */
+
+    if (
+        supplierProduct.status !==
+        "AVAILABLE"
+    ) {
+        throw new Error(
+            "The selected supplier listing is no longer available."
+        );
+    }
+
+    if (
+        supplierProduct.isFlagged
+    ) {
+        throw new Error(
+            "The selected supplier listing is currently unavailable."
         );
     }
 
@@ -344,15 +496,50 @@ export async function createProcurement(
     }
 
     if (
-        supplierProduct.stock < quantity
+        supplierProduct.stock <
+        quantity
     ) {
         throw new Error(
             "The selected supplier no longer has sufficient stock."
         );
     }
 
+    if (
+        !supplierProduct.nafdacRegNumber
+            ?.trim()
+    ) {
+        throw new Error(
+            "Supplier NAFDAC registration is missing."
+        );
+    }
+
+    if (
+        !supplierProduct.batchNumber
+            ?.trim()
+    ) {
+        throw new Error(
+            "Supplier batch information is missing."
+        );
+    }
+
+    const expiryDate =
+        new Date(
+            supplierProduct.expiryDate
+        );
+
+    if (
+        !Number.isFinite(
+            expiryDate.getTime()
+        ) ||
+        expiryDate <= new Date()
+    ) {
+        throw new Error(
+            "The selected supplier batch has expired."
+        );
+    }
+
     /* =======================================================
-       Total
+       Price Validation
        ======================================================= */
 
     const unitPrice =
@@ -369,11 +556,28 @@ export async function createProcurement(
         );
     }
 
-    const totalAmount = Math.round(
-        unitPrice * quantity
-    );
+    /*
+     * Matching is authoritative for supplier selection,
+     * but the final price is still re-read from the database.
+     */
+    if (
+        Number(
+            selectedSupplier.finalPrice
+        ) !== unitPrice
+    ) {
+        throw new Error(
+            "Supplier pricing changed. Please refresh the supplier pool and try again."
+        );
+    }
 
-    if (totalAmount <= 0) {
+    const totalAmount =
+        Math.round(
+            unitPrice * quantity
+        );
+
+    if (
+        totalAmount <= 0
+    ) {
         throw new Error(
             "Procurement total must be greater than zero."
         );
@@ -386,43 +590,46 @@ export async function createProcurement(
     let walletAmount = 0;
     let creditAmount = 0;
 
-    if (
-        input.paymentMethod ===
-        "WALLET"
+    switch (
+    input.paymentMethod
     ) {
-        walletAmount = totalAmount;
-    }
+        case "WALLET":
+            walletAmount =
+                totalAmount;
+            break;
 
-    if (
-        input.paymentMethod ===
-        "CREDIT"
-    ) {
-        creditAmount = totalAmount;
-    }
+        case "CREDIT":
+            creditAmount =
+                totalAmount;
+            break;
 
-    if (
-        input.paymentMethod ===
-        "WALLET_AND_CREDIT"
-    ) {
-        walletAmount = Math.min(
-            totalAmount,
-            Math.max(
-                0,
-                Math.round(
-                    Number(
-                        input.splitWalletAmount ?? 0
+        case "WALLET_AND_CREDIT":
+            walletAmount =
+                Math.min(
+                    totalAmount,
+                    Math.max(
+                        0,
+                        Math.round(
+                            Number(
+                                input.splitWalletAmount ??
+                                0
+                            )
+                        )
                     )
-                )
-            )
-        );
+                );
 
-        creditAmount =
-            totalAmount -
-            walletAmount;
+            creditAmount =
+                totalAmount -
+                walletAmount;
+
+            break;
     }
 
     if (
-        walletAmount + creditAmount !==
+        walletAmount < 0 ||
+        creditAmount < 0 ||
+        walletAmount +
+        creditAmount !==
         totalAmount
     ) {
         throw new Error(
@@ -430,8 +637,23 @@ export async function createProcurement(
         );
     }
 
+    /*
+     * Prevent an empty split from silently becoming
+     * an invalid payment request.
+     */
+    if (
+        input.paymentMethod ===
+        "WALLET_AND_CREDIT" &&
+        walletAmount <= 0 &&
+        creditAmount <= 0
+    ) {
+        throw new Error(
+            "At least one payment source must contain funds."
+        );
+    }
+
     /* =======================================================
-       Start Mongo Transaction
+       MongoDB Transaction
        ======================================================= */
 
     const session =
@@ -439,289 +661,295 @@ export async function createProcurement(
 
     try {
         let createdProcurement:
-            | typeof Procurement.prototype
+            | InstanceType<typeof Procurement>
             | null = null;
 
         await session.withTransaction(
             async () => {
-                /* ================================================
-                   Wallet
-                   ================================================ */
+                /* ==============================================
+                   Determine selected candidate rank
+                   ============================================== */
 
-                let wallet =
-                    walletAmount > 0
-                        ? await Wallet.findOne({
-                            buyerId,
-                        }).session(session)
-                        : null;
-
-                if (walletAmount > 0) {
-                    if (!wallet) {
-                        throw new Error(
-                            "Buyer wallet was not found."
-                        );
-                    }
-
-                    if (
-                        wallet.status !== "ACTIVE"
-                    ) {
-                        throw new Error(
-                            "Buyer wallet is not active."
-                        );
-                    }
-
-                    if (
-                        wallet.availableBalance <
-                        walletAmount
-                    ) {
-                        throw new Error(
-                            "Insufficient wallet balance."
-                        );
-                    }
-                }
-
-                /* ================================================
-                   Credit Account
-                   ================================================ */
-
-                let creditAccount =
-                    creditAmount > 0
-                        ? await CreditAccount.findOne({
-                            buyerId,
-                        }).session(session)
-                        : null;
-
-                if (creditAmount > 0) {
-                    if (!creditAccount) {
-                        throw new Error(
-                            "Buyer credit account was not found."
-                        );
-                    }
-
-                    if (
-                        creditAccount.status !==
-                        "ACTIVE"
-                    ) {
-                        throw new Error(
-                            "Buyer credit facility is not active."
-                        );
-                    }
-
-                    if (
-                        creditAccount.availableCredit <
-                        creditAmount
-                    ) {
-                        throw new Error(
-                            "Insufficient available credit."
-                        );
-                    }
-                }
-
-                /* ================================================
-                   Procurement Candidates
-                   
-                   Store the ranked eligible pool as a snapshot.
-                   ================================================ */
-
-                const eligibleCandidates =
+                const eligibleMatches =
                     matches.filter(
-                        (supplier) =>
-                            supplier.isEligible
-                    );
-
-                const supplierCandidates =
-                    eligibleCandidates.map(
                         (
-                            supplier,
-                            index
-                        ) => ({
-                            supplierId:
-                                assertObjectId(
-                                    supplier.supplierId,
-                                    "supplier"
-                                ),
-
-                            supplierName:
-                                supplier.supplierName,
-
-                            supplierType:
-                                supplier.supplierType,
-
-                            supplierProductId:
-                                assertObjectId(
-                                    supplier.supplierProductId,
-                                    "supplier listing"
-                                ),
-
-                            unitPrice:
-                                supplier.finalPrice,
-
-                            totalPrice:
-                                Math.round(
-                                    supplier.finalPrice *
-                                    quantity
-                                ),
-
-                            stock:
-                                supplier.stock,
-
-                            rank:
-                                index + 1,
-
-                            score:
-                                Math.round(
-                                    supplier.totalScore *
-                                    100
-                                ) / 100,
-
-                            status:
-                                supplier.supplierProductId ===
-                                    selectedSupplier.supplierProductId
-                                    ? "CONTACTED"
-                                    : "QUEUED",
-                        })
+                            match
+                        ) =>
+                            match.isEligible
                     );
 
-                /* ================================================
-                   Procurement
-                   ================================================ */
+                const selectedIndex =
+                    eligibleMatches.findIndex(
+                        (
+                            match
+                        ) =>
+                            normalizeId(
+                                match.supplierProductId
+                            ) ===
+                            supplierProductId.toString()
+                    );
+
+                if (
+                    selectedIndex < 0
+                ) {
+                    throw new Error(
+                        "Selected supplier is not present in the eligible supplier pool."
+                    );
+                }
+
+                /* ==============================================
+                   Supplier Candidate Snapshot
+                   ============================================== */
+const supplierCandidates: Array<{
+    supplierId: Types.ObjectId;
+    supplierName: string;
+    supplierType: string;
+    supplierProductId: Types.ObjectId;
+    unitPrice: number;
+    totalPrice: number;
+    stock: number;
+    rank: number;
+    score: number;
+    status: SupplierCandidateStatus;
+}> = eligibleMatches.map(
+    (
+        match,
+        index
+    ) => ({
+        supplierId:
+            assertObjectId(
+                match.supplierId,
+                "supplier"
+            ),
+
+        supplierName:
+            match.supplierName,
+
+        supplierType:
+            match.supplierType,
+
+        supplierProductId:
+            assertObjectId(
+                match.supplierProductId,
+                "supplier listing"
+            ),
+
+        unitPrice:
+            Number(
+                match.finalPrice
+            ),
+
+        totalPrice:
+            Math.round(
+                Number(
+                    match.finalPrice
+                ) *
+                quantity
+            ),
+
+        stock:
+            match.stock,
+
+        rank:
+            index + 1,
+
+        score:
+            Math.round(
+                match.totalScore *
+                100
+            ) / 100,
+
+        status:
+            index === selectedIndex
+                ? "CONTACTED"
+                : "QUEUED",
+    })
+);
+            
+
+                /* ==============================================
+                   Procurement Number
+                   ============================================== */
 
                 const procurementNumber =
                     generateProcurementNumber();
 
-                const procurementDocs =
-                    await Procurement.create(
-                        [
-                            {
-                                procurementNumber,
+                /* ==============================================
+                   Procurement
+                   ============================================== */
 
-                                buyerId,
-
-                                buyerName,
-
-                                items: [
-                                    {
-                                        productId,
-
-                                        productName:
-                                            product.name,
-
-                                        quantity,
-
-                                        unit:
-                                            supplierProduct.unit,
-
-                                        preferredSupplierType:
-                                            selectedSupplier.supplierType,
-                                    },
-                                ],
-
-                                /*
-                                 * We are immediately beginning sourcing
-                                 * against the selected ranked supplier.
-                                 */
-                                status: "SUPPLIER_CONTACTED",
-
-                                supplierCandidates,
-
-                                currentSupplierIndex: 0,
-
-                                currentSupplierId:
-                                    assertObjectId(
-                                        selectedSupplier.supplierId,
-                                        "supplier"
-                                    ),
-
-                                currentSupplierName:
-                                    selectedSupplier.supplierName,
-
-                                attemptHistory: [
-                                    {
-                                        attemptNumber: 1,
-
-                                        supplierId:
-                                            assertObjectId(
-                                                selectedSupplier.supplierId,
-                                                "supplier"
-                                            ),
-
-                                        supplierName:
-                                            selectedSupplier.supplierName,
-
-                                        supplierType:
-                                            selectedSupplier.supplierType,
-
-                                        offeredPrice:
-                                            selectedSupplier.finalPrice,
-
-                                        status:
-                                            "CONTACTED",
-
-                                        contactedAt:
-                                            new Date(),
-                                    },
-                                ],
-
-                                deliveryAddress,
-
-                                notes:
-                                    input.notes?.trim() ||
-                                    undefined,
-                                matchingWeightsSnapshot?: {
-                                    priceWeight: number;
-                                    stockWeight: number;
-                                    ratingWeight: number;
-                                    fulfillmentWeight: number;
-                                    deliveryWeight: number;
-                                    supplierTypeWeight: number;
-                                };                           /*
-                                 * Procurement should not remain open
-                                 * indefinitely.
-                                 */
-                                expiresAt:
-                                    new Date(
-                                        Date.now() +
-                                        24 *
-                                        60 *
-                                        60 *
-                                        1000
-                                    ),
-                            },
-                        ],
+                const procurementDocs = await Procurement.create(
+                    [
                         {
-                            session,
-                        }
-                    );
+                            procurementNumber,
 
-                createdProcurement =
-                    procurementDocs[0];
+                            buyerId,
 
-                const procurementId =
-                    createdProcurement._id;
+                            buyerName,
 
-                /* ================================================
+                            items: [
+                                {
+                                    productId,
+
+                                    productName:
+                                        product.name,
+
+                                    quantity,
+
+                                    unit:
+                                        supplierProduct.unit ??
+                                        product.unit,
+
+                                    preferredSupplierType:
+                                        selectedSupplier.supplierType,
+                                },
+                            ],
+
+                            /*
+                             * Supplier has been selected and
+                             * notification is being created.
+                             */
+                            status:
+                                "SUPPLIER_CONTACTED",
+
+                            supplierCandidates,
+
+                            currentSupplierIndex:
+                                selectedIndex,
+
+                            currentSupplierId:
+                                supplierId,
+
+                            currentSupplierName:
+                                selectedSupplier.supplierName,
+
+                            attemptHistory: [
+                                {
+                                    attemptNumber:
+                                        1,
+
+                                    supplierId,
+
+                                    supplierName:
+                                        selectedSupplier.supplierName,
+
+                                    supplierType:
+                                        selectedSupplier.supplierType,
+
+                                    offeredPrice:
+                                        unitPrice,
+
+                                    status:
+                                        "CONTACTED",
+
+                                    contactedAt:
+                                        new Date(),
+                                },
+                            ],
+
+                            deliveryAddress,
+
+                            notes:
+                                input.notes
+                                    ?.trim() ||
+                                undefined,
+
+                            /*
+                             * IMPORTANT:
+                             * This assumes the Procurement model
+                             * has been updated to snapshot the
+                             * actual matching engine weights.
+                             */
+                            matchingWeightsSnapshot: {
+                                priceWeight: 35,
+                                stockWeight: 20,
+                                ratingWeight: 15,
+                                fulfillmentWeight: 15,
+                                deliveryWeight: 10,
+                                supplierTypeWeight: 5,
+                            },
+
+                            /*
+                             * Recommended fields in Procurement
+                             * for financial traceability.
+                             */
+                            financials: {
+                                paymentMethod:
+                                    input.paymentMethod,
+
+                                totalAmount,
+
+                                walletAmount,
+
+                                creditAmount,
+
+                                currency: "NGN",
+                            },
+
+                            expiresAt:
+                                new Date(
+                                    Date.now() +
+                                    24 *
+                                    60 *
+                                    60 *
+                                    1000
+                                ),
+                        },
+                    ],
+                    {
+                        session,
+                    }
+                );
+
+                createdProcurement =  procurementDocs[0];
+
+                const procurementId = createdProcurement._id;
+
+                /* ==============================================
                    Wallet Reservation
-                   
-                   We use heldBalance rather than immediately
-                   treating the money as spent.
-                   ================================================ */
+                   ============================================== */
 
                 if (
-                    wallet &&
                     walletAmount > 0
                 ) {
-                    const before =
-                        wallet.availableBalance;
+                    const wallet =
+                        await Wallet.findOneAndUpdate(
+                            {
+                                buyerId,
 
-                    wallet.availableBalance -=
+                                status:
+                                    "ACTIVE",
+
+                                availableBalance:
+                                {
+                                    $gte:
+                                        walletAmount,
+                                },
+                            },
+                            {
+                                $inc: {
+                                    availableBalance:
+                                        -walletAmount,
+
+                                    heldBalance:
+                                        walletAmount,
+                                },
+                            },
+                            {
+                                new: true,
+                                session,
+                            }
+                        );
+
+                    if (!wallet) {
+                        throw new Error(
+                            "Insufficient wallet balance or wallet is not active."
+                        );
+                    }
+
+                    const balanceBefore =
+                        wallet.availableBalance +
                         walletAmount;
-
-                    wallet.heldBalance +=
-                        walletAmount;
-
-                    await wallet.save({
-                        session,
-                    });
 
                     await WalletTransaction.create(
                         [
@@ -731,15 +959,16 @@ export async function createProcurement(
 
                                 buyerId,
 
-                                type: "HOLD",
+                                type:
+                                    "HOLD",
 
                                 amount:
                                     walletAmount,
 
-                                direction: "DEBIT",
+                                direction:
+                                    "DEBIT",
 
-                                balanceBefore:
-                                    before,
+                                balanceBefore,
 
                                 balanceAfter:
                                     wallet.availableBalance,
@@ -752,18 +981,25 @@ export async function createProcurement(
                                 description:
                                     `Wallet funds reserved for procurement ${procurementNumber}`,
 
-                                status: "SUCCESS",
+                                status:
+                                    "SUCCESS",
 
-                                source: "ORDER",
+                                source:
+                                    "ORDER",
 
                                 procurementId,
 
                                 metadata: {
                                     procurementNumber,
+
                                     productId:
                                         productId.toString(),
+
                                     supplierProductId:
                                         supplierProductId.toString(),
+
+                                    heldBalance:
+                                        wallet.heldBalance,
                                 },
                             },
                         ],
@@ -773,31 +1009,56 @@ export async function createProcurement(
                     );
                 }
 
-                /* ================================================
-                   Credit Reservation / Charge
-                   
-                   The credit facility is committed immediately.
-                   ================================================ */
+                /* ==============================================
+                   Credit Commitment
+                   ============================================== */
 
                 if (
-                    creditAccount &&
                     creditAmount > 0
                 ) {
-                    const before =
-                        creditAccount.availableCredit;
+                    const creditAccount =
+                        await CreditAccount.findOneAndUpdate(
+                            {
+                                buyerId,
 
-                    creditAccount.availableCredit -=
+                                status:
+                                    "ACTIVE",
+
+                                availableCredit:
+                                {
+                                    $gte:
+                                        creditAmount,
+                                },
+                            },
+                            {
+                                $inc: {
+                                    availableCredit:
+                                        -creditAmount,
+
+                                    creditUsed:
+                                        creditAmount,
+
+                                    outstandingBalance:
+                                        creditAmount,
+                                },
+                            },
+                            {
+                                new: true,
+                                session,
+                            }
+                        );
+
+                    if (
+                        !creditAccount
+                    ) {
+                        throw new Error(
+                            "Insufficient available credit or credit facility is not active."
+                        );
+                    }
+
+                    const balanceBefore =
+                        creditAccount.availableCredit +
                         creditAmount;
-
-                    creditAccount.creditUsed +=
-                        creditAmount;
-
-                    creditAccount.outstandingBalance +=
-                        creditAmount;
-
-                    await creditAccount.save({
-                        session,
-                    });
 
                     await CreditTransaction.create(
                         [
@@ -816,8 +1077,7 @@ export async function createProcurement(
                                 direction:
                                     "CHARGE",
 
-                                balanceBefore:
-                                    before,
+                                balanceBefore,
 
                                 balanceAfter:
                                     creditAccount.availableCredit,
@@ -834,8 +1094,10 @@ export async function createProcurement(
 
                                 metadata: {
                                     procurementNumber,
+
                                     productId:
                                         productId.toString(),
+
                                     supplierProductId:
                                         supplierProductId.toString(),
                                 },
@@ -847,9 +1109,9 @@ export async function createProcurement(
                     );
                 }
 
-                /* ================================================
+                /* ==============================================
                    Buyer Notification
-                   ================================================ */
+                   ============================================== */
 
                 await Notification.create(
                     [
@@ -869,7 +1131,8 @@ export async function createProcurement(
                             type:
                                 "ORDER",
 
-                            isRead: false,
+                            isRead:
+                                false,
 
                             entityType:
                                 "Procurement",
@@ -883,18 +1146,15 @@ export async function createProcurement(
                     }
                 );
 
-                /* ================================================
+                /* ==============================================
                    Supplier Notification
-                   ================================================ */
+                   ============================================== */
 
                 await Notification.create(
                     [
                         {
                             recipientId:
-                                assertObjectId(
-                                    selectedSupplier.supplierId,
-                                    "supplier"
-                                ),
+                                supplierId,
 
                             recipientRole:
                                 "supplier",
@@ -906,9 +1166,10 @@ export async function createProcurement(
                                 `You have received procurement ${procurementNumber} for ${quantity.toLocaleString()} ${supplierProduct.unit} of ${product.name}. Please review and respond.`,
 
                             type:
-                                "ORDER",
+                                "SUPPLIER",
 
-                            isRead: false,
+                            isRead:
+                                false,
 
                             entityType:
                                 "Procurement",
@@ -922,9 +1183,9 @@ export async function createProcurement(
                     }
                 );
 
-                /* ================================================
+                /* ==============================================
                    Audit Log — Procurement
-                   ================================================ */
+                   ============================================== */
 
                 await AuditLog.create(
                     [
@@ -957,10 +1218,10 @@ export async function createProcurement(
                                     product.name,
 
                                 supplierId:
-                                    selectedSupplier.supplierId,
+                                    supplierId.toString(),
 
                                 supplierProductId:
-                                    selectedSupplier.supplierProductId,
+                                    supplierProductId.toString(),
 
                                 supplierName:
                                     selectedSupplier.supplierName,
@@ -971,7 +1232,8 @@ export async function createProcurement(
                                 quantity,
 
                                 unit:
-                                    supplierProduct.unit,
+                                    supplierProduct.unit ??
+                                    product.unit,
 
                                 unitPrice,
 
@@ -991,11 +1253,13 @@ export async function createProcurement(
                     }
                 );
 
-                /* ================================================
-                   Audit Log — Financial Commitment
-                   ================================================ */
+                /* ==============================================
+                   Audit Log — Wallet Reservation
+                   ============================================== */
 
-                if (walletAmount > 0) {
+                if (
+                    walletAmount > 0
+                ) {
                     await AuditLog.create(
                         [
                             {
@@ -1019,9 +1283,12 @@ export async function createProcurement(
 
                                 metadata: {
                                     procurementNumber,
+
                                     paymentMethod:
                                         input.paymentMethod,
+
                                     walletAmount,
+
                                     creditAmount,
                                 },
                             },
@@ -1032,7 +1299,13 @@ export async function createProcurement(
                     );
                 }
 
-                if (creditAmount > 0) {
+                /* ==============================================
+                   Audit Log — Credit Commitment
+                   ============================================== */
+
+                if (
+                    creditAmount > 0
+                ) {
                     await AuditLog.create(
                         [
                             {
@@ -1056,9 +1329,12 @@ export async function createProcurement(
 
                                 metadata: {
                                     procurementNumber,
+
                                     paymentMethod:
                                         input.paymentMethod,
+
                                     walletAmount,
+
                                     creditAmount,
                                 },
                             },
@@ -1068,8 +1344,65 @@ export async function createProcurement(
                         }
                     );
                 }
+
+                /* ==============================================
+                   Audit Log — Supplier Contact
+                   ============================================== */
+
+                await AuditLog.create(
+                    [
+                        {
+                            actorId:
+                                buyerId,
+
+                            actorType:
+                                "BUYER",
+
+                            action:
+                                "SUPPLIER_CONTACTED",
+
+                            entityType:
+                                "Procurement",
+
+                            entityId:
+                                procurementId,
+
+                            description:
+                                `Supplier ${selectedSupplier.supplierName} was selected and contacted for procurement ${procurementNumber}.`,
+
+                            metadata: {
+                                procurementNumber,
+
+                                supplierId:
+                                    supplierId.toString(),
+
+                                supplierProductId:
+                                    supplierProductId.toString(),
+
+                                supplierName:
+                                    selectedSupplier.supplierName,
+
+                                supplierType:
+                                    selectedSupplier.supplierType,
+
+                                rank:
+                                    selectedIndex + 1,
+
+                                score:
+                                    selectedSupplier.totalScore,
+                            },
+                        },
+                    ],
+                    {
+                        session,
+                    }
+                );
             }
         );
+
+        /* =====================================================
+           Transaction completed
+           ===================================================== */
 
         if (!createdProcurement) {
             throw new Error(
@@ -1078,7 +1411,7 @@ export async function createProcurement(
         }
 
         /* =====================================================
-           Return Safe Client Response
+           Safe Client Response
            ===================================================== */
 
         return {

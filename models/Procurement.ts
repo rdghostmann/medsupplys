@@ -77,6 +77,20 @@ export interface IProcurementItem {
   requiredByDate?: Date;
 }
 
+
+export interface IProcurementSupplierCandidate {
+  supplierId: Types.ObjectId;
+  supplierName: string;
+  supplierType: string;
+  supplierProductId: Types.ObjectId;
+  unitPrice: number;
+  totalPrice: number;
+  stock: number;
+  rank: number;
+  score: number;
+  status: SupplierCandidateStatus;
+}
+
 /* =========================================================
    Supplier Candidate
    ========================================================= */
@@ -184,7 +198,7 @@ export interface IProcurement extends Document {
 
   financials: IProcurementFinancials;
 
-  supplierCandidates: ISupplierCandidate[];
+  supplierCandidates: IProcurementSupplierCandidate[];
 
   currentSupplierIndex: number;
 
