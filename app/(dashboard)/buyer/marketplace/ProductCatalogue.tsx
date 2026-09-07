@@ -187,42 +187,50 @@ export default function ProductCatalogue({
               )}
             </div>
 
-            <Button
-              type="button"
-              variant="outline"
-              className="h-11 rounded-xl border-slate-200"
-            >
-              <SlidersHorizontal className="mr-2 h-4 w-4" />
-              Filters
-            </Button>
+
           </div>
 
           {/* Category Filter */}
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-            {categories.map((category) => {
-              const active =
-                selectedCategory === category;
+          <div className="w-full overflow-hidden">
+            <div
+              className="
+                flex
+                w-full
+                gap-2
+                overflow-x-auto
+                pb-2
+                [-ms-overflow-style:none]
+              "
+            >
+              {categories.map((category) => {
+                const active = selectedCategory === category;
 
-              return (
-                <button
-                  key={category}
-                  type="button"
-                  onClick={() =>
-                    setSelectedCategory(category)
-                  }
-                  className={[
-                    "whitespace-nowrap rounded-full border px-4 py-2 text-xs font-semibold transition-colors",
-                    active
-                      ? "border-blue-600 bg-blue-600 text-white"
-                      : "border-slate-200 bg-white text-slate-600 hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
-                  ].join(" ")}
-                >
-                  {category === "ALL"
-                    ? "All Products"
-                    : category}
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={category}
+                    type="button"
+                    onClick={() => setSelectedCategory(category)}
+                    className={[
+                      "shrink-0 whitespace-nowrap rounded-full border px-4 py-2",
+                      "text-xs font-semibold transition-all duration-200",
+                      "focus:outline-none focus:ring-2 focus:ring-blue-500/30",
+                      active
+                        ? "border-blue-600 bg-blue-600 text-white shadow-sm"
+                        : [
+                          "border-slate-200 bg-white text-slate-600",
+                          "hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
+                        ].join(" "),
+                    ].join(" ")}
+                  >
+                    {category === "ALL" && (
+                      <SlidersHorizontal className="mr-2 inline-block h-4 w-4" />
+                    )}
+
+                    {category === "ALL" ? "All Products" : category}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 

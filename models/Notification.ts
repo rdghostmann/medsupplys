@@ -8,6 +8,16 @@ import {
   Model,
 } from "mongoose";
 
+/* =========================================================
+   Types
+   ========================================================= */
+
+export type NotificationRecipientRole =
+  | "buyer"
+  | "supplier"
+  | "pharmacist"
+  | "admin";
+
 export type NotificationType =
   | "ORDER"
   | "SUPPLIER"
@@ -18,11 +28,16 @@ export type NotificationType =
   | "KYC"
   | "SYSTEM";
 
+/* =========================================================
+   Interface
+   ========================================================= */
+
 export interface INotification
   extends Document {
   recipientId: Schema.Types.ObjectId;
 
-  recipientRole: string;
+  recipientRole:
+    NotificationRecipientRole;
 
   title: string;
 
@@ -43,9 +58,17 @@ export interface INotification
   expiresAt?: Date;
 }
 
+/* =========================================================
+   Schema
+   ========================================================= */
+
 const NotificationSchema =
   new Schema<INotification>(
     {
+      /* -----------------------------------------------------
+         Recipient
+         ----------------------------------------------------- */
+
       recipientId: {
         type: Schema.Types.ObjectId,
         ref: "User",
@@ -55,18 +78,35 @@ const NotificationSchema =
 
       recipientRole: {
         type: String,
+        enum: [
+          "buyer",
+          "supplier",
+          "pharmacist",
+          "admin",
+        ],
         required: true,
+        index: true,
       },
+
+      /* -----------------------------------------------------
+         Notification Content
+         ----------------------------------------------------- */
 
       title: {
         type: String,
         required: true,
+        trim: true,
       },
 
       message: {
         type: String,
         required: true,
+        trim: true,
       },
+
+      /* -----------------------------------------------------
+         Notification Type
+         ----------------------------------------------------- */
 
       type: {
         type: String,
@@ -81,7 +121,12 @@ const NotificationSchema =
           "SYSTEM",
         ],
         required: true,
+        index: true,
       },
+
+      /* -----------------------------------------------------
+         Read State
+         ----------------------------------------------------- */
 
       isRead: {
         type: Boolean,
@@ -89,30 +134,86 @@ const NotificationSchema =
         index: true,
       },
 
-      readAt: Date,
+      readAt: {
+        type: Date,
+      },
 
-      entityType: String,
+      /* -----------------------------------------------------
+         Related Entity
+         ----------------------------------------------------- */
+
+      entityType: {
+        type: String,
+        trim: true,
+      },
 
       entityId: {
         type: Schema.Types.ObjectId,
+        index: true,
       },
 
-      expiresAt: Date,
+      /* -----------------------------------------------------
+         Expiration
+         ----------------------------------------------------- */
+
+      expiresAt: {
+        type: Date,
+      },
     },
     {
       timestamps: {
         createdAt: true,
         updatedAt: false,
       },
+
       versionKey: false,
     }
   );
 
+/* =========================================================
+   Indexes
+   ========================================================= */
+
+/**
+ * Primary notification inbox query:
+ *
+ * "Give me this user's unread notifications,
+ * newest first."
+ */
 NotificationSchema.index({
   recipientId: 1,
   isRead: 1,
   createdAt: -1,
 });
+
+/**
+ * Useful for querying all notifications associated
+ * with a particular procurement/order/etc.
+ */
+NotificationSchema.index({
+  entityType: 1,
+  entityId: 1,
+  createdAt: -1,
+});
+
+/**
+ * Useful when notification cleanup/expiration jobs
+ * are introduced.
+ *
+ * MongoDB will automatically remove documents after
+ * expiresAt when the date is reached.
+ */
+NotificationSchema.index(
+  { expiresAt: 1 },
+  {
+    expireAfterSeconds: 0,
+    sparse: true,
+  }
+);
+
+/* =========================================================
+   Model
+   ========================================================= */
 
 export const Notification:
   Model<INotification> =

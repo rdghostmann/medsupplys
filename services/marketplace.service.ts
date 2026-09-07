@@ -593,23 +593,23 @@ async function fetchMarketplaceProducts(): Promise<
       normalizeMarketplaceProduct
     );
 
-  const supplierListingCount =
-    normalizedProducts.reduce(
-      (total, product) =>
-        total + product.supplierCount,
-      0
-    );
+  // const supplierListingCount =
+  //   normalizedProducts.reduce(
+  //     (total, product) =>
+  //       total + product.supplierCount,
+  //     0
+  //   );
 
-  console.log(
-    "[MARKETPLACE] Fresh marketplace data generated",
-    {
-      masterProducts:
-        normalizedProducts.length,
+  // console.log(
+  //   "[MARKETPLACE] Fresh marketplace data generated",
+  //   {
+  //     masterProducts:
+  //       normalizedProducts.length,
 
-      supplierListings:
-        supplierListingCount,
-    }
-  );
+  //     supplierListings:
+  //       supplierListingCount,
+  //   }
+  // );
 
   return normalizedProducts;
 }
@@ -678,9 +678,9 @@ export async function getMarketplaceProducts(): Promise<
   const products =
     await getCachedMarketplaceProducts();
 
-  console.log(
-    `[MARKETPLACE] Returning ${products.length} products`
-  );
+  // console.log(
+  //   `[MARKETPLACE] Returning ${products.length} products`
+  // );
 
   return products;
 }
