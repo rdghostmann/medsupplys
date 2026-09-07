@@ -1,14 +1,16 @@
 // app/(dashboard)/buyer/marketplace/page.tsx
-import MarketplacePage from "./MarketplacePage"
-// import { getMarketplaceProducts } from "@/services/marketplace.service"
+
+import { getMarketplaceProducts } from "@/services/marketplace.service";
+import MarketplacePage from "./MarketplacePage";
 
 export default async function Page() {
-  // const products = await getMarketplaceProducts()
+  const products = await getMarketplaceProducts();
 
-  return (
-    <>
-    Marketplace Page
-    {/* <MarketplacePage products={products} /> */}
-    </>
-  )
+  console.log("=== BUYER MARKETPLACE DATA ===");
+  console.dir(products, {
+    depth: null,
+    colors: true,
+  });
+
+  return <MarketplacePage products={products} />;
 }

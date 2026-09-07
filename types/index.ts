@@ -1,6 +1,7 @@
 // types/index.ts
 import { z } from "zod"
 
+
 export type UserRole = "BUYER" | "SUPPLIER" | "PHARMACIST" | "ADMIN"
 export type SupplierType =
     | "importer"
@@ -62,98 +63,98 @@ export type VerificationResult =
     | "PENDING"
     | "REJECTED"
 export type ProductCategory =
-  // Anti-infectives
-  | 'ANTIBIOTICS'
-  | 'ANTIMICROBIALS'
-  | 'ANTIFUNGALS'
-  | 'ANTIVIRALS'
-  | 'ANTIPARASITICS'
-  | 'ANTIMALARIALS'
-  | 'ANTITUBERCULARS'
+    // Anti-infectives
+    | 'ANTIBIOTICS'
+    | 'ANTIMICROBIALS'
+    | 'ANTIFUNGALS'
+    | 'ANTIVIRALS'
+    | 'ANTIPARASITICS'
+    | 'ANTIMALARIALS'
+    | 'ANTITUBERCULARS'
 
-  // Pain & nervous system
-  | 'ANALGESICS'
-  | 'ANTI_INFLAMMATORIES'
-  | 'ANESTHETICS'
-  | 'ANTICONVULSANTS'
-  | 'ANTIDEPRESSANTS'
-  | 'ANTIPSYCHOTICS'
-  | 'SEDATIVES'
+    // Pain & nervous system
+    | 'ANALGESICS'
+    | 'ANTI_INFLAMMATORIES'
+    | 'ANESTHETICS'
+    | 'ANTICONVULSANTS'
+    | 'ANTIDEPRESSANTS'
+    | 'ANTIPSYCHOTICS'
+    | 'SEDATIVES'
 
-  // Cardiovascular
-  | 'CARDIOVASCULAR'
-  | 'ANTIHYPERTENSIVES'
-  | 'ANTICOAGULANTS'
-  | 'ANTIPLATELETS'
-  | 'LIPID_LOWERING'
+    // Cardiovascular
+    | 'CARDIOVASCULAR'
+    | 'ANTIHYPERTENSIVES'
+    | 'ANTICOAGULANTS'
+    | 'ANTIPLATELETS'
+    | 'LIPID_LOWERING'
 
-  // Endocrine & metabolic
-  | 'DIABETES'
-  | 'HORMONES'
-  | 'THYROID'
-  | 'CORTICOSTEROIDS'
-  | 'VITAMINS_MINERALS'
-  | 'NUTRITIONAL_SUPPLEMENTS'
+    // Endocrine & metabolic
+    | 'DIABETES'
+    | 'HORMONES'
+    | 'THYROID'
+    | 'CORTICOSTEROIDS'
+    | 'VITAMINS_MINERALS'
+    | 'NUTRITIONAL_SUPPLEMENTS'
 
-  // Gastrointestinal
-  | 'GASTROINTESTINAL'
-  | 'ANTIEMETICS'
-  | 'ANTACIDS'
-  | 'LAXATIVES'
-  | 'ANTIDIARRHEALS'
+    // Gastrointestinal
+    | 'GASTROINTESTINAL'
+    | 'ANTIEMETICS'
+    | 'ANTACIDS'
+    | 'LAXATIVES'
+    | 'ANTIDIARRHEALS'
 
-  // Respiratory
-  | 'RESPIRATORY'
-  | 'ANTIHISTAMINES'
-  | 'BRONCHODILATORS'
-  | 'COUGH_COLD'
-  | 'MUCOLYTICS'
+    // Respiratory
+    | 'RESPIRATORY'
+    | 'ANTIHISTAMINES'
+    | 'BRONCHODILATORS'
+    | 'COUGH_COLD'
+    | 'MUCOLYTICS'
 
-  // Hospital / critical care
-  | 'CRITICAL_CARE'
-  | 'IV_FLUIDS'
-  | 'ELECTROLYTES'
-  | 'BLOOD_PRODUCTS'
-  | 'EMERGENCY_MEDICINES'
+    // Hospital / critical care
+    | 'CRITICAL_CARE'
+    | 'IV_FLUIDS'
+    | 'ELECTROLYTES'
+    | 'BLOOD_PRODUCTS'
+    | 'EMERGENCY_MEDICINES'
 
-  // Immunology
-  | 'VACCINES'
-  | 'IMMUNOLOGICALS'
-  | 'IMMUNOSUPPRESSANTS'
+    // Immunology
+    | 'VACCINES'
+    | 'IMMUNOLOGICALS'
+    | 'IMMUNOSUPPRESSANTS'
 
-  // Maternal / reproductive
-  | 'OBSTETRICS'
-  | 'GYNECOLOGY'
-  | 'CONTRACEPTIVES'
-  | 'FERTILITY_MEDICINES'
+    // Maternal / reproductive
+    | 'OBSTETRICS'
+    | 'GYNECOLOGY'
+    | 'CONTRACEPTIVES'
+    | 'FERTILITY_MEDICINES'
 
-  // Renal / urology
-  | 'RENAL'
-  | 'UROLOGY'
+    // Renal / urology
+    | 'RENAL'
+    | 'UROLOGY'
 
-  // Dermatology
-  | 'DERMATOLOGY'
-  | 'TOPICAL_MEDICATIONS'
+    // Dermatology
+    | 'DERMATOLOGY'
+    | 'TOPICAL_MEDICATIONS'
 
-  // Ophthalmic / ENT
-  | 'OPHTHALMIC'
-  | 'OTIC'
-  | 'NASAL_MEDICATIONS'
+    // Ophthalmic / ENT
+    | 'OPHTHALMIC'
+    | 'OTIC'
+    | 'NASAL_MEDICATIONS'
 
-  // Oncology
-  | 'ONCOLOGY'
-  | 'CHEMOTHERAPY'
+    // Oncology
+    | 'ONCOLOGY'
+    | 'CHEMOTHERAPY'
 
-  // Other pharmaceutical / healthcare
-  | 'PEDIATRIC_MEDICINES'
-  | 'GERIATRIC_MEDICINES'
-  | 'HEMATOLOGY'
-  | 'HEMATOPOIETIC_AGENTS'
-  | 'DISINFECTANTS_ANTISEPTICS'
-  | 'WOUND_CARE'
-  | 'MEDICAL_DEVICES'
-  | 'SURGICAL_SUPPLIES'
-  | 'DIAGNOSTICS';
+    // Other pharmaceutical / healthcare
+    | 'PEDIATRIC_MEDICINES'
+    | 'GERIATRIC_MEDICINES'
+    | 'HEMATOLOGY'
+    | 'HEMATOPOIETIC_AGENTS'
+    | 'DISINFECTANTS_ANTISEPTICS'
+    | 'WOUND_CARE'
+    | 'MEDICAL_DEVICES'
+    | 'SURGICAL_SUPPLIES'
+    | 'DIAGNOSTICS';
 
 export type Role = "buyer" | "supplier" | "admin" | "pharmacist"
 export type OrganizationType = "manufacturer" | "distributor" | "wholesaler" | "pharmacy"
@@ -231,35 +232,35 @@ export interface Order {
 }
 
 export interface SupplierOrderItem {
-  id: string;
-  productId: string;
-  supplierProductId: string;
-  name: string;
-  unit: string;
-  quantity: number;
-  unitPrice: number;
-  subtotal: number;
-  batchNumber: string;
-  expiryDate: string;
+    id: string;
+    productId: string;
+    supplierProductId: string;
+    name: string;
+    unit: string;
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+    batchNumber: string;
+    expiryDate: string;
 }
 
 
 export interface CreditAccount {
-  id: string;
-  buyerId: string;
-  buyerName: string;
-  creditLimit: number;
-  availableCredit: number;
-  creditUsed: number;
-  outstandingBalance: number;
-  status: CreditStatus;
-  approvedBy: string;
-  approvedAt: string;
-  dueDate: string;
-  terms: string; // e.g. "Net 30 Days"
-  interestRatePercent: number;
-  createdAt: string;
-  updatedAt: string;
+    id: string;
+    buyerId: string;
+    buyerName: string;
+    creditLimit: number;
+    availableCredit: number;
+    creditUsed: number;
+    outstandingBalance: number;
+    status: CreditStatus;
+    approvedBy: string;
+    approvedAt: string;
+    dueDate: string;
+    terms: string; // e.g. "Net 30 Days"
+    interestRatePercent: number;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export interface PharmacistVerificationRecord {
@@ -293,6 +294,78 @@ export type MatchResult = {
 
     reasons: string[]
 }
+
+// /types/marketplace.ts
+
+export type MarketplaceSupplierSummary = {
+    supplierId: string;
+    supplierProductId: string;
+
+    supplierName: string;
+    supplierType:
+    | "importer"
+    | "distributor"
+    | "retailer";
+
+    state?: string;
+    lga?: string;
+
+    verified: boolean;
+    supplierApprovalStatus?: string;
+
+    rating: number;
+    fulfillmentRate: number;
+    estimatedDeliveryDays: number;
+
+    stock: number;
+    minOrderQuantity: number;
+    maxOrderQuantity: number;
+
+    finalPrice: number;
+
+    status:
+    | "AVAILABLE"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | "ON_REQUEST"
+    | "SUSPENDED";
+
+    isFlagged: boolean;
+};
+
+export type MarketplaceProduct = {
+    productId: string;
+
+    name: string;
+    genericName?: string;
+    brandName?: string;
+
+    activeIngredient: string;
+    strength: string;
+    dosageForm: string;
+
+    category: string;
+    unit: string;
+    packSize?: string;
+
+    referenceBasePrice: number;
+
+    commissionPercent: number;
+    maxMarkupPercent: number;
+
+    storageCondition?: string;
+    requiresColdChain: boolean;
+
+    controlledDrug: boolean;
+    prescriptionRequired: boolean;
+
+    description?: string;
+    image?: string;
+
+    supplierCount: number;
+
+    suppliers: MarketplaceSupplierSummary[];
+};
 
 export type MarketItem = {
     _id: string
@@ -443,54 +516,6 @@ export type Supplier = {
         badges: string[]
     }
 }
-export type MarketplaceProduct = {
-  product: {
-    _id: string;
-    name: string;
-    genericName?: string;
-    brandName?: string;
-    activeIngredient: string;
-    strength: string;
-    dosageForm: string;
-    category: string;
-    unit: string;
-    packSize?: string;
-    description?: string;
-    image?: string;
-  };
-
-  supplierOffers: {
-    _id: string;
-    supplierId: string;
-    supplierType: "importer" | "distributor" | "retailer";
-
-    nafdacRegNumber: string;
-
-    basePrice: number;
-    commission: number;
-    commissionPercent: number;
-    finalPrice: number;
-
-    stock: number;
-    minOrderQuantity: number;
-    maxOrderQuantity: number;
-
-    unit: string;
-    batchNumber: string;
-    expiryDate: Date;
-
-    rating: number;
-    fulfillmentRate: number;
-    estimatedDeliveryDays: number;
-
-    status:
-      | "AVAILABLE"
-      | "LOW_STOCK"
-      | "OUT_OF_STOCK"
-      | "ON_REQUEST"
-      | "SUSPENDED";
-  }[];
-};
 
 export type MarketplaceSupplier = Supplier & {
     supplierProductId: string
@@ -503,6 +528,8 @@ export type MarketplaceSupplier = Supplier & {
     license?: string
     salesUnit?: string
 }
+
+
 
 
 export type DeliveryDetails = {
@@ -660,23 +687,60 @@ export interface UserNotificationPreferences {
 
 export interface SupplierScoreBreakdown {
     supplierId: string;
+    supplierProductId: string;
+
     supplierName: string;
-    supplierType: SupplierType;
+
+    supplierType:
+    | "importer"
+    | "distributor"
+    | "retailer";
+
     basePrice: number;
+    commission: number;
+    commissionPercent: number;
     finalPrice: number;
+
     stock: number;
     moq: number;
+    maxOrderQuantity: number;
+
     rating: number;
     fulfillmentRate: number;
     deliveryDays: number;
+
     availabilityScore: number;
     priceScore: number;
     supplierTypeScore: number;
     fulfillmentScore: number;
     reliabilityScore: number;
+
     totalScore: number;
+
     isEligible: boolean;
     ineligibilityReason?: string;
+
+    nafdacRegNumber: string;
+    batchNumber: string;
+    expiryDate: string;
+    manufacturingDate?: string;
+
+    verified: boolean;
+    supplierApprovalStatus?: SupplierApprovalStatus;
+
+    state?: string;
+    lga?: string;
+
+    unit: string;
+
+    isFlagged: boolean;
+
+    status:
+    | "AVAILABLE"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | "ON_REQUEST"
+    | "SUSPENDED";
 }
 
 export interface SupplierAttemptHistory {
@@ -818,114 +882,114 @@ export interface AuditLog {
     timestamp: string;
 }
 export interface Notification {
-  id: string;
-  recipientId: string;
-  recipientRole: UserRole | 'ALL';
-  title: string;
-  message: string;
-  type: 'ORDER' | 'WALLET' | 'CREDIT' | 'VERIFICATION' | 'SUPPLIER' | 'SYSTEM';
-  isRead: boolean;
-  link?: string;
-  createdAt: string;
+    id: string;
+    recipientId: string;
+    recipientRole: UserRole | 'ALL';
+    title: string;
+    message: string;
+    type: 'ORDER' | 'WALLET' | 'CREDIT' | 'VERIFICATION' | 'SUPPLIER' | 'SYSTEM';
+    isRead: boolean;
+    link?: string;
+    createdAt: string;
 }
 
 export interface SupplierPayout {
-  id: string;
-  supplierId: string;
-  supplierName: string;
-  amount: number;
-  transferFee: number;
-  netAmount: number;
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
-  reference: string;
-  status: 'PENDING' | 'PROCESSING' | 'SETTLED' | 'FAILED';
-  settlementDate?: string;
-  notes?: string;
-  createdAt: string;
+    id: string;
+    supplierId: string;
+    supplierName: string;
+    amount: number;
+    transferFee: number;
+    netAmount: number;
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+    reference: string;
+    status: 'PENDING' | 'PROCESSING' | 'SETTLED' | 'FAILED';
+    settlementDate?: string;
+    notes?: string;
+    createdAt: string;
 }
 
 export interface SupplierRevenueMetrics {
-  totalGrossRevenue: number;
-  totalPlatformCommission: number;
-  netEarnings: number;
-  availableForPayout: number;
-  inEscrow: number;
-  totalPaidOut: number;
-  settledOrdersCount: number;
-  activeOrdersCount: number;
+    totalGrossRevenue: number;
+    totalPlatformCommission: number;
+    netEarnings: number;
+    availableForPayout: number;
+    inEscrow: number;
+    totalPaidOut: number;
+    settledOrdersCount: number;
+    activeOrdersCount: number;
 }
 
 export interface MatchingWeights {
-  availabilityWeight: number; // 25
-  priceWeight: number;        // 35
-  supplierTypeWeight: number; // 20 (Importer > Distributor > Retailer)
-  fulfillmentWeight: number;  // 10
-  reliabilityWeight: number;  // 10
+    availabilityWeight: number; // 25
+    priceWeight: number;        // 35
+    supplierTypeWeight: number; // 20 (Importer > Distributor > Retailer)
+    fulfillmentWeight: number;  // 10
+    reliabilityWeight: number;  // 10
 }
 
 export interface PlatformConfig {
-  defaultCommissionPercent: number;
-  matchingWeights: MatchingWeights;
-  minCreditApprovalLimit: number;
-  maxCreditApprovalLimit: number;
-  autoAdvanceSupplierTimeoutSeconds: number;
+    defaultCommissionPercent: number;
+    matchingWeights: MatchingWeights;
+    minCreditApprovalLimit: number;
+    maxCreditApprovalLimit: number;
+    autoAdvanceSupplierTimeoutSeconds: number;
 }
 
 export type PaymentProvider =
-  | "PAYSTACK"
-  | "FLUTTERWAVE";
+    | "PAYSTACK"
+    | "FLUTTERWAVE";
 
 export type PaymentPurpose =
-  | "WALLET_TOPUP";
+    | "WALLET_TOPUP";
 
 export interface InitializePaymentParams {
-  buyerId: string;
+    buyerId: string;
 
-  email: string;
+    email: string;
 
-  name: string;
+    name: string;
 
-  amount: number;
+    amount: number;
 
-  currency: "NGN";
+    currency: "NGN";
 
-  reference: string;
+    reference: string;
 
-  purpose: PaymentPurpose;
+    purpose: PaymentPurpose;
 
-  callbackUrl: string;
+    callbackUrl: string;
 
-  metadata?: Record<string, unknown>;
+    metadata?: Record<string, unknown>;
 }
 
 export interface InitializePaymentResult {
-  success: boolean;
+    success: boolean;
 
-  provider: PaymentProvider;
+    provider: PaymentProvider;
 
-  reference: string;
+    reference: string;
 
-  checkoutUrl: string;
+    checkoutUrl: string;
 
-  providerReference?: string;
+    providerReference?: string;
 }
 
 export interface VerifyPaymentResult {
-  success: boolean;
+    success: boolean;
 
-  provider: PaymentProvider;
+    provider: PaymentProvider;
 
-  reference: string;
+    reference: string;
 
-  providerReference?: string;
+    providerReference?: string;
 
-  amount: number;
+    amount: number;
 
-  currency: string;
+    currency: string;
 
-  status:
+    status:
     | "SUCCESS"
     | "FAILED"
     | "PENDING";
