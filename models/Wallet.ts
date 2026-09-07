@@ -24,7 +24,7 @@ export interface IWallet extends Document {
 
   availableBalance: number;
 
-heldBalance: number;
+  heldBalance: number;
 
   totalDeposited: number;
 

@@ -29,26 +29,7 @@ type BuyerWalletData = CurrentBuyerWallet;
 /* -------------------------------------------------------------------------- */
 
 const mockWalletTransactions: WalletTransaction[] = [
-  // {
-  //   id: "tx_001",
-  //   walletId: "wallet_buyer_001",
-  //   buyerId: "buyer_001",
-  //   type: "TOPUP",
-  //   amount: 500000,
-  //   direction: "CREDIT",
-  //   balanceBefore: 347500,
-  //   balanceAfter: 847500,
-  //   reference: "MS-TOP-260905-001",
-  //   description:
-  //     "Institutional wallet funding via Paystack",
-  //   status: "SUCCESS",
-  //   metadata: {
-  //     paymentMethod: "Paystack",
-  //     channel: "bank_transfer",
-  //     gatewayReference: "PSK-884729102",
-  //   },
-  //   createdAt: "2026-09-05T09:15:00",
-  // },
+
 
   {
     id: "tx_002",
@@ -220,10 +201,11 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
   wallet,
   walletTransactions: initialTransactions,
 }) => {
+
+  
   void mockWalletTransactions;
 
-  const [walletState] =
-    useState<BuyerWalletData | null>(wallet);
+  const [walletState] =    useState<BuyerWalletData | null>(wallet);
 
   const [transactions, setTransactions] =
     useState<WalletTransaction[]>(initialTransactions);
@@ -280,19 +262,19 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
           type="button"
           onClick={() => setIsTopUpModalOpen(true)}
           className="
-    flex cursor-pointer
-    items-center gap-1.5
-    self-start
-    rounded-xl
-    bg-emerald-600
-    px-4 py-2
-    text-xs font-bold
-    text-white
-    shadow-md
-    shadow-emerald-600/20
-    transition
-    hover:bg-emerald-700
-  "
+          flex cursor-pointer
+          items-center gap-1.5
+          self-start
+          rounded-xl
+          bg-emerald-600
+          px-4 py-2
+          text-xs font-bold
+          text-white
+          shadow-md
+          shadow-emerald-600/20
+          transition
+          hover:bg-emerald-700
+        "
         >
           <WalletIcon className="h-4 w-4" />
 

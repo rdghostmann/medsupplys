@@ -2,7 +2,6 @@
 
 import { InitializePaymentParams, InitializePaymentResult, VerifyPaymentResult } from "@/types";
 
-
 export interface PaymentProvider {
   initializePayment(
     params: InitializePaymentParams

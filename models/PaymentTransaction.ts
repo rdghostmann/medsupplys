@@ -17,6 +17,8 @@ export type PaymentPurpose =
   | "order_payment";
 
 export interface IPaymentTransaction extends Document {
+  _id: mongoose.Types.ObjectId;
+
   buyerId: mongoose.Types.ObjectId;
 
   walletId: mongoose.Types.ObjectId;
@@ -126,7 +128,7 @@ const PaymentTransactionSchema =
   );
 
 PaymentTransactionSchema.index({
-  userId: 1,
+  buyerId: 1,
   createdAt: -1,
 });
 
