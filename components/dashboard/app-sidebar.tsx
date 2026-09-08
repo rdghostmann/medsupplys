@@ -6,12 +6,10 @@ import Link from "next/link"
 import { useSession } from "next-auth/react"
 import {
   Gear,
-  Question,
-  MagnifyingGlass,
   Command,
 } from "@phosphor-icons/react"
 
-import { NavMain } from "@/components/dashboard/nav-main"
+import { NavMain, type NavItem } from "@/components/dashboard/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 
@@ -38,7 +36,9 @@ export function AppSidebar({
   const role = session?.user?.role as UserRole | undefined
 
   // Dynamically get nav items based on role
-  const navMain = role ? roleNavMain[role] || [] : []
+  const navMain: NavItem[] = role
+    ? roleNavMain[role] || []
+    : []
 
   const data = {
     user: {
@@ -54,16 +54,7 @@ export function AppSidebar({
         url: `/${role}/profile-settings`,
         icon: <Gear />,
       },
-      // {
-      //   title: "Get Help",
-      //   url: "#",
-      //   icon: <Question />,
-      // },
-      // {
-      //   title: "Search",
-      //   url: "#",
-      //   icon: <MagnifyingGlass />,
-      // },
+      
     ],
   }
 

@@ -12,13 +12,16 @@ import {
 import MasterProductCatalog from "./MasterProductCatalog";
 
 import type { MasterProduct } from "@/types";
+import type { SupplierInventoryRecord } from "@/controllers/product.action";
 
 interface MasterCataloguePageProps {
   products: MasterProduct[];
+  inventory: SupplierInventoryRecord[];
 }
 
 export default function MasterCataloguePage({
   products,
+  inventory,
 }: MasterCataloguePageProps) {
   return (
     <div className="flex flex-1 flex-col">
@@ -45,6 +48,7 @@ export default function MasterCataloguePage({
           <div className="px-4 lg:px-6">
             <MasterProductCatalog
               products={products}
+              inventory={inventory}
             />
           </div>
         </div>

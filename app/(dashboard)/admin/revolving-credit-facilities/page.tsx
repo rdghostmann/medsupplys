@@ -8,7 +8,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import CreditFacilities from "./CreditFacilities";
+import CreditFacilities from "./CreditFacilitiesManagement";
 
 export default function Page() {
 

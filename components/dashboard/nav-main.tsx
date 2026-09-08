@@ -8,15 +8,18 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
+import type { LucideIcon } from "lucide-react"
+
+export type NavItem = {
+  title: string
+  url: string
+  icon?: LucideIcon | React.ReactNode
+}
 
 export function NavMain({
   items,
 }: {
-  items: {
-    title: string
-    url: string
-    icon?: React.ReactNode
-  }[]
+  items: NavItem[]
 }) {
   return (
     <SidebarGroup>
@@ -50,7 +53,11 @@ export function NavMain({
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton asChild tooltip={item.title}>
                 <Link href={item.url} className="flex w-full items-center gap-2">
-                  {item.icon}
+                  {typeof item.icon === "function" ? (
+                    <item.icon className="size-4 shrink-0" />
+                  ) : (
+                    item.icon
+                  )}
                   <span>{item.title}</span>
                 </Link>
               </SidebarMenuButton>

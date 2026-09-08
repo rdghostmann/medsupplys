@@ -30,6 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DOSAGE_FORM_GROUPS, PACK_SIZE_GROUPS } from "@/lib/catalogOptions";
+import type { SupplierInventoryRecord } from "@/controllers/product.action";
 import {
   MasterProduct,
   ProductStatus,
@@ -38,15 +39,7 @@ import {
 type Product = MasterProduct;
 
 
-type SupplierInventory = {
-  id: string;
-  productId: string;
-  supplierName: string;
-  supplierType: "Importer" | "Distributor" | "Retailer";
-  stock: number;
-  basePrice: number;
-  fulfillmentRate: number;
-};
+type SupplierInventory = SupplierInventoryRecord;
 
 /* =========================================================
    Categories
@@ -117,130 +110,6 @@ const EMOJI_OPTIONS = [
 
 
 /* =========================================================
-   Mock Supplier Inventory
-========================================================= */
-
-const MOCK_INVENTORY: SupplierInventory[] = [
-  {
-    id: "INV-001",
-    productId: "PROD-001",
-    supplierName: "May & Baker Nigeria Plc",
-    supplierType: "Importer",
-    stock: 12500,
-    basePrice: 10500,
-    fulfillmentRate: 99.2,
-  },
-  {
-    id: "INV-002",
-    productId: "PROD-001",
-    supplierName: "Emzor Pharmaceutical Industries",
-    supplierType: "Distributor",
-    stock: 8200,
-    basePrice: 11000,
-    fulfillmentRate: 98.6,
-  },
-  {
-    id: "INV-003",
-    productId: "PROD-002",
-    supplierName: "Fidson Healthcare Plc",
-    supplierType: "Importer",
-    stock: 5400,
-    basePrice: 21800,
-    fulfillmentRate: 99.1,
-  },
-  {
-    id: "INV-004",
-    productId: "PROD-002",
-    supplierName: "Swiss Pharma Nigeria Ltd",
-    supplierType: "Distributor",
-    stock: 3200,
-    basePrice: 22900,
-    fulfillmentRate: 97.8,
-  },
-  {
-    id: "INV-005",
-    productId: "PROD-003",
-    supplierName: "Neimeth Pharmaceuticals",
-    supplierType: "Importer",
-    stock: 4700,
-    basePrice: 15800,
-    fulfillmentRate: 98.9,
-  },
-  {
-    id: "INV-006",
-    productId: "PROD-004",
-    supplierName: "Juhel Nigeria Limited",
-    supplierType: "Distributor",
-    stock: 2800,
-    basePrice: 31500,
-    fulfillmentRate: 98.4,
-  },
-  {
-    id: "INV-007",
-    productId: "PROD-005",
-    supplierName: "May & Baker Nigeria Plc",
-    supplierType: "Importer",
-    stock: 9600,
-    basePrice: 7900,
-    fulfillmentRate: 99.3,
-  },
-  {
-    id: "INV-008",
-    productId: "PROD-006",
-    supplierName: "Emzor Pharmaceutical Industries",
-    supplierType: "Distributor",
-    stock: 4100,
-    basePrice: 19500,
-    fulfillmentRate: 98.2,
-  },
-  {
-    id: "INV-009",
-    productId: "PROD-007",
-    supplierName: "Fidson Healthcare Plc",
-    supplierType: "Importer",
-    stock: 3600,
-    basePrice: 14100,
-    fulfillmentRate: 99.0,
-  },
-  {
-    id: "INV-010",
-    productId: "PROD-008",
-    supplierName: "Juhel Nigeria Limited",
-    supplierType: "Distributor",
-    stock: 1800,
-    basePrice: 12500,
-    fulfillmentRate: 97.9,
-  },
-  {
-    id: "INV-011",
-    productId: "PROD-009",
-    supplierName: "Swiss Pharma Nigeria Ltd",
-    supplierType: "Retailer",
-    stock: 25000,
-    basePrice: 4200,
-    fulfillmentRate: 96.8,
-  },
-  {
-    id: "INV-012",
-    productId: "PROD-010",
-    supplierName: "Neimeth Pharmaceuticals",
-    supplierType: "Importer",
-    stock: 2900,
-    basePrice: 17600,
-    fulfillmentRate: 99.4,
-  },
-  {
-    id: "INV-013",
-    productId: "PROD-011",
-    supplierName: "May & Baker Nigeria Plc",
-    supplierType: "Importer",
-    stock: 850,
-    basePrice: 16200,
-    fulfillmentRate: 99.1,
-  },
-];
-
-/* =========================================================
    Form Defaults
 ========================================================= */
 
@@ -267,15 +136,14 @@ const DEFAULT_FORM_DATA = {
 ========================================================= */
 interface MasterProductCatalogProps {
   products: MasterProduct[];
+  inventory: SupplierInventory[];
 }
 
 
 export const MasterProductCatalog: React.FC<
   MasterProductCatalogProps
-> = ({ products }) => {
+> = ({ products, inventory }) => {
   const [catalogProducts, setProducts] = useState<MasterProduct[]>(products);
-  
-  const [inventory] = useState<SupplierInventory[]>(MOCK_INVENTORY);
 
   /* =========================================================
      Filters & State
