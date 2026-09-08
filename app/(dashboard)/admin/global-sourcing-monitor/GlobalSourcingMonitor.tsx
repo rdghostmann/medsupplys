@@ -1,7 +1,7 @@
-// BuyerProcurement.tsx
+// GlobalSourcingMonitor.tsx
 "use client"
 
-import React, { useMemo, useState } from "react"
+import React, { useEffect, useMemo, useState } from "react"
 import {
   Sparkles,
   RefreshCw,
@@ -16,293 +16,23 @@ import {
 import { toast } from "sonner"
 import {motion} from "framer-motion"
 
-/* -------------------------------------------------------------------------- */
-/* Types                                                                      */
-/* -------------------------------------------------------------------------- */
-
-type ProcurementStatus =
-  | "PENDING"
-  | "SUPPLIER_CONTACTED"
-  | "NEXT_SUPPLIER_PENDING"
-  | "SUPPLIER_CONFIRMED"
-  | "BUYER_ACTION_REQUIRED"
-  | "ORDER_CREATED"
-  | "COMPLETED"
-  | "CANCELLED"
-
-type SupplierQueueStatus =
-  | "PENDING"
-  | "CONTACTED"
-  | "ACCEPTED"
-  | "REJECTED"
-  | "UNAVAILABLE"
-
-type SupplierQueueItem = {
-  supplierId: string
-  supplierName: string
-  supplierType: "Importer" | "Distributor" | "Retailer"
-  unitPrice: number
-  stock: number
-  rank: number
-  status: SupplierQueueStatus
-}
-
-type AttemptHistory = {
-  attemptNumber: number
-  supplierId: string
-  supplierName: string
-  supplierType: "Importer" | "Distributor" | "Retailer"
-  contactedAt: string
-  respondedAt?: string
-  status: SupplierQueueStatus
-  reason?: string
-}
-
-type Procurement = {
-  id: string
-  procurementNumber: string
-  productName: string
-  category: string
-  quantity: number
-  unit: string
-  totalAmount: number
-  paymentMethod:
-    | "WALLET"
-    | "CREDIT"
-    | "WALLET_CREDIT"
-  status: ProcurementStatus
-  currentSupplierName: string
-  currentSupplierIndex: number
-  supplierQueue: SupplierQueueItem[]
-  attemptHistory: AttemptHistory[]
-  associatedOrderId?: string
-  createdAt: string
-}
-
+import type {
+  AdminProcurement,
+  ProcurementStatus,
+  SupplierQueueStatus,
+  AttemptHistory,
+} from "@/controllers/procurement.controller";
 /* -------------------------------------------------------------------------- */
 /* Props                                                                      */
 /* -------------------------------------------------------------------------- */
 
 interface GlobalSourcingMonitorProps {
-  onRefresh?: () => void | Promise<void>
-  onOpenCatalogue?: () => void
-  onOpenOrders?: (orderId: string) => void
+  procurements: AdminProcurement[];
+  onRefresh?: () => void | Promise<void>;
+  onOpenCatalogue?: () => void;
+  onOpenOrders?: (orderId: string) => void;
 }
 
-/* -------------------------------------------------------------------------- */
-/* Mock Data                                                                  */
-/* -------------------------------------------------------------------------- */
-
-const mockProcurements: Procurement[] = [
-  {
-    id: "proc-2026-000184",
-    procurementNumber: "MS-2026-000184",
-    productName: "Paracetamol 500mg",
-    category: "Analgesics",
-    quantity: 5000,
-    unit: "tablets",
-    totalAmount: 610000,
-    paymentMethod: "WALLET_CREDIT",
-    status: "SUPPLIER_CONTACTED",
-    currentSupplierName: "Fidson Healthcare Plc",
-    currentSupplierIndex: 0,
-
-    supplierQueue: [
-      {
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 122,
-        stock: 14200,
-        rank: 1,
-        status: "CONTACTED",
-      },
-      {
-        supplierId: "supplier-emzor-003",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 128,
-        stock: 9600,
-        rank: 2,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier-swiss-004",
-        supplierName: "Swiss Pharma Nigeria Ltd",
-        supplierType: "Distributor",
-        unitPrice: 132,
-        stock: 7100,
-        rank: 3,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier-juhel-005",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 140,
-        stock: 4200,
-        rank: 4,
-        status: "PENDING",
-      },
-    ],
-
-    attemptHistory: [
-      {
-        attemptNumber: 1,
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        contactedAt: "2026-09-05T09:10:00",
-        status: "CONTACTED",
-        reason:
-          "Preferred supplier unavailable. Automated fallback sequence initiated.",
-      },
-    ],
-
-    createdAt: "2026-09-05T08:45:00",
-  },
-
-  {
-    id: "proc-2026-000181",
-    procurementNumber: "MS-2026-000181",
-    productName: "Amoxicillin 500mg",
-    category: "Antibiotics",
-    quantity: 2000,
-    unit: "capsules",
-    totalAmount: 510000,
-    paymentMethod: "WALLET",
-    status: "BUYER_ACTION_REQUIRED",
-    currentSupplierName: "Fidson Healthcare Plc",
-    currentSupplierIndex: 0,
-
-    supplierQueue: [
-      {
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 250,
-        stock: 12500,
-        rank: 1,
-        status: "CONTACTED",
-      },
-      {
-        supplierId: "supplier-emzor-003",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 258,
-        stock: 8200,
-        rank: 2,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier-juhel-005",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 275,
-        stock: 3100,
-        rank: 3,
-        status: "PENDING",
-      },
-    ],
-
-    attemptHistory: [
-      {
-        attemptNumber: 1,
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        contactedAt: "2026-09-04T14:10:00",
-        respondedAt: "2026-09-04T14:24:00",
-        status: "CONTACTED",
-        reason:
-          "Supplier documentation received and is currently undergoing verification.",
-      },
-    ],
-
-    associatedOrderId: "MS-2026-000181",
-
-    createdAt: "2026-09-04T13:50:00",
-  },
-
-  {
-    id: "proc-2026-000190",
-    procurementNumber: "MS-2026-000190",
-    productName: "Ibuprofen 400mg",
-    category: "Analgesics",
-    quantity: 3500,
-    unit: "tablets",
-    totalAmount: 630000,
-    paymentMethod: "CREDIT",
-    status: "NEXT_SUPPLIER_PENDING",
-    currentSupplierName: "Emzor Pharmaceutical Industries Ltd",
-    currentSupplierIndex: 1,
-
-    supplierQueue: [
-      {
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        unitPrice: 175,
-        stock: 0,
-        rank: 1,
-        status: "UNAVAILABLE",
-      },
-      {
-        supplierId: "supplier-emzor-003",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        unitPrice: 180,
-        stock: 9600,
-        rank: 2,
-        status: "CONTACTED",
-      },
-      {
-        supplierId: "supplier-swiss-004",
-        supplierName: "Swiss Pharma Nigeria Ltd",
-        supplierType: "Distributor",
-        unitPrice: 185,
-        stock: 7100,
-        rank: 3,
-        status: "PENDING",
-      },
-      {
-        supplierId: "supplier-juhel-005",
-        supplierName: "Juhel Nigeria Limited",
-        supplierType: "Retailer",
-        unitPrice: 195,
-        stock: 4200,
-        rank: 4,
-        status: "PENDING",
-      },
-    ],
-
-    attemptHistory: [
-      {
-        attemptNumber: 1,
-        supplierId: "supplier-fidson-002",
-        supplierName: "Fidson Healthcare Plc",
-        supplierType: "Importer",
-        contactedAt: "2026-09-05T08:35:00",
-        respondedAt: "2026-09-05T08:42:00",
-        status: "UNAVAILABLE",
-        reason:
-          "Required quantity unavailable in current inventory.",
-      },
-      {
-        attemptNumber: 2,
-        supplierId: "supplier-emzor-003",
-        supplierName: "Emzor Pharmaceutical Industries Ltd",
-        supplierType: "Distributor",
-        contactedAt: "2026-09-05T08:50:00",
-        status: "CONTACTED",
-        reason:
-          "Waiting for supplier confirmation.",
-      },
-    ],
-
-    createdAt: "2026-09-05T08:20:00",
-  },
-]
 
 /* -------------------------------------------------------------------------- */
 /* Component                                                                  */
@@ -311,12 +41,15 @@ const mockProcurements: Procurement[] = [
 const GlobalSourcingMonitor: React.FC<
   GlobalSourcingMonitorProps
 > = ({
+  procurements,
   onRefresh,
   onOpenCatalogue,
   onOpenOrders,
 }) => {
-  const [procurements, setProcurements] =
-    useState<Procurement[]>(mockProcurements)
+
+  const [managedProcurements, setProcurements] =
+    useState<AdminProcurement[]>(procurements)
+
 
   const [expandedId, setExpandedId] =
     useState<string | null>(null)
@@ -333,7 +66,7 @@ const GlobalSourcingMonitor: React.FC<
 
   const activeProcurements = useMemo(
     () =>
-      procurements.filter(
+      managedProcurements.filter(
         (proc) =>
           ![
             "COMPLETED",
@@ -341,7 +74,7 @@ const GlobalSourcingMonitor: React.FC<
             "CANCELLED",
           ].includes(proc.status)
       ),
-    [procurements]
+    [managedProcurements]
   )
 
   /* ------------------------------------------------------------------------ */
@@ -434,42 +167,29 @@ const GlobalSourcingMonitor: React.FC<
   /* Refresh                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  const refreshAll = async () => {
-    setIsRefreshing(true)
+const refreshAll = async () => {
+  setIsRefreshing(true);
 
-    try {
-      /*
-       * Mock refresh.
-       *
-       * Replace this section with the procurement API
-       * when the backend endpoint is connected.
-       */
-      await new Promise((resolve) =>
-        setTimeout(resolve, 700)
-      )
-
-      setProcurements([...mockProcurements])
-
-      if (onRefresh) {
-        await onRefresh()
-      }
-
-      toast.success("Sourcing engine refreshed", {
-        description:
-          "Procurement queue and supplier rankings have been refreshed.",
-      })
-    } catch (error) {
-      toast.error("Unable to refresh sourcing engine", {
-        description:
-          error instanceof Error
-            ? error.message
-            : "Please try again.",
-      })
-    } finally {
-      setIsRefreshing(false)
+  try {
+    if (onRefresh) {
+      await onRefresh();
     }
-  }
 
+    toast.success("Sourcing engine refreshed", {
+      description:
+        "Procurement queue and supplier rankings have been refreshed.",
+    });
+  } catch (error) {
+    toast.error("Unable to refresh sourcing engine", {
+      description:
+        error instanceof Error
+          ? error.message
+          : "Please try again.",
+    });
+  } finally {
+    setIsRefreshing(false);
+  }
+};
   /* ------------------------------------------------------------------------ */
   /* Advance Fallback                                                         */
   /* ------------------------------------------------------------------------ */
@@ -477,7 +197,7 @@ const GlobalSourcingMonitor: React.FC<
   const handleAdvanceFallback = async (
     procurementId: string
   ) => {
-    const procurement = procurements.find(
+    const procurement = managedProcurements.find(
       (proc) => proc.id === procurementId
     )
 
@@ -604,7 +324,7 @@ const GlobalSourcingMonitor: React.FC<
   /* Empty State                                                              */
   /* ------------------------------------------------------------------------ */
 
-  if (procurements.length === 0) {
+  if (managedProcurements.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -706,7 +426,7 @@ const GlobalSourcingMonitor: React.FC<
 
       {/* Procurement Cards */}
       <div className="space-y-4">
-        {procurements.map((proc) => {
+        {managedProcurements.map((proc) => {
           const isExpanded =
             expandedId === proc.id
 

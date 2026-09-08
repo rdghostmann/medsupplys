@@ -1030,3 +1030,44 @@ export interface VerifyPaymentResult {
     | "FAILED"
     | "PENDING";
 }
+
+export type ProductStatus =
+  | "ACTIVE"
+  | "INACTIVE"
+  | "ARCHIVED";
+
+export interface MasterProduct {
+  id: string;
+
+    emoji?: string;
+
+  name: string;
+
+  category: string;
+
+  description: string;
+
+  activeIngredient: string;
+
+  strength: string;
+
+  dosageForm: string;
+
+  unit: string;
+
+  packSize: string;
+
+  nafdacRegNumber: string;
+
+  referenceBasePrice: number;
+
+  commissionPercent: number;
+
+  maxMarkupPercent: number;
+
+  status: ProductStatus;
+
+  storageCondition: string;
+
+  image?: string;
+}

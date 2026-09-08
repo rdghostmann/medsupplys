@@ -10,14 +10,24 @@ import {
 } from "@/components/ui/breadcrumb";
 
 import MatchingAlgorithmWeightsTuner from "./MatchingAlgorithmWeightsTuner";
+import MatchingWeightsReference from "./MatchingWeightsReference";
 
 import type {
   MatchingWeights,
 } from "@/controllers/platform-config.controller";
 
+
 interface MatchingAlgorithmPageProps {
   matchingWeights: MatchingWeights;
 }
+
+export const DEFAULT_MATCHING_WEIGHTS = {
+  availability: 20,
+  priceCompetitiveness: 35,
+  supplierType: 5,
+  fulfillmentHistory: 15,
+  reliability: 25,
+} as const;
 
 export default function MatchingAlgorithmPage({
   matchingWeights,
@@ -47,9 +57,20 @@ export default function MatchingAlgorithmPage({
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <div className="px-4 lg:px-6">
-            <MatchingAlgorithmWeightsTuner
-              matchingWeights={matchingWeights}
-            />
+
+            <div className="grid gap-6 xl:grid-cols-[1fr_380px]">
+              {/* Calibration */}
+              <MatchingAlgorithmWeightsTuner
+                matchingWeights={matchingWeights}
+              />
+
+
+              {/* Current/default reference */}
+              <MatchingWeightsReference
+                weights={matchingWeights}
+              />
+            </div>
+
           </div>
         </div>
       </div>

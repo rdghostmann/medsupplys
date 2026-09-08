@@ -1,39 +1,13 @@
-"use client";
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import MasterProductCatalog from "./MasterProductCatalog";
+// /admin/master-product-catalog/page.tsx
+import { findAllMasterProducts } from "@/controllers/product.action";
+import MasterCataloguePage from "./MasterCataloguePage";
 
-export default function Page() {
-    return (
-        <div className="flex flex-1 flex-col">
-            <Breadcrumb className="p-4 lg:px-6">
-                <BreadcrumbList>
-                    <BreadcrumbItem>
-                        <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                        <BreadcrumbPage>Master Product Catalog</BreadcrumbPage>
-                    </BreadcrumbItem>
-                </BreadcrumbList>
-            </Breadcrumb>
+export default async function Page() {
+  const products = await findAllMasterProducts();
 
-            <div className="@container/main flex flex-1 flex-col gap-2">
-                <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-                    {/* <AdminStatsCard /> */}
-                    <div className="px-4 lg:px-6">
-                        <MasterProductCatalog />
-
-                    </div>
-                </div>
-            </div>
-        </div>
-
-    )
+  return (
+    <MasterCataloguePage
+      products={products}
+    />
+  );
 }

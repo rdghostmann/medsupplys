@@ -1,42 +1,10 @@
-"use client";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
+// /admin/suppliers/page.tsx
 
-import SupplierListing from './SupplierListing';
-import SupplierKYCManagement from "./SupplierKYCManagement";
-export default function Page() {
-  return (
-    <div className="flex flex-1 flex-col">
-      <Breadcrumb className="p-4 lg:px-6">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-          <BreadcrumbItem>
-            <BreadcrumbPage>Supplier & KYC Approval</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
+import SupplierKYCSupplierKYCPage from "./SupplierKYCSupplierKYCPage";
+import { getAdminSuppliers } from "@/controllers/admin.actions";
 
-      <div className="@container/main flex flex-1 flex-col gap-2">
-        <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          {/* <AdminStatsCard /> */}
+export default async function Page() {
+  const suppliers = await getAdminSuppliers();
 
-
-          <div className="px-4 lg:px-6">
-                {/* <SupplierListing /> */}
-                <SupplierKYCManagement />
-          </div>
-        </div>
-      </div>
-    </div>
-
-  )
+  return <SupplierKYCSupplierKYCPage suppliers={suppliers} />;
 }

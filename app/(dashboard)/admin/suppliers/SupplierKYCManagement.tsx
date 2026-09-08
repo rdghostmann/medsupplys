@@ -1,3 +1,4 @@
+// /admin/suppliers/SupplierKYCManagement.tsx
 "use client";
 
 import React, { useMemo, useState } from "react";
@@ -20,6 +21,12 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { SupplierApprovalStatus, SupplierType } from "@/types";
+import {
+    updateSupplierStatus,
+    type AdminSupplier,
+    type AdminSupplierStatus,
+    type AdminSupplierType,
+} from "@/controllers/admin.actions";
 
 /**
  * ============================================================
@@ -29,43 +36,7 @@ import { SupplierApprovalStatus, SupplierType } from "@/types";
 
 type CreditRatingTier = "A" | "B" | "C" | "UNRATED";
 
-type MockSupplier = {
-    id: string;
-    name: string;
-    organization: string;
-    email: string;
-    phone: string;
-    role: "SUPPLIER";
-
-    state: string;
-    lga: string;
-    address: string;
-
-    supplierType: SupplierType;
-    supplierApprovalStatus: SupplierApprovalStatus;
-
-    licenseNumber: string;
-    pcnPremisesLicense: string;
-    nafdacGdpLicense: string;
-    taxIdentificationNumber: string;
-
-    isColdChainCertified: boolean;
-    coldChainCapacityM3: number;
-    backupPowerSpec: string;
-
-    settlementBankName: string;
-    settlementAccountNumber: string;
-    settlementAccountName: string;
-
-    assignedCreditLimit: number;
-    creditRatingTier: CreditRatingTier;
-
-    kycReviewNotes: string;
-    kycRejectionReason?: string;
-    kycSuspensionReason?: string;
-
-    createdAt: string;
-};
+type MockSupplier = AdminSupplier;
 
 /**
  * ============================================================
@@ -73,7 +44,7 @@ type MockSupplier = {
  * ============================================================
  */
 
-const initialMockSuppliers: MockSupplier[] = [
+export const initialMockSuppliers: MockSupplier[] = [
     {
         id: "sup-001",
         name: "Fidson Healthcare",
@@ -380,10 +351,11 @@ const initialMockSuppliers: MockSupplier[] = [
  * ============================================================
  */
 
-const SupplierKYCManagement: React.FC = () => {
-    // Mock suppliers are now the local source of truth.
+const SupplierKYCManagement: React.FC<{
+    initialSuppliers: AdminSupplier[];
+}> = ({ initialSuppliers }) => {
     const [allUsers, setAllUsers] =
-        useState<MockSupplier[]>(initialMockSuppliers);
+        useState<MockSupplier[]>(initialSuppliers);
 
     // Filter state
     const [searchTerm, setSearchTerm] = useState("");
@@ -555,43 +527,20 @@ const SupplierKYCManagement: React.FC = () => {
         try {
             setIsSubmitting(true);
 
-            // Simulate backend processing.
-            await new Promise((resolve) =>
-                setTimeout(resolve, 900)
+            const updatedSupplier = await updateSupplierStatus(
+                targetSupplier.id,
+                newStatus as AdminSupplierStatus,
+                {
+                    supplierType: (tier || targetSupplier.supplierType) as AdminSupplierType,
+                    kycReviewNotes:
+                        reviewNotes ||
+                        `Admin evaluated KYC on ${new Date().toLocaleDateString()}`,
+                    actionReason: reason,
+                    assignedCreditLimit,
+                    creditRatingTier,
+                    isColdChainCertified: checklist.coldChainVerified,
+                }
             );
-
-            const updatedSupplier: MockSupplier = {
-                ...targetSupplier,
-
-                supplierApprovalStatus: newStatus,
-
-                supplierType:
-                    tier ||
-                    targetSupplier.supplierType ||
-                    "DISTRIBUTOR",
-
-                kycReviewNotes:
-                    reviewNotes ||
-                    `Admin evaluated KYC on ${new Date().toLocaleDateString()}`,
-
-                kycRejectionReason:
-                    newStatus === "REJECTED"
-                        ? reason ||
-                        "Non-compliance with NAFDAC/PCN standards"
-                        : undefined,
-
-                kycSuspensionReason:
-                    newStatus === "SUSPENDED"
-                        ? reason || "Administrative suspension"
-                        : undefined,
-
-                assignedCreditLimit,
-
-                creditRatingTier,
-
-                isColdChainCertified:
-                    checklist.coldChainVerified,
-            };
 
             // Replace the supplier in local mock state.
             setAllUsers((currentSuppliers) =>

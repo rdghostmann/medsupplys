@@ -155,7 +155,7 @@ export default function MatchingAlgorithmWeightsTuner({
   };
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 md:p-6">
+    <main className="min-h-screen  ">
       <div className="mx-auto w-full max-w-7xl space-y-6">
         {/* Page Header */}
         <div>

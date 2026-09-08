@@ -18,10 +18,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-// import {
-//   DOSAGE_FORM_GROUPS,
-//   PACK_SIZE_GROUPS,
-// } from '@/lib/catalogOptions';
+;
 import {
   Select,
   SelectContent,
@@ -33,30 +30,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DOSAGE_FORM_GROUPS, PACK_SIZE_GROUPS } from "@/lib/catalogOptions";
-/* =========================================================
-   Types
-========================================================= */
+import {
+  MasterProduct,
+  ProductStatus,
+} from "@/types";
 
-type ProductStatus = "ACTIVE" | "INACTIVE" | "ARCHIVED";
+type Product = MasterProduct;
 
-type Product = {
-  id: string;
-  name: string;
-  category: string;
-  description: string;
-  activeIngredient: string;
-  strength: string;
-  dosageForm: string;
-  unit: string;
-  packSize: string;
-  nafdacRegNumber: string;
-  referenceBasePrice: number;
-  commissionPercent: number;
-  maxMarkupPercent: number;
-  status: ProductStatus;
-  storageCondition: string;
-  emoji: string;
-};
 
 type SupplierInventory = {
   id: string;
@@ -135,253 +115,6 @@ const EMOJI_OPTIONS = [
 ];
 
 
-/* =========================================================
-   Mock Product Data
-========================================================= */
-
-const MOCK_PRODUCTS: Product[] = [
-  {
-    id: "PROD-001",
-    name: "Paracetamol 500mg Tablets",
-    category: "Analgesics & Antipyretics",
-    description:
-      "Analgesic and antipyretic medication commonly used for the relief of mild to moderate pain and fever.",
-    activeIngredient: "Paracetamol",
-    strength: "500mg",
-    dosageForm: "Oral Tablet",
-    unit: "Packs of 100 Tablets",
-    packSize: "100 tablets/pack",
-    nafdacRegNumber: "NAFDAC-04-7218",
-    referenceBasePrice: 12000,
-    commissionPercent: 8,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from light.",
-    emoji: "💊",
-  },
-  {
-    id: "PROD-002",
-    name: "Amoxicillin 500mg Capsules",
-    category: "Antibiotics & Antimicrobials",
-    description:
-      "Broad-spectrum penicillin antibiotic used for the treatment of susceptible bacterial infections.",
-    activeIngredient: "Amoxicillin",
-    strength: "500mg",
-    dosageForm: "Oral Capsule",
-    unit: "Packs of 100 Capsules",
-    packSize: "100 capsules/pack",
-    nafdacRegNumber: "NAFDAC-04-6382",
-    referenceBasePrice: 25000,
-    commissionPercent: 10,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from excessive heat.",
-    emoji: "💊",
-  },
-  {
-    id: "PROD-003",
-    name: "Ibuprofen 400mg Tablets",
-    category: "NSAIDs & Anti-Inflammatory",
-    description:
-      "Non-steroidal anti-inflammatory medicine indicated for pain, inflammation and fever.",
-    activeIngredient: "Ibuprofen",
-    strength: "400mg",
-    dosageForm: "Oral Tablet",
-    unit: "Packs of 100 Tablets",
-    packSize: "100 tablets/pack",
-    nafdacRegNumber: "NAFDAC-04-8156",
-    referenceBasePrice: 18000,
-    commissionPercent: 7,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry and well-ventilated location.",
-    emoji: "🔴",
-  },
-  {
-    id: "PROD-004",
-    name: "Artemether/Lumefantrine",
-    category: "Antimalarials",
-    description:
-      "Artemisinin-based combination therapy for the treatment of uncomplicated Plasmodium falciparum malaria.",
-    activeIngredient: "Artemether + Lumefantrine",
-    strength: "20mg/120mg",
-    dosageForm: "Oral Tablet",
-    unit: "Packs of 24 Tablets",
-    packSize: "24 tablets/pack",
-    nafdacRegNumber: "NAFDAC-04-5531",
-    referenceBasePrice: 35000,
-    commissionPercent: 12,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from light.",
-    emoji: "💊",
-  },
-  {
-    id: "PROD-005",
-    name: "Vitamin C 1000mg",
-    category: "Other",
-    description:
-      "Vitamin C supplement used to support normal immune function and address dietary vitamin C deficiency.",
-    activeIngredient: "Ascorbic Acid",
-    strength: "1000mg",
-    dosageForm: "Effervescent Tablet",
-    unit: "Tubes of 20 Tablets",
-    packSize: "20 tablets/tube",
-    nafdacRegNumber: "NAFDAC-04-9127",
-    referenceBasePrice: 9000,
-    commissionPercent: 5,
-    maxMarkupPercent: 20,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 25°C in a dry place and tightly closed.",
-    emoji: "🌿",
-  },
-  {
-    id: "PROD-006",
-    name: "Metformin 500mg Tablets",
-    category: "Endocrine & Diabetes Care",
-    description:
-      "Biguanide oral antidiabetic medicine used as part of the management of type 2 diabetes.",
-    activeIngredient: "Metformin Hydrochloride",
-    strength: "500mg",
-    dosageForm: "Oral Tablet",
-    unit: "Packs of 100 Tablets",
-    packSize: "100 tablets/pack",
-    nafdacRegNumber: "NAFDAC-04-4472",
-    referenceBasePrice: 22000,
-    commissionPercent: 9,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from moisture.",
-    emoji: "💊",
-  },
-  {
-    id: "PROD-007",
-    name: "Omeprazole 20mg Capsules",
-    category: "Other",
-    description:
-      "Proton pump inhibitor used in the management of acid-related gastrointestinal disorders.",
-    activeIngredient: "Omeprazole",
-    strength: "20mg",
-    dosageForm: "Delayed Release Capsule",
-    unit: "Packs of 28 Capsules",
-    packSize: "28 capsules/pack",
-    nafdacRegNumber: "NAFDAC-04-7364",
-    referenceBasePrice: 16000,
-    commissionPercent: 6,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 25°C in a dry place protected from moisture.",
-    emoji: "💊",
-  },
-  {
-    id: "PROD-008",
-    name: "Cough Relief Syrup",
-    category: "Other",
-    description:
-      "Oral cough preparation for symptomatic relief of uncomplicated cough conditions.",
-    activeIngredient: "Dextromethorphan + Guaifenesin",
-    strength: "10mg/100mg per 5ml",
-    dosageForm: "Oral Syrup",
-    unit: "Bottles",
-    packSize: "100ml/bottle",
-    nafdacRegNumber: "NAFDAC-04-6019",
-    referenceBasePrice: 14000,
-    commissionPercent: 7,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C. Protect from direct sunlight.",
-    emoji: "🧪",
-  },
-  {
-    id: "PROD-009",
-    name: "ORS Sachets",
-    category: "Intravenous Fluids & Electrolytes",
-    description:
-      "Oral rehydration salts used to prevent and treat dehydration associated with diarrhoeal illness.",
-    activeIngredient:
-      "Sodium Chloride + Potassium Chloride + Glucose",
-    strength: "Standard WHO Formula",
-    dosageForm: "Oral Powder",
-    unit: "Boxes of 100 Sachets",
-    packSize: "100 sachets/box",
-    nafdacRegNumber: "NAFDAC-04-3817",
-    referenceBasePrice: 5000,
-    commissionPercent: 4,
-    maxMarkupPercent: 20,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from moisture.",
-    emoji: "⚪",
-  },
-  {
-    id: "PROD-010",
-    name: "Amlodipine 5mg Tablets",
-    category: "Cardiovascular & Antihypertensives",
-    description:
-      "Calcium-channel blocker used in the management of hypertension and selected cardiovascular conditions.",
-    activeIngredient: "Amlodipine Besylate",
-    strength: "5mg",
-    dosageForm: "Oral Tablet",
-    unit: "Packs of 30 Tablets",
-    packSize: "30 tablets/pack",
-    nafdacRegNumber: "NAFDAC-04-2945",
-    referenceBasePrice: 20000,
-    commissionPercent: 9,
-    maxMarkupPercent: 25,
-    status: "ACTIVE",
-    storageCondition:
-      "Store below 30°C in a dry place protected from light.",
-    emoji: "🫀",
-  },
-  {
-    id: "PROD-011",
-    name: "Insulin Human 100IU/ml",
-    category: "Endocrine & Diabetes Care",
-    description:
-      "Human insulin preparation used for glycaemic control in patients requiring insulin therapy.",
-    activeIngredient: "Human Insulin",
-    strength: "100IU/ml",
-    dosageForm: "Injection",
-    unit: "Vials",
-    packSize: "10ml/vial",
-    nafdacRegNumber: "NAFDAC-04-1843",
-    referenceBasePrice: 18500,
-    commissionPercent: 10,
-    maxMarkupPercent: 20,
-    status: "ACTIVE",
-    storageCondition:
-      "Cold chain required. Store at 2°C–8°C. Do not freeze.",
-    emoji: "💉",
-  },
-  {
-    id: "PROD-012",
-    name: "Ceftriaxone 1g Injection",
-    category: "Antibiotics & Antimicrobials",
-    description:
-      "Third-generation cephalosporin antibiotic supplied as a sterile injectable formulation.",
-    activeIngredient: "Ceftriaxone Sodium",
-    strength: "1g",
-    dosageForm: "Powder for Injection",
-    unit: "Vials",
-    packSize: "1 vial/box",
-    nafdacRegNumber: "NAFDAC-04-5728",
-    referenceBasePrice: 8500,
-    commissionPercent: 10,
-    maxMarkupPercent: 25,
-    status: "INACTIVE",
-    storageCondition:
-      "Store below 25°C in a dry place protected from light.",
-    emoji: "💉",
-  },
-];
 
 /* =========================================================
    Mock Supplier Inventory
@@ -532,9 +265,16 @@ const DEFAULT_FORM_DATA = {
 /* =========================================================
    Component
 ========================================================= */
+interface MasterProductCatalogProps {
+  products: MasterProduct[];
+}
 
-export const MasterProductCatalog: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
+
+export const MasterProductCatalog: React.FC<
+  MasterProductCatalogProps
+> = ({ products }) => {
+  const [catalogProducts, setProducts] = useState<MasterProduct[]>(products);
+  
   const [inventory] = useState<SupplierInventory[]>(MOCK_INVENTORY);
 
   /* =========================================================
@@ -617,7 +357,7 @@ export const MasterProductCatalog: React.FC = () => {
   ========================================================= */
 
   const filteredProducts = useMemo(() => {
-    return products.filter((prod) => {
+    return catalogProducts.filter((prod) => {
       const query = searchTerm.trim().toLowerCase();
 
       const matchesSearch =
@@ -645,7 +385,7 @@ export const MasterProductCatalog: React.FC = () => {
       );
     });
   }, [
-    products,
+    catalogProducts,
     searchTerm,
     selectedCategory,
     statusFilter,
@@ -657,28 +397,28 @@ export const MasterProductCatalog: React.FC = () => {
   ========================================================= */
 
   const stats = useMemo(() => {
-    const total = products.length;
+    const total = catalogProducts.length;
 
-    const active = products.filter(
+    const active = catalogProducts.filter(
       (p) => p.status === "ACTIVE"
     ).length;
 
-    const archived = products.filter(
+    const archived = catalogProducts.filter(
       (p) => p.status === "ARCHIVED"
     ).length;
 
-    const inactive = products.filter(
+    const inactive = catalogProducts.filter(
       (p) => p.status === "INACTIVE"
     ).length;
 
-    const coldChain = products.filter(
+    const coldChain = catalogProducts.filter(
       isColdChainProduct
     ).length;
 
     const avgCommission =
       total > 0
         ? (
-          products.reduce(
+            catalogProducts.reduce(
             (acc, p) => acc + (p.commissionPercent || 10),
             0
           ) / total
@@ -693,7 +433,7 @@ export const MasterProductCatalog: React.FC = () => {
       coldChain,
       avgCommission,
     };
-  }, [products]);
+  }, [catalogProducts]);
 
   /* =========================================================
      Open Create Modal
@@ -810,7 +550,7 @@ export const MasterProductCatalog: React.FC = () => {
         });
       } else {
         const newProduct: Product = {
-          id: `PROD-${String(products.length + 1).padStart(
+          id: `PROD-${String(catalogProducts.length + 1).padStart(
             3,
             "0"
           )}`,
@@ -938,10 +678,10 @@ export const MasterProductCatalog: React.FC = () => {
           Header
       ====================================================== */}
 
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-start justify-between gap-4 lg:flex-row lg:items-center">
         <div>
           <h2 className="flex items-center gap-2 text-lg font-bold text-slate-900">
-            <Package className="h-5 w-5 text-blue-600" />
+            <Package className="hidden h-5 w-5 text-blue-600" />
 
             <span>
               Master Pharmaceutical Product Catalog
