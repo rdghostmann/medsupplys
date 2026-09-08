@@ -1,13 +1,17 @@
-// /models/PlatformConfig.ts
-
 import {
   Schema,
   model,
   models,
   Document,
   Model,
+  Types,
 } from "mongoose";
 
+/**
+ * Platform-level supplier matching configuration.
+ *
+ * All values are percentages and must total exactly 100.
+ */
 export interface IMatchingWeights {
   availabilityWeight: number;
   priceWeight: number;
@@ -16,8 +20,7 @@ export interface IMatchingWeights {
   reliabilityWeight: number;
 }
 
-export interface IPlatformConfig
-  extends Document {
+export interface IPlatformConfig extends Document {
   key: string;
 
   defaultCommissionPercent: number;
@@ -32,7 +35,7 @@ export interface IPlatformConfig
 
   currency: "NGN";
 
-  updatedBy?: Schema.Types.ObjectId;
+  updatedBy?: Types.ObjectId;
 
   createdAt: Date;
 
@@ -77,7 +80,9 @@ const MatchingWeightsSchema =
         max: 100,
       },
     },
-    { _id: false }
+    {
+      _id: false,
+    }
   );
 
 const PlatformConfigSchema =
@@ -102,11 +107,11 @@ const PlatformConfigSchema =
         type: MatchingWeightsSchema,
         required: true,
         default: {
-          availabilityWeight: 25,
+          availabilityWeight: 20,
           priceWeight: 35,
-          supplierTypeWeight: 20,
-          fulfillmentWeight: 10,
-          reliabilityWeight: 10,
+          supplierTypeWeight: 5,
+          fulfillmentWeight: 15,
+          reliabilityWeight: 25,
         },
       },
 
@@ -148,46 +153,46 @@ const PlatformConfigSchema =
     }
   );
 
-/*
- * Protect matching engine integrity.
+/**
+ * Protect platform configuration integrity.
  *
- * The five weights must always total 100.
+ * Matching weights must always total 100%.
  */
-PlatformConfigSchema.pre(
-  "validate",
-  async function () {
-    const weights = this.matchingWeights;
+PlatformConfigSchema.pre("validate", async function () {
+  const weights = this.matchingWeights;
 
-    if (!weights) {
-      throw new Error("Matching weights are required");
-    }
-
-    const total =
-      weights.availabilityWeight +
-      weights.priceWeight +
-      weights.supplierTypeWeight +
-      weights.fulfillmentWeight +
-      weights.reliabilityWeight;
-
-    if (total !== 100) {
-      throw new Error(
-        `Matching weights must total 100%. Current total: ${total}%`
-      );
-    }
-
-    if (
-      this.minCreditApprovalLimit >
-      this.maxCreditApprovalLimit
-    ) {
-      throw new Error(
-        "Minimum credit approval limit cannot exceed maximum credit approval limit"
-      );
-    }
+  if (!weights) {
+    throw new Error("Matching weights are required");
   }
-);
 
-export const PlatformConfig:
-  Model<IPlatformConfig> =
+  const total =
+    weights.availabilityWeight +
+    weights.priceWeight +
+    weights.supplierTypeWeight +
+    weights.fulfillmentWeight +
+    weights.reliabilityWeight;
+
+  if (total !== 100) {
+    throw new Error(
+      `Matching weights must total 100%. Current total: ${total}%`
+    );
+  }
+
+  if (
+    this.minCreditApprovalLimit >
+    this.maxCreditApprovalLimit
+  ) {
+    throw new Error(
+      "Minimum credit approval limit cannot exceed maximum credit approval limit"
+    );
+  }
+});
+
+PlatformConfigSchema.index({
+  key: 1,
+});
+
+export const PlatformConfig: Model<IPlatformConfig> =
   models.PlatformConfig ||
   model<IPlatformConfig>(
     "PlatformConfig",

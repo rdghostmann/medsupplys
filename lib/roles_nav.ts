@@ -30,6 +30,7 @@ export const roleNavMain = {
     { id: "suppliers", title: "Suppliers & KYC Approval", icon: "👩‍👩‍👦‍👦", url: "/admin/suppliers" },
     { id: "master-product-catalog", title: "Master Product Catalog", icon: "📦", url: "/admin/master-product-catalog" },
     { id: "revolving-credit-facilities", title: "Revolving Credit Facilities", icon: "💳", url: "/admin/revolving-credit-facilities" },
+    { id: "matching-algorithm", title: "Matching Algorithm", icon: "⚙️", url: "/admin/matching-algorithm" },
     { id: "global-sourcing-monitor", title: "Global Sourcing Monitor", icon: "💹", url: "/admin/global-sourcing-monitor" },
     { id: "global-order-logistics", title: "Global Order & Logistics", icon: "✈", url: "/admin/global-order-logistics  " },
     { id: "master-system-audit", title: "Master System Audit Logs", icon: "🕥", url: "/admin/master-system-audit" },
