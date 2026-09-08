@@ -86,6 +86,9 @@ export interface IncomingProcurementRequest {
   quantity: number;
   unit: string;
 
+  totalAmount: number;
+  paymentMethod: "WALLET" | "CREDIT" | "WALLET_AND_CREDIT";
+
   status:
   | "SUPPLIER_CONTACTED"
   | "SUPPLIER_CONFIRMED"
@@ -254,6 +257,7 @@ export interface SupplierDashboardData {
   payouts: SupplierPayoutRecord[];
 }
 
+
 export interface SupplierPayoutRecord {
   id: string;
   supplierId: string;
@@ -267,6 +271,17 @@ export interface SupplierPayoutRecord {
   accountName: string;
   notes?: string;
   createdAt: string;
+}
+
+export type SupplierProcurementResponse =
+  | "ACCEPT"
+  | "UNAVAILABLE";
+
+export interface SupplierProcurementResponseResult {
+  procurementId: string;
+  response: SupplierProcurementResponse;
+  nextSupplierName?: string;
+  nextSupplierRank?: number;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -444,12 +459,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       .where("currentSupplierId")
       .equals(user._id.toString())
       .where("status")
-      .in([
-        "SUPPLIER_CONTACTED",
-        "SOURCING",
-        "MATCHING",
-        "OPEN",
-      ])
+      .equals("SUPPLIER_CONTACTED")
       .sort({
         createdAt: -1,
       })
@@ -490,6 +500,13 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
 
           unit:
             firstItem?.unit || "",
+
+          totalAmount:
+            Number(procurement.financials?.totalAmount || 0),
+
+          paymentMethod:
+            procurement.financials?.paymentMethod ||
+            "WALLET",
 
           status:
             procurement.status as IncomingProcurementRequest["status"],
@@ -834,6 +851,108 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       payouts: [],
     };
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Respond to Assigned Procurement                                            */
+/* -------------------------------------------------------------------------- */
+
+export async function respondToSupplierProcurement(
+  procurementId: string,
+  response: SupplierProcurementResponse,
+  responseNotes?: string
+): Promise<SupplierProcurementResponseResult> {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user?.email) {
+    throw new Error("Unauthenticated supplier");
+  }
+
+  await connectToDB();
+
+  const supplier = await User.findOne({
+    email: session.user.email,
+    role: "supplier",
+  })
+    .select("_id")
+    .lean();
+
+  if (!supplier) {
+    throw new Error("Supplier account not found");
+  }
+
+  const procurement = await Procurement.findOne({
+    _id: procurementId,
+    currentSupplierId: supplier._id,
+    status: "SUPPLIER_CONTACTED",
+  });
+
+  if (!procurement) {
+    throw new Error("Procurement request is no longer available");
+  }
+
+  const currentIndex = procurement.currentSupplierIndex;
+  const currentSupplier = procurement.supplierCandidates[currentIndex];
+
+  if (!currentSupplier) {
+    throw new Error("Current supplier candidate not found");
+  }
+
+  const now = new Date();
+  const note = responseNotes?.trim();
+  const candidateStatus = response === "ACCEPT" ? "ACCEPTED" : "DECLINED";
+
+  currentSupplier.status = candidateStatus;
+
+  procurement.attemptHistory.push({
+    attemptNumber: procurement.attemptHistory.length + 1,
+    supplierId: currentSupplier.supplierId,
+    supplierName: currentSupplier.supplierName,
+    supplierType: currentSupplier.supplierType,
+    supplierProductId: currentSupplier.supplierProductId,
+    offeredPrice: currentSupplier.unitPrice,
+    status: candidateStatus,
+    contactedAt: procurement.supplierContactedAt,
+    respondedAt: now,
+    responseNotes: note,
+  });
+
+  if (response === "ACCEPT") {
+    procurement.status = "SUPPLIER_CONFIRMED";
+    procurement.supplierConfirmedAt = now;
+    procurement.notes = note || procurement.notes;
+    await procurement.save();
+
+    return {
+      procurementId,
+      response,
+    };
+  }
+
+  const nextSupplierIndex = currentIndex + 1;
+  const nextSupplier = procurement.supplierCandidates[nextSupplierIndex];
+
+  if (nextSupplier) {
+    nextSupplier.status = "CONTACTED";
+    procurement.currentSupplierIndex = nextSupplierIndex;
+    procurement.currentSupplierId = nextSupplier.supplierId;
+    procurement.currentSupplierProductId = nextSupplier.supplierProductId;
+    procurement.currentSupplierName = nextSupplier.supplierName;
+    procurement.supplierContactedAt = now;
+    procurement.notes = note || procurement.notes;
+  } else {
+    procurement.status = "CANCELLED";
+    procurement.notes = note || "Supplier queue exhausted";
+  }
+
+  await procurement.save();
+
+  return {
+    procurementId,
+    response,
+    nextSupplierName: nextSupplier?.supplierName,
+    nextSupplierRank: nextSupplier?.rank,
+  };
 }
 
 /* -------------------------------------------------------------------------- */

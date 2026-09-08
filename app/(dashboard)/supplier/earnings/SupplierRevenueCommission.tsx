@@ -130,13 +130,6 @@ export const SupplierRevenueCommission: React.FC<
       )
       .reduce((sum, payout) => sum + payout.netAmount, 0);
 
-    /*
-     * Mock settlement balance.
-     *
-     * In a production implementation this would come from the
-     * backend wallet/escrow ledger rather than being calculated
-     * entirely in the client.
-     */
     const availableForPayout = Math.max(
       0,
       netEarnings - inEscrow - totalPaidOut
@@ -376,7 +369,7 @@ export const SupplierRevenueCommission: React.FC<
                 Request Direct Credit Enabled
               </span>
 
-              
+
             </div>
 
             <p className="text-xs text-slate-500 mt-1">
@@ -397,9 +390,8 @@ export const SupplierRevenueCommission: React.FC<
               title="Refresh ledger"
             >
               <RefreshCw
-                className={`w-3.5 h-3.5 ${
-                  isLoading ? 'animate-spin' : ''
-                }`}
+                className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''
+                  }`}
               />
 
               {isLoading ? 'Syncing...' : 'Sync Ledger'}
@@ -412,11 +404,11 @@ export const SupplierRevenueCommission: React.FC<
                 setIsPayoutModalOpen(true);
               }}
               disabled={availableForPayout <= 0}
-              className="hidden items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              // className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            // className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ArrowUpRight className="w-4 h-4" />
-              Request Settlement Payout (
+              <span className="text-xs">Request Settlement Payout (</span>
               {formatNaira(availableForPayout)})
             </button>
           </div>
@@ -572,7 +564,8 @@ export const SupplierRevenueCommission: React.FC<
           REVENUE SUMMARY
       ===================================================== */}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-col-3 gap-4">
+      <div className="hidden grid-cols-1 md:grid-cols-2 lg:grid-col-3 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-col-3 gap-4"> */}
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
             <TrendingUp className="w-4 h-4 text-blue-600" />
@@ -648,7 +641,7 @@ export const SupplierRevenueCommission: React.FC<
               Hospital Invoice Formula:
             </div>
 
-            <div className="flex items-center gap-2 text-sm font-semibold flex-wrap">
+            <div className="flex items-center gap-2 text-xs lg:text-sm font-semibold flex-wrap">
               <span className="text-emerald-400">
                 Your Base Quote (100%)
               </span>
@@ -666,10 +659,10 @@ export const SupplierRevenueCommission: React.FC<
               </span>
             </div>
 
-            <div className="mt-3 pt-2 border-t border-slate-700/80 text-[11px] text-slate-400 flex items-center justify-between gap-4">
+            <div className="mt-3 pt-2 border-t border-slate-700/80 text-[9px] text-slate-400 flex items-center justify-between gap-4">
               <span>Example on ₦10,000 quote:</span>
 
-              <span className="text-slate-200">
+              <span className="text-[9px] text-slate-200">
                 Buyer pays ₦11,000 → You receive{' '}
                 <strong>₦10,000</strong>
               </span>
@@ -716,11 +709,10 @@ export const SupplierRevenueCommission: React.FC<
               <button
                 type="button"
                 onClick={() => setStatusFilter('ALL')}
-                className={`px-3 py-1 rounded-lg transition-colors ${
-                  statusFilter === 'ALL'
+                className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === 'ALL'
                     ? 'bg-white text-slate-900 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 All ({supplierOrders.length})
               </button>
@@ -728,11 +720,10 @@ export const SupplierRevenueCommission: React.FC<
               <button
                 type="button"
                 onClick={() => setStatusFilter('ESCROW')}
-                className={`px-3 py-1 rounded-lg transition-colors ${
-                  statusFilter === 'ESCROW'
+                className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === 'ESCROW'
                     ? 'bg-white text-blue-700 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 In Escrow
               </button>
@@ -740,11 +731,10 @@ export const SupplierRevenueCommission: React.FC<
               <button
                 type="button"
                 onClick={() => setStatusFilter('SETTLED')}
-                className={`px-3 py-1 rounded-lg transition-colors ${
-                  statusFilter === 'SETTLED'
+                className={`px-3 py-1 rounded-lg transition-colors ${statusFilter === 'SETTLED'
                     ? 'bg-white text-emerald-700 shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 Settled
               </button>
@@ -1016,13 +1006,12 @@ export const SupplierRevenueCommission: React.FC<
 
                     <td className="py-3.5 px-5 text-center">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                          payout.status === 'SETTLED'
+                        className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${payout.status === 'SETTLED'
                             ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                             : payout.status === 'PROCESSING'
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                            : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}
+                              ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                              : 'bg-red-50 text-red-700 border border-red-200'
+                          }`}
                       >
                         {payout.status === 'SETTLED' ? (
                           <CheckCircle2 className="w-3 h-3" />

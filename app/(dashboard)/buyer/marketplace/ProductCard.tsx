@@ -81,7 +81,7 @@ export default function ProductCard({
             </h3>
 
             {product.brandName && (
-              <p className="mt-1 text-xs font-medium text-slate-500">
+              <p className="hidden mt-1 text-xs font-medium text-slate-500">
                 Brand: {product.brandName}
               </p>
             )}

@@ -5,7 +5,6 @@ import React, { useMemo, useState } from "react";
 import {
   Sparkles,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
 
 } from "lucide-react";
@@ -14,6 +13,7 @@ import type {
   CurrentSupplierUser,
   IncomingProcurementRequest,
 } from "@/controllers/supplier.action";
+import { respondToSupplierProcurement } from "@/controllers/supplier.action";
 type ResponseType = "ACCEPT" | "REJECT" | "UNAVAILABLE";
 
 interface IncomingRequestsProps {
@@ -33,14 +33,18 @@ const IncomingRequests: React.FC<
 
   const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
+  const [respondedProcurementIds, setRespondedProcurementIds] =
+    useState<Set<string>>(() => new Set());
+
   // Filter procurements where this supplier is the CURRENT ACTIVE
   // candidate in the sourcing queue.
   const pendingRequests = useMemo(() => {
     return procurements.filter(
       (procurement) =>
-        procurement.currentSupplierId === user.id
+        procurement.currentSupplierId === user.id &&
+        !respondedProcurementIds.has(procurement.id)
     );
-  }, [procurements, user.id]);
+  }, [procurements, respondedProcurementIds, user.id]);
 
   const handleRespond = async (
     procurementId: string,
@@ -58,10 +62,18 @@ const IncomingRequests: React.FC<
     setIsProcessing(procurementId);
 
     try {
-      // Simulate backend processing
-      await new Promise((resolve) => setTimeout(resolve, 900));
-
       const note = responseNotes[procurementId]?.trim();
+      const result = await respondToSupplierProcurement(
+        procurementId,
+        response === "ACCEPT" ? "ACCEPT" : "UNAVAILABLE",
+        note
+      );
+
+      setRespondedProcurementIds((current) => {
+        const next = new Set(current);
+        next.add(procurementId);
+        return next;
+      });
 
       if (response === "ACCEPT") {
      
@@ -75,23 +87,11 @@ const IncomingRequests: React.FC<
           });
         }
       } else {
-        const nextSupplierIndex =
-          procurement.currentSupplierIndex + 1;
-
-        const hasFallbackSupplier =
-          nextSupplierIndex < procurement.supplierQueue.length;
-
-
-        if (hasFallbackSupplier) {
-          const nextSupplier =
-            procurement.supplierQueue[nextSupplierIndex];
-
+        if (result.nextSupplierName) {
           toast.info(
-            response === "UNAVAILABLE"
-              ? "Stock Unavailable — Fallback Triggered"
-              : "Request Declined — Fallback Triggered",
+            "Stock Unavailable — Fallback Triggered",
             {
-              description: `The sourcing engine has forwarded the request to ${nextSupplier.supplierName}, ranked #${nextSupplier.rank}.`,
+              description: `The sourcing engine has forwarded the request to ${result.nextSupplierName}, ranked #${result.nextSupplierRank}.`,
             }
           );
         } else {

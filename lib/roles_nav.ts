@@ -3,17 +3,19 @@
 export const roleNavMain = {
   buyer: [
     { id: "overview", title: "Overview", icon: "📊", url: "/buyer" },
-    { id: "browse", title: "Products Catalogue", icon: "🛍️", url: "/buyer/marketplace" },
-    { id: "browse", title: "Procurement Sourcing", icon: "✨", url: "/buyer/procurement-sourcing" },
+    { id: "marketplace", title: "Products Catalogue", icon: "🛍️", url: "/buyer/marketplace" },
+    { id: "procurement-sourcing", title: "Procurement Sourcing", icon: "✨", url: "/buyer/procurement-sourcing" },
     { id: "orders", title: "My Orders & Tracking", icon: "📋", url: "/buyer/orders" },
     { id: "buyer-wallet", title: "Procurement Wallet", icon: "👜", url: "/buyer/buyerwallet" },
     { id: "credit-repayment", title: "Credit Facility Repayment", icon: "💰", url: "/buyer/revolving-credit" },
+    { id: "audit-log", title: "Audit Log", icon: "📝", url: "/buyer/audit-log" },
+
   ],
   supplier: [
     { id: "overview", title: "Supplier Dashboard", icon: "📊", url: "/supplier" },
     { id: "order-requests", title: "Incoming Requests", icon: "📃", url: "/supplier/order-requests" },
     { id: "inventory", title: "Inventory & Catalog", icon: "📦", url: "/supplier/inventory" },
-    { id: "order-tracking", title: "Order Tracking", icon: "🚛", url: "/supplier/order-tracking" },
+    { id: "order-tracking", title: "Committed Orders & Dispatch", icon: "🚛", url: "/supplier/order-tracking" },
     { id: "earnings", title: "Revenue & Commission", icon: "💰", url: "/supplier/earnings" },
     { id: "audit-log", title: "Audit Log", icon: "📝", url: "/supplier/audit-log" },
   ],

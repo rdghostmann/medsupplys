@@ -12,6 +12,7 @@ import {
 import { Package, Package2, ShieldCheck } from "@hugeicons/core-free-icons"
 import { WalletIcon } from "@phosphor-icons/react"
 import { ShieldCheckIcon } from "@phosphor-icons/react/dist/ssr"
+import { useRouter } from "next/navigation"
 
 interface WelcomeBannerProps {
   id?: string
@@ -33,6 +34,10 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
   creditAvailable,
   loading = false,
 }) => {
+
+  const router = useRouter()
+
+
   return (
     <div
       id={id}
@@ -58,7 +63,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
 
           <div className="flex flex-wrap items-center gap-3 mt-5">
             <button
-              onClick={() => {}}
+              onClick={() => {router.push("/buyer/marketplace")}}
               className="px-4 py-2 bg-white hover:bg-slate-100 text-blue-900 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
             >
               <Package2Icon className="w-4 h-4 text-blue-600" />
@@ -66,7 +71,7 @@ export const WelcomeBanner: React.FC<WelcomeBannerProps> = ({
             </button>
 
             <button
-              // onClick={() => setIsPaystackModalOpen(true)}
+              onClick={() => {router.push("/buyer/buyerwallet")}}
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center gap-1.5 cursor-pointer"
             >
               <WalletIcon className="w-4 h-4" />

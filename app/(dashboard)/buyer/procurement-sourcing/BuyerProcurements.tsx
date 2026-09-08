@@ -671,7 +671,7 @@ export const BuyerProcurements: React.FC<
           type="button"
           onClick={refreshAll}
           disabled={isRefreshing}
-          className="flex cursor-pointer items-center gap-1.5 self-start rounded-xl bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
+          className="hidden cursor-pointer items-center gap-1.5 self-start rounded-xl bg-slate-100 px-3.5 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <RefreshCw
             className={`h-3.5 w-3.5 ${

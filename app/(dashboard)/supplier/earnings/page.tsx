@@ -1,3 +1,4 @@
+// /supplier/earnings/page.tsx
 import { getCurrentSupplierDashboard } from "@/controllers/supplier.action";
 import EarningPage from "./EarningPage";
 
