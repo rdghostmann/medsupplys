@@ -1,5 +1,8 @@
 "use client"
 
+import * as React from "react"
+import { usePathname } from "next/navigation"
+
 import {
   SidebarGroup,
   SidebarGroupContent,
@@ -16,11 +19,21 @@ export type NavItem = {
   icon?: LucideIcon | React.ReactNode
 }
 
+const isIconComponent = (
+  icon: NavItem["icon"]
+): icon is LucideIcon =>
+  typeof icon === "function" ||
+  (typeof icon === "object" &&
+    icon !== null &&
+    "render" in icon)
+
 export function NavMain({
   items,
 }: {
   items: NavItem[]
 }) {
+  const pathname = usePathname()
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -47,14 +60,25 @@ export function NavMain({
         </SidebarMenu> */}
         <SidebarMenu>
           <span className="text-xs font-medium text-muted-foreground">
-            Main
+            Main Menu
           </span>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild tooltip={item.title}>
+              <SidebarMenuButton
+                asChild
+                tooltip={item.title}
+                className={`text-gray-300 hover:bg-slate-800 hover:text-gray-100 ${
+                  pathname === item.url ||
+                  pathname.startsWith(`${item.url}/`)
+                        ? 'bg-[#EFF6FF] text-[#2563EB] font-semibold shadow-xs ring-1 ring-blue-200'
+                        : 'text-[#64748B] hover:text-[#0F172A] hover:bg-slate-100'
+                }`}
+              >
                 <Link href={item.url} className="flex w-full items-center gap-2">
-                  {typeof item.icon === "function" ? (
-                    <item.icon className="size-4 shrink-0" />
+                  {isIconComponent(item.icon) ? (
+                    React.createElement(item.icon, {
+                      className: "size-4 shrink-0",
+                    })
                   ) : (
                     item.icon
                   )}
