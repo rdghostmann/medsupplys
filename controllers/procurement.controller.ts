@@ -2,6 +2,7 @@
 "use server";
 
 import { getServerSession } from "next-auth";
+import { Types } from "mongoose";
 
 import { authOptions } from "@/auth";
 import { connectToDB } from "@/lib/connectToDB";
@@ -168,6 +169,16 @@ function normalizeQueueStatus(
   }
 }
 
+function toObjectIds(values: unknown[]): Types.ObjectId[] {
+  return values.flatMap((value) => {
+    const id = value?.toString();
+
+    return id && Types.ObjectId.isValid(id)
+      ? [new Types.ObjectId(id)]
+      : [];
+  });
+}
+
 /* -------------------------------------------------------------------------- */
 /* GET PROCUREMENTS                                                           */
 /* -------------------------------------------------------------------------- */
@@ -191,23 +202,24 @@ export async function getProcurements(): Promise<
    * Collect referenced IDs so we can resolve related
    * Product / SupplierProduct / Supplier information.
    */
-  const productIds = procurements
-    .map((procurement) =>
-      procurement.productId?.toString()
+  const productIds = toObjectIds(
+    procurements.map(
+      (procurement) => procurement.items?.[0]?.productId
     )
-    .filter(Boolean);
+  );
 
-  const supplierProductIds = procurements
-    .map((procurement) =>
-      procurement.currentSupplierProductId?.toString()
-    )
-    .filter(Boolean);
+  const supplierProductIds = toObjectIds(
+    procurements.flatMap((procurement) => [
+      procurement.currentSupplierProductId,
+      procurement.items?.[0]?.supplierProductId,
+    ])
+  );
 
-  const supplierIds = procurements
-    .map((procurement) =>
-      procurement.currentSupplierId?.toString()
+  const supplierIds = toObjectIds(
+    procurements.map(
+      (procurement) => procurement.currentSupplierId
     )
-    .filter(Boolean);
+  );
 
   const [products, supplierProducts, suppliers] =
     await Promise.all([
@@ -258,9 +270,9 @@ export async function getProcurements(): Promise<
   /* ------------------------------------------------------------------------ */
 
   return procurements.map((procurement) => {
-    const product = procurement.productId
+    const product = procurement.items?.[0]?.productId
       ? productMap.get(
-          procurement.productId.toString()
+          procurement.items[0].productId.toString()
         )
       : undefined;
 
@@ -271,11 +283,17 @@ export async function getProcurements(): Promise<
       : undefined;
 
     const currentSupplierProduct =
-      procurement.currentSupplierProductId
+      procurement.currentSupplierProductId ||
+      procurement.items?.[0]?.supplierProductId
         ? supplierProductMap.get(
-            procurement.currentSupplierProductId.toString()
+            (
+              procurement.currentSupplierProductId ||
+              procurement.items?.[0]?.supplierProductId
+            )!.toString()
           )
         : undefined;
+
+    const firstItem = procurement.items?.[0];
 
     /*
      * Supplier candidates should come from the snapshot
@@ -339,7 +357,7 @@ export async function getProcurements(): Promise<
      * another field name.
      */
     const attemptHistory: AttemptHistory[] = (
-      procurement.supplierAttempts ?? []
+      procurement.attemptHistory ?? []
     ).map(
       (
         attempt: {
@@ -405,6 +423,7 @@ export async function getProcurements(): Promise<
 
       productName:
         product?.name ??
+        firstItem?.productName ??
         "Unknown Product",
 
       category:
@@ -412,21 +431,21 @@ export async function getProcurements(): Promise<
         "Uncategorized",
 
       quantity: Number(
-        procurement.quantity ?? 0
+        firstItem?.quantity ?? 0
       ),
 
       unit:
         currentSupplierProduct?.unit ??
-        procurement.unit ??
+        firstItem?.unit ??
         "units",
 
       totalAmount: Number(
-        procurement.totalAmount ?? 0
+        procurement.financials?.totalAmount ?? 0
       ),
 
       paymentMethod:
         normalizePaymentMethod(
-          procurement.paymentMethod
+          procurement.financials?.paymentMethod
         ),
 
       status:
