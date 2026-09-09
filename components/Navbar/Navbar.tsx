@@ -152,6 +152,16 @@ export default function Navbar() {
       ),
     },
     {
+      name: "Services",
+      href: "/services",
+      icon: (
+        <StorefrontIcon
+          size={18}
+          weight="duotone"
+        />
+      ),
+    },
+    {
       name: "How it Works",
       href: "/how-it-works",
       icon: (

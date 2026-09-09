@@ -1,3 +1,4 @@
+"use client"
 import React from 'react';
 import { ArrowRight, ShieldCheck, CheckCircle2, Building2 } from 'lucide-react';
 import { MedSupplyLogo } from './MedSupplyLogo';

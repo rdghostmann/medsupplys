@@ -134,8 +134,8 @@ const HeroSection = () => {
              <Image
                 src="/hero-dashboard-preview.png"
                 alt="MedSupply Dashboard Preview"
-                width={1200}
-                height={800}
+                width={1493}
+                height={707}
                 className="w-full h-auto rounded-2xl border border-slate-200/90 shadow-lg"
               />
             </div>

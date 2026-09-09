@@ -8,6 +8,8 @@ import type { Metadata } from "next";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import SessionWrapper from "@/components/SessionWrapper/SessionWrapper";
 import ReactQueryProvider from "@/provider/ReactQueryProvider";
+import Navbar from "@/components/Navbar/Navbar";
+import Footer from "@/components/Footer/Footer";
 
 
 const fontSansBig = Space_Grotesk({
@@ -135,6 +137,7 @@ export default function RootLayout({
       suppressHydrationWarning
       className={cn("antialiased", fontMono.variable, outfit.variable, fontSans.variable, fontSansBig.variable)}
     >
+      <Navbar />
       <body cz-shortcut-listen="true">
         <ThemeProvider
           attribute="class"
@@ -147,11 +150,13 @@ export default function RootLayout({
               <ReactQueryProvider>
                 {children}
               </ReactQueryProvider>
-                <Toaster richColors position="top-right" />
+              <Toaster richColors position="top-right" />
             </TooltipProvider>
           </SessionWrapper>
         </ThemeProvider>
       </body>
+      <Footer />
+
     </html>
   )
 }
