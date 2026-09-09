@@ -291,7 +291,7 @@ const router = useRouter();
             MedSupply reserves the right to amend these Terms to reflect evolving regulatory updates from PCN, NAFDAC, or the Central Bank of Nigeria. Institutional subscribers will be notified electronically at least 14 days prior to any material change taking effect.
           </p>
 
-          <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 to-blue-950 text-white space-y-3 shadow-md">
+          <div className="p-5 rounded-2xl bg-linear-to-br from-slate-900 to-blue-950 text-white space-y-3 shadow-md">
             <div className="flex items-center gap-2">
               <Scale className="text-emerald-400" size={20} />
               <h5 className="font-bold text-sm text-white">Office of the General Counsel &amp; Legal Affairs</h5>
@@ -334,7 +334,7 @@ const router = useRouter();
   return (
     <div className="bg-white min-h-screen">
       {/* Header Banner */}
-      <div className="border-b border-slate-200 bg-gradient-to-b from-blue-50/40 via-white to-white py-10 sm:py-14">
+      <div className="border-b border-slate-200 bg-linear-to-b from-blue-50/40 via-white to-white py-10 sm:py-14">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <div className="flex items-center gap-2 text-xs text-slate-500 mb-4">
@@ -382,7 +382,7 @@ const router = useRouter();
 
               <button
                 onClick={() => router.push('/privacy-policy')}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:opacity-95 transition-all cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:opacity-95 transition-all cursor-pointer"
               >
                 <span>Privacy Policy</span>
                 <ArrowRight size={13} />
@@ -538,7 +538,7 @@ const router = useRouter();
             ))}
 
             {/* Bottom Cross Link */}
-            <div className="p-6 sm:p-8 rounded-2xl bg-gradient-to-r from-blue-900 via-blue-800 to-teal-800 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
+            <div className="p-6 sm:p-8 rounded-2xl bg-linear-to-r from-blue-900 via-blue-800 to-teal-800 text-white flex flex-col sm:flex-row items-center justify-between gap-6 shadow-lg">
               <div>
                 <h4 className="text-lg font-bold text-white">Institutional Privacy &amp; Data Security</h4>
                 <p className="text-xs text-blue-100 mt-1 max-w-md leading-relaxed">

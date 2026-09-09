@@ -134,10 +134,18 @@ const Footer = () => {
 
               <li>
                 <Link
-                  href="/stats"
+                  href="/privacy-policy"
                   className="transition-colors hover:text-blue-700"
                 >
-                  Platform Statistics
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/terms-conditions"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Terms & Conditions
                 </Link>
               </li>
             </ul>
