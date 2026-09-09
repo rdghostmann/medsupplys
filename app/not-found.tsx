@@ -44,10 +44,12 @@ export default function NotFound() {
           transition={{ delay: 0.1 }}
           className="glass-card rounded-2xl p-6 space-y-4"
         >
-          <p className="text-sm text-muted-foreground">
+          <p className="flex items-center text-sm text-muted-foreground">
             <Search className="w-3 h-3" />
 
-            You can navigate back or explore the platform.
+            <span className="ml-2">
+              Try searching for what you are looking for or go back to the homepage.
+            </span>
           </p>
 
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
