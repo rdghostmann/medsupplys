@@ -11,7 +11,7 @@ import TestimonialSection from "@/components/Testimonial/Testimonial";
 import { ValuePropSection } from "@/components/ValuePropsSection/ValueProps";
 import Link from "next/link";
 import { motion } from "framer-motion"
-import { Star } from "@phosphor-icons/react";
+import { Star, StarAndCrescentIcon } from "@phosphor-icons/react";
 import ComplianceSection from "@/components/ComplianceBlock/ComplianceBlock";
 import Image from "next/image";
 import { StatCard } from "@/components/ui/StatCard";
@@ -44,61 +44,6 @@ export default function HomePage() {
          <Hero />
 
          <HeroSection />
-
-         <section className="hidden pt-36 pb-20 px-6 max-w-7xl mx-auto md:grid-cols-2 gap-16 items-center">
-            <div>
-               <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 px-4 py-1.5 rounded-full text-xs font-medium mb-5">
-                  <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />
-                  Verification-Based B2B Platform
-               </div>
-               <h1 className="text-5xl font-sora font-semibold leading-tight tracking-tight mb-5">
-                  The Trusted <span className="text-blue-600">Pharmaceutical</span> B2B Marketplace
-               </h1>
-               <p className="text-lg text-slate-600 leading-relaxed mb-8 max-w-md">
-                  Connect verified pharmaceutical suppliers with licensed buyers through a secure, pharmacist-verified transaction workflow.
-               </p>
-               <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: 0.3 }}
-                  className="flex flex-wrap items-center gap-4"
-               >
-                  <button className="px-8 py-4 bg-blue-600 text-white font-bold rounded-full hover:bg-primary-dark transition-all shadow-xl shadow-primary/30">
-                     Explore Products
-                  </button>
-
-                  <div className="flex items-center gap-3 bg-white/80 backdrop-blur px-4 py-2 rounded-full border border-slate-100">
-                     <div className="flex -space-x-2">
-                        {[1, 2, 3].map((i) => (
-                           <Image
-                              key={i}
-                              src={`https://i.pravatar.cc/100?img=${i + 10}`}
-                              alt="User"
-                              width={20}
-                              height={20}
-                              className="w-8 h-8 rounded-full border-2 border-white object-cover"
-                              referrerPolicy="no-referrer"
-                              priority
-                           />
-                        ))}
-                     </div>
-                     <div>
-                        <div className="flex items-center gap-1">
-                           <span className="text-sm font-bold text-slate-900">4.9/5</span>
-                           <div className="flex">
-                              {[1, 2, 3, 4, 5].map((s) => (
-                                 <Star key={s} size={10} fill="#f59e0b" className="text-amber-500" />
-                              ))}
-                           </div>
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-medium tracking-wide uppercase">1M Happy customers</p>
-                     </div>
-                  </div>
-               </motion.div>
-            </div>
-         </section>
-
-         {/* <StatsSection /> */}
 
          <LogoCloud />
 
@@ -144,6 +89,12 @@ export default function HomePage() {
                      value="24/7"
                      subtext="Real-time ordering portal"
                      icon={Clock}
+                  />
+                  <StatCard
+                     label="Years of Service"
+                     value="5+"
+                     subtext="Trusted by healthcare providers"
+                     icon={StarAndCrescentIcon}
                   />
                </div>
             </div>
