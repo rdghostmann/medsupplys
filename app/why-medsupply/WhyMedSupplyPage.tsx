@@ -4,16 +4,15 @@ import React from 'react';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 import { CTASection } from '@/components/ui/CTASection';
-import { 
-  Check, 
-  X, 
-  ShieldCheck, 
-  Clock, 
-  BarChart3, 
-  Layers, 
-  Truck, 
-  FileSpreadsheet, 
-  TrendingDown, 
+import {
+  Check,
+  X,
+  ShieldCheck,
+  Clock,
+  BarChart3,
+  Layers,
+  Truck,
+  FileSpreadsheet,
   Sparkles,
   ArrowRight,
   BadgeCheck,
@@ -110,7 +109,7 @@ const WhyMedSupplyPage: React.FC = () => {
     }
   ];
 
-    const whyPillars = [
+  const whyPillars = [
     {
       title: 'Zero-Counterfeit Guarantee',
       desc: 'Informal open drug markets carry up to 30% counterfeit risk. MedSupply operates a strictly verified, closed-loop supply chain where every batch is scanned and confirmed by licensed pharmacists.',
@@ -157,7 +156,7 @@ const WhyMedSupplyPage: React.FC = () => {
 
           <div className="mt-8 flex justify-center gap-3">
             <button
-              onClick={() => {}}
+              onClick={() => { }}
               className="px-6 py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
             >
               Test Live Comparison Engine
@@ -224,7 +223,7 @@ const WhyMedSupplyPage: React.FC = () => {
         </div>
       </section>
 
-         {/* 3. WHY MEDISUPPLY SECTION */}
+      {/* 3. WHY MEDISUPPLY SECTION */}
       <section id="why-medsupply" className="scroll-mt-24 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 lg:p-16 overflow-hidden relative shadow-xl">
@@ -233,12 +232,12 @@ const WhyMedSupplyPage: React.FC = () => {
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
               <div className="lg:col-span-6 space-y-6">
-                <span className="text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-950 px-3 py-1 rounded-full border border-blue-800">
+                <span className="hidden not-[]:text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-950 px-3 py-1 rounded-full border border-blue-800">
                   Transforming Healthcare Procurement
                 </span>
 
                 <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
-                  Why Leading Nigerian Hospitals Choose MediSupply
+                 Transforming Healthcare Procurement
                 </h2>
 
                 <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
@@ -297,7 +296,7 @@ const WhyMedSupplyPage: React.FC = () => {
                     height={896}
                     className="w-full h-[420px] object-cover object-center"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent"></div>
                   <div className="absolute bottom-4 left-4 right-4 text-white">
                     <p className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-semibold">
                       ● Clinical Verification Gate
