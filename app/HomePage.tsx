@@ -125,7 +125,7 @@ export default function HomePage() {
                   subtitle="Powering verified drug supplies across tertiary teaching hospitals, private clinic groups, and state healthcare networks."
                />
 
-               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6">
+               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                   <StatCard
                      label="Verified Products"
                      value="1,500+"
@@ -172,7 +172,7 @@ export default function HomePage() {
                   subtitle="A comprehensive pharmaceutical supply chain infrastructure engineered for transparency, regulatory compliance, and cost containment."
                />
 
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
                   <Services />
                </div>
 
