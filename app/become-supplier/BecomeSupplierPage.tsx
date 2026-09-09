@@ -19,6 +19,7 @@ import {
   FileCheck2,
   Sparkles
 } from 'lucide-react';
+import Image from 'next/image';
 
 const BecomeSupplierPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
@@ -385,6 +386,60 @@ const BecomeSupplierPage: React.FC = () => {
           )}
         </div>
       </section>
+
+       {/* ELIGIBILITY CHECKLIST & MANUFACTURING ASSET */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-100/80 rounded-3xl p-8 sm:p-12 border border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-5">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                Mandatory Documentation
+              </span>
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Accreditation Prerequisites
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                MediSupply upholds zero tolerance for unregulated pharmaceuticals. All prospective suppliers must provide
+                certified true copies of the following statutory documents:
+              </p>
+
+              <div className="space-y-3 pt-2">
+                {[
+                  'Pharmacists Council of Nigeria (PCN) Superintendent Pharmacist Annual Retention Certificate',
+                  'Registered & Validated Pharmaceutical Premise Inspection Certificate',
+                  'NAFDAC Product Registration Certificates for all submitted SKUs',
+                  'Good Distribution Practice (GDP) / Good Manufacturing Practice (GMP) Certification',
+                  'Corporate Affairs Commission (CAC) Certificate of Incorporation & Form CAC 1.1',
+                  'Calibrated Cold-Chain validation logs (if offering temperature-sensitive products)',
+                ].map((req, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-xs text-slate-700">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                    <span>{req}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 rounded-2xl overflow-hidden shadow-lg border border-slate-300">
+              <Image
+                src="/pharma_manufacturing_plant_1788851214483.jpg"
+                alt="Pharmaceutical Manufacturer Facility"
+                referrerPolicy="no-referrer"
+                width={1200}
+                height={896}
+                className="w-full h-80 object-cover object-center"
+              />
+              <div className="p-4 bg-white text-xs border-t border-slate-200">
+                <p className="font-bold text-slate-900">Tier-1 Manufacturer Portal</p>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Direct API inventory sync & bulk order processing for certified factories.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* Supplier FAQs */}
       <section className="py-16 sm:py-20 bg-slate-50 border-t border-slate-200/80">

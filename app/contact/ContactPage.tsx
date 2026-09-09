@@ -235,7 +235,7 @@ const ContactPage: React.FC = () => {
                     className="w-full py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Send size={14} />
-                    <span>Transmit Message to Procurement Directorate</span>
+                    <span>Transmit Message to Procurement Desk</span>
                   </button>
                 </form>
               )}

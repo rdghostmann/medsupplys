@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { FAQS } from '../../data/mockData';
 
 export const FAQAccordion: React.FC = () => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
@@ -8,6 +7,34 @@ export const FAQAccordion: React.FC = () => {
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
+
+  const FAQS = [
+    {
+      question: 'How does MedSupply work for healthcare buyers?',
+      answer: 'MedSupply operates as a curated B2B procurement network. Hospital procurement teams and licensed pharmacies search our standardized pharmaceutical catalogue, compare line-item quotes from verified distributors and importers, issue formal digital purchase orders, and track deliveries with cold-chain oversight from warehouse to dispensary.'
+    },
+    {
+      question: 'Who is eligible to purchase medicines through MedSupply?',
+      answer: 'MedSupply is strictly a B2B platform. Access is restricted to licensed healthcare organizations including teaching hospitals, private medical clinics, retail pharmacy chains, community health boards, and authorized corporate medical centers. All buying entities must submit their operating license during onboarding.'
+    },
+    {
+      question: 'How does MedSupply verify pharmaceutical suppliers?',
+      answer: 'Every supplier on our platform undergoes a rigorous 4-step compliance audit: validation of national regulatory licenses (such as NAFDAC and Pharmacy Council operating permits), corporate registry authentication, verification of physical Good Distribution Practice (GDP) warehouse standards, and strict anti-counterfeiting history checks.'
+    },
+    {
+      question: 'What is the difference between Importer, Distributor, and Retailer tiers?',
+      answer: 'Importers bring WHO-prequalified and registered therapeutics into the country in bulk with higher Minimum Order Quantities (MOQ). Distributors maintain regional warehouses and offer intermediate pack sizes with 24-48 hour delivery. Retailers and institutional suppliers cater to smaller clinics requiring lower MOQs with same-day or rapid fulfillment.'
+    },
+    {
+      question: 'Can our hospital compare prices across multiple suppliers before ordering?',
+      answer: 'Yes. MedSupply provides instant side-by-side pricing matrices showing unit prices, pack sizes, volume-discount tiers, batch numbers, remaining shelf-life, and delivery lead times from every verified supplier carrying that SKU.'
+    },
+    {
+      question: 'How does MedSupply ensure cold-chain integrity during delivery?',
+      answer: 'Cold-chain products (such as insulin, biologicals, and vaccines) are fulfilled exclusively by GDP-certified distributors equipped with calibrated temperature-controlled active coolers and data loggers. Temperature compliance reports are verified at handover before goods receipt is signed.'
+    }
+  ];
+  
 
   return (
     <div className="max-w-3xl mx-auto space-y-3.5">

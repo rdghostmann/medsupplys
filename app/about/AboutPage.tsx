@@ -1,19 +1,20 @@
 import React from 'react';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 import { CTASection } from '@/components/ui/CTASection';
-import { 
-  ShieldCheck, 
-  Target, 
-  Eye, 
-  Lightbulb, 
-  HeartHandshake, 
-  Award, 
+import {
+  ShieldCheck,
+  Target,
+  Eye,
+  Lightbulb,
+  HeartHandshake,
+  Award,
   ArrowRight,
   CheckCircle2,
   Building2,
   Sparkles,
   Users
 } from 'lucide-react';
+import Image from 'next/image';
 
 const AboutPage: React.FC = () => {
 
@@ -90,6 +91,29 @@ const AboutPage: React.FC = () => {
     }
   ];
 
+    const leadership = [
+    {
+      name: 'Pharm. (Dr.) Ngozi Okonjo-Briggs, FPSN',
+      role: 'Chief Executive Officer & Founder',
+      bio: 'Former Director of Pharmaceutical Services with over 22 years of clinical governance experience across West Africa.',
+    },
+    {
+      name: 'Dr. Babatunde Sanusi, FWACP, MBBS',
+      role: 'Chief Medical & Compliance Officer',
+      bio: 'Fellow of the West African College of Physicians; leading clinical pharmacology advisory councils for tertiary hospitals.',
+    },
+    {
+      name: 'Engr. Chukwuma Eze, MSc',
+      role: 'VP of Supply Chain Engineering',
+      bio: 'Former regional operations director at global healthcare logistics networks; specialist in cold-chain IoT telemetry.',
+    },
+    {
+      name: 'Amina Bello, FCA',
+      role: 'Head of Healthcare Credit & Risk',
+      bio: 'Ex-commercial banking executive managing syndicated healthcare liquidity facilities and revolving hospital credit portfolios.',
+    },
+  ];
+
   return (
     <div className="bg-white">
       {/* Hero Section - Clean White Theme */}
@@ -113,7 +137,7 @@ const AboutPage: React.FC = () => {
       <section className="py-16 sm:py-20 border-b border-slate-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-            
+
             <div className="p-8 sm:p-10 rounded-2xl bg-blue-50/50 border border-blue-200/80 flex flex-col justify-between">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-blue-700 text-white flex items-center justify-center mb-5 shadow-xs">
@@ -186,6 +210,43 @@ const AboutPage: React.FC = () => {
         </div>
       </section>
 
+      {/* THE STORY OF MEDISUPPLY */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-slate-100/80 rounded-3xl p-8 sm:p-12 border border-slate-200">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4">
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Our Origin</span>
+              <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+                Solving the Open-Market Dilemma
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                In Nigeria, over 60% of pharmaceutical transactions historically passed through unregulated open markets
+                such as Idumota in Lagos and Head Bridge in Onitsha. For hospitals, this created an impossible dilemma:
+                risk substandard, expired, or counterfeit drugs, or face devastating stockouts when formal channels stalled.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                MediSupply was founded by seasoned clinical pharmacists, healthcare financiers, and supply chain engineers
+                to construct an impermeable closed-loop rail. By validating every supplier with PCN premises inspections and
+                direct NAFDAC registration checks, we provide hospitals with factory-direct authenticity and guaranteed
+                supply continuity.
+              </p>
+            </div>
+
+            <div className="lg:col-span-5 rounded-2xl overflow-hidden shadow-lg border border-slate-300">
+              <Image
+                src="/medsupply_hero_pharmacy_1788851113035.jpg"
+                alt="Pharmacist inspects verified inventory"
+                width={1376}
+                height={768}
+                referrerPolicy="no-referrer"
+                className="w-full h-72 object-cover object-center"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+    
       {/* Timeline Section */}
       <section className="py-16 sm:py-24 bg-white border-t border-slate-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -219,6 +280,41 @@ const AboutPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+        {/* LEADERSHIP & ADVISORY */}
+      <section className="mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+        <div className="text-center max-w-2xl mx-auto space-y-2">
+          <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            Governance & Leadership
+          </span>
+          <h2 className="font-display text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Led by Clinical & Financial Veterans
+          </h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {leadership.map((leader, idx) => (
+            <div
+              key={idx}
+              className="bg-white rounded-2xl border border-slate-200 p-6 space-y-3 shadow-2xs hover:shadow-md transition text-left"
+            >
+              <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-display font-bold text-sm text-slate-900 leading-snug">
+                  {leader.name}
+                </h3>
+                <p className="text-[11px] font-semibold text-blue-600 mt-0.5">{leader.role}</p>
+              </div>
+              <p className="text-xs text-slate-500 leading-relaxed pt-2 border-t border-slate-100">
+                {leader.bio}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
 
       {/* CTA Section */}
       <CTASection />

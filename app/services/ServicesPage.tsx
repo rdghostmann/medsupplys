@@ -7,7 +7,7 @@ import { CTASection } from '@/components/ui/CTASection';
 import * as LucideIcons from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
- const MOCK_SERVICES = [
+const MOCK_SERVICES = [
   {
     id: 'sourcing',
     title: 'Pharmaceutical Sourcing',
@@ -127,6 +127,36 @@ import { useRouter } from 'next/navigation';
     ],
     keyMetrics: 'Audit-Proof System',
     badge: 'Safe & Secure'
+  },
+  {
+    id: 'institutional-revolving-credit',
+    title: 'Institutional Revolving Credit (Net 30/45 Days)',
+    tagline: 'Healthcare Working Capital Solutions',
+    description: 'Flexible credit lines tailored to hospital payment collection cycles. Maintain vital clinical inventory while awaiting HMO reimbursements and patient account reconciliations.',
+    icon: 'FileCheck',
+    benefits: [
+      'Pre-approved credit limits from ₦5,000,000 to ₦50,000,000',
+      'Custom settlement tenors: Net-15, Net-30, or Net-45 days',
+      'Automated headroom restoration upon invoice clearance',
+      'Zero compound interest with predictable flat service structures'
+    ],
+    keyMetrics: 'Credit Lines up to ₦50M',
+    badge: 'Up to ₦50M Facility'
+  },
+  {
+    id: 'automated-sourcing-fallback-&-stockout-prevention',
+    title: 'Automated Sourcing Fallback & Stockout Prevention',
+    tagline: 'Resilient Supply Chain',
+    description: 'Proprietary multi-tier routing engine that monitors real-time inventory across 9 verified manufacturers. If a primary supplier experiences stock constraints, orders immediately auto-cascade.',
+    icon: 'FileCheck',
+    benefits: [
+      'Sub-second algorithmic fallback to pre-vetted secondary suppliers',
+      'Preservation of pre-negotiated institutional pricing ceilings',
+      'Zero manual intervention required during emergency shortages',
+      'Detailed audit log explaining routing logic and supplier swaps'
+    ],
+    keyMetrics: '99.9% Stockout Prevention',
+    badge: 'Up to ₦50M Facility'
   }
 ];
 

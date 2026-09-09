@@ -13,7 +13,8 @@ import {
   Clock,
   Lock,
   ChevronRight,
-  Award
+  Award,
+  CreditCard
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -22,11 +23,11 @@ const HeroSection = () => {
   return (
     <div>
       {/* HERO SECTION - WHITE THEME WITH BRAND GRADIENTS */}
-    <section className="relative pt-32 pb-16 lg:pt-48 lg:pb-32 overflow-hidden">
-      {/* <section className="relative overflow-hidden bg-linear-to-b from-white via-blue-50/25 to-emerald-50/20 text-slate-900 pt-10 pb-20 lg:pt-16 lg:pb-28 border-b border-slate-200/80"> */}
+      <section className="relative pt-32 pb-16 lg:pt-48 lg:pb-32 overflow-hidden">
+        {/* <section className="relative overflow-hidden bg-linear-to-b from-white via-blue-50/25 to-emerald-50/20 text-slate-900 pt-10 pb-20 lg:pt-16 lg:pb-28 border-b border-slate-200/80"> */}
         {/* Subtle Ambient Brand Gradient Background */}
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-linear-to-r from-blue-400/10 via-sky-400/10 to-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute top-0 right-0 w-[350px] h-[250px] bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-175 h-87.5 bg-linear-to-r from-blue-400/10 via-sky-400/10 to-emerald-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-87.5 h-62.5 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
           <div className="text-center max-w-3xl mx-auto">
@@ -84,8 +85,65 @@ const HeroSection = () => {
             </div>
           </div>
 
+
+          {/* Right Visual Image & Live Overlay Cards */}
+          <div className="lg:col-span-5 mt-12 sm:mt-16 relative">
+            <div className="relative rounded-3xl overflow-hidden border border-slate-200/90 shadow-xl bg-slate-100">
+              <Image
+                src="/medsupply_hero_pharmacy_1788851113035.jpg"
+                alt="Verified Pharmaceutical Procurement Center"
+                width={1376}
+                height={768}
+                // referrerPolicy="no-referrer"
+                className="w-full h-115 object-cover object-center transform hover:scale-102 transition duration-700"
+              />
+
+              {/* Subtle gradient vignette */}
+              <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent to-transparent"></div>
+
+              {/* Bottom Overlay Info */}
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-emerald-400 block font-bold">
+                  ● Live Procurement Hub
+                </span>
+                <p className="font-display font-bold text-sm text-white">
+                  Central Pharmaceutical Distribution & QA Laboratory
+                </p>
+                <p className="text-[11px] text-slate-300">
+                  Active temperature monitoring: 2.8°C | 1,240 Certified SKUs Available
+                </p>
+              </div>
+            </div>
+
+            {/* Floating Live Telemetry Badge 1: QA Pharmacist */}
+            <div className="absolute -top-4 -left-4 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 p-3 shadow-lg flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500 max-w-xs">
+              <div className="w-9 h-9 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 leading-none">NAFDAC Batch Release</p>
+                <p className="text-[10px] text-emerald-600 font-semibold mt-0.5">
+                  ● 100% Laboratory CoA Verified
+                </p>
+              </div>
+            </div>
+
+            {/* Floating Live Telemetry Badge 2: Net 30 Credit */}
+            <div className="absolute -bottom-5 -right-4 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200 p-3 shadow-lg flex items-center gap-3 max-w-xs">
+              <div className="w-9 h-9 rounded-xl bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 shrink-0">
+                <CreditCard className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-900 leading-none">Net-30 Working Capital</p>
+                <p className="text-[10px] text-blue-600 font-semibold mt-0.5">
+                  Up to ₦50M Facility for Hospitals
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Hero Visual Dashboard Preview Container with Floating UI Badges */}
-          <div className="mt-12 sm:mt-16 relative">
+          <div className="hidden mt-12 sm:mt-16 relative">
 
             {/* Floating UI Badge 1: Top Left */}
             <div className="hidden md:flex absolute -top-5 -left-3 z-20 items-center gap-2.5 bg-white/95 backdrop-blur-md text-slate-900 px-4 py-2.5 rounded-xl border border-slate-200/90 shadow-lg">
@@ -133,7 +191,7 @@ const HeroSection = () => {
 
             {/* Dashboard Preview UI Image */}
             <div>
-             <Image
+              <Image
                 src="/hero-dashboard-preview.png"
                 alt="MedSupply Dashboard Preview"
                 width={1493}
