@@ -21,7 +21,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <div className={`relative p-6 sm:p-7 rounded-2xl border transition-all duration-200 ${
       highlight 
-        ? 'bg-gradient-to-br from-[#1e40af] via-[#0284c7] to-[#00b87c] text-white border-blue-400/40 shadow-lg shadow-blue-900/15' 
+        ? 'bg-linear-to-br from-[#1e40af] via-[#0284c7] to-[#00b87c] text-white border-blue-400/40 shadow-lg shadow-blue-900/15' 
         : 'bg-white border-slate-200/80 shadow-xs hover:border-blue-300 hover:shadow-md'
     }`}>
       <div className="flex items-start justify-between gap-4">

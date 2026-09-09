@@ -1,13 +1,12 @@
 import React from 'react';
-import { useRouter } from '../../context/RouterContext';
 import { ArrowRight, ShieldCheck, CheckCircle2, Building2 } from 'lucide-react';
 import { MedSupplyLogo } from './MedSupplyLogo';
-
+import { useRouter } from 'next/navigation';
 export const CTASection: React.FC = () => {
-  const { navigate, openQuoteModal } = useRouter();
 
+const router = useRouter();
   return (
-    <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-blue-50/30 to-emerald-50/30 text-slate-900 border-t border-b border-slate-200/80 overflow-hidden">
+    <section className="relative py-20 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/30 to-emerald-50/30 text-slate-900 border-t border-b border-slate-200/80 overflow-hidden">
       {/* Background subtle ambient lighting */}
       <div className="absolute top-0 right-0 -mr-24 -mt-24 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 -ml-24 -mb-24 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -23,7 +22,7 @@ export const CTASection: React.FC = () => {
 
         <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight text-slate-900">
           Ready to Modernize Your{' '}
-          <span className="bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] bg-clip-text text-transparent">
+          <span className="bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] bg-clip-text text-transparent">
             Pharmaceutical Procurement
           </span>?
         </h2>
@@ -34,15 +33,15 @@ export const CTASection: React.FC = () => {
 
         <div className="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
           <button
-            onClick={() => openQuoteModal()}
-            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-sm transition-all shadow-md shadow-blue-700/20 flex items-center justify-center gap-2 group cursor-pointer"
+            onClick={() => {}}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-sm transition-all shadow-md shadow-blue-700/20 flex items-center justify-center gap-2 group cursor-pointer"
           >
             <span>Start Procuring Now</span>
             <ArrowRight size={16} className="group-hover:translate-x-0.5 transition-transform" />
           </button>
 
           <button
-            onClick={() => navigate('/become-a-supplier')}
+            onClick={() => router.push('/become-a-supplier')}
             className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <Building2 size={16} className="text-blue-700" />

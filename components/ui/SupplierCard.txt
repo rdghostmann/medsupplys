@@ -1,14 +1,13 @@
 import React from 'react';
 import { Supplier } from '../../types';
 import { BadgeCheck, Star, MapPin, Package, Clock, ShieldCheck, CheckCircle2 } from 'lucide-react';
-import { useRouter } from '../../context/RouterContext';
 
 interface SupplierCardProps {
   supplier: Supplier;
 }
 
 export const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
-  const { openQuoteModal } = useRouter();
+
 
   const typeColorMap = {
     Importer: 'bg-indigo-50 text-indigo-800 border-indigo-200',
@@ -89,13 +88,13 @@ export const SupplierCard: React.FC<SupplierCardProps> = ({ supplier }) => {
 
       <div className="mt-5 pt-3 flex items-center gap-2">
         <button
-          onClick={() => openQuoteModal()}
-          className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold transition-all text-center shadow-xs cursor-pointer"
+          onClick={() => {}}
+          className="flex-1 py-2 px-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold transition-all text-center shadow-xs cursor-pointer"
         >
           Compare Quotes
         </button>
         <button
-          onClick={() => openQuoteModal()}
+          onClick={() => {}}
           className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
         >
           Direct RFQ

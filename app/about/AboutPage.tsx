@@ -93,7 +93,7 @@ const AboutPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero Section - Clean White Theme */}
-      <section className="bg-gradient-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
+      <section className="bg-linear-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
         <div className="absolute -top-10 -right-10 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-6">
@@ -133,7 +133,7 @@ const AboutPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-8 sm:p-10 rounded-2xl bg-gradient-to-br from-[#1e40af] via-[#0284c7] to-[#00b87c] text-white flex flex-col justify-between shadow-lg shadow-blue-900/10">
+            <div className="p-8 sm:p-10 rounded-2xl bg-linear-to-br from-[#1e40af] via-[#0284c7] to-[#00b87c] text-white flex flex-col justify-between shadow-lg shadow-blue-900/10">
               <div>
                 <div className="w-12 h-12 rounded-xl bg-white/20 text-white border border-white/30 flex items-center justify-center mb-5 shadow-xs">
                   <Eye size={24} />

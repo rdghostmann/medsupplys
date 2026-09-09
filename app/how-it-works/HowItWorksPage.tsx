@@ -1,8 +1,10 @@
+"use client"
 import React, { useState } from 'react';
 
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { ProcurementWorkflow } from '../components/ui/ProcurementWorkflow';
-import { CTASection } from '../components/ui/CTASection';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
+import { ProcurementWorkflow } from '@/components/ui/ProcurementWorkflow';
+import { CTASection } from '@/components/ui/CTASection';
 import { 
   Search, 
   Layers, 
@@ -18,11 +20,14 @@ import {
   ClipboardList,
   Sparkles
 } from 'lucide-react';
+import {useRouter} from 'next/navigation';
 
 export const HowItWorksPage: React.FC = () => {
-  const { navigate, openQuoteModal } = useRouter();
+
   const [selectedRoleFlow, setSelectedRoleFlow] = useState<'buyer' | 'supplier'>('buyer');
 
+  const router = useRouter();
+  
   const buyerSteps = [
     {
       step: '01',
@@ -144,7 +149,7 @@ export const HowItWorksPage: React.FC = () => {
                 onClick={() => setSelectedRoleFlow('buyer')}
                 className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                   selectedRoleFlow === 'buyer'
-                    ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-sm'
+                    ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -154,7 +159,7 @@ export const HowItWorksPage: React.FC = () => {
                 onClick={() => setSelectedRoleFlow('supplier')}
                 className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                   selectedRoleFlow === 'supplier'
-                    ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-sm'
+                    ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-sm'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -195,7 +200,7 @@ export const HowItWorksPage: React.FC = () => {
                   <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200/90 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <span className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white font-mono font-bold text-xs flex items-center justify-center">
+                        <span className="w-8 h-8 rounded-lg bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white font-mono font-bold text-xs flex items-center justify-center">
                           {s.step}
                         </span>
                         <Icon size={18} className="text-blue-700" />
@@ -216,16 +221,16 @@ export const HowItWorksPage: React.FC = () => {
           <div className="mt-12 text-center">
             {selectedRoleFlow === 'buyer' ? (
               <button
-                onClick={() => openQuoteModal()}
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
+                onClick={() => {}}
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
               >
                 <span>Start Procuring as a Buyer</span>
                 <ArrowRight size={14} />
               </button>
             ) : (
               <button
-                onClick={() => navigate('/become-a-supplier')}
-                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
+                onClick={() => router.push('/become-a-supplier')}
+                className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
               >
                 <span>Apply as a Pharmaceutical Supplier</span>
                 <ArrowRight size={14} />

@@ -300,7 +300,7 @@ const PharmacistDashboard: React.FC = () => {
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto space-y-8">
         {/* Banner / Welcome */}
-        <div className=" lg:block rounded-3xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
+        <div className=" lg:block rounded-3xl bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">

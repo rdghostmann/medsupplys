@@ -1011,7 +1011,7 @@ const SupplierDashboardPage: React.FC<
           {/* RIGHT COLUMN */}
           <div className="space-y-8">
             {/* Settlement Account */}
-            <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white shadow-sm">
+            <div className="bg-linear-to-br from-slate-900 to-slate-800 rounded-2xl p-5 text-white shadow-sm">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
                   NIBSS Settlement Account

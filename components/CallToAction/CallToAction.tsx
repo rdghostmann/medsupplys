@@ -6,7 +6,7 @@ export function CtaSection() {
   return (
     <section className="py-24 px-4 bg-white" id="cta-section">
       <div className="max-w-7xl mx-auto">
-        <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 px-8 md:px-16 shadow-2xl">
+        <div className="relative overflow-hidden rounded-[2.5rem] bg-linear-to-br from-blue-600 via-indigo-600 to-violet-700 py-20 px-8 md:px-16 shadow-2xl">
           {/* Watermark/Background decoration */}
           <div className="absolute top-0 right-0 -translate-y-1/4 translate-x-1/4 opacity-10 pointer-events-none">
              <Building2 size={600} className="text-white" />

@@ -1,6 +1,5 @@
 import React from 'react';
-import { useRouter } from '../../context/RouterContext';
-import { MOCK_ORDERS } from '../../data/mockData';
+import { MOCK_ORDERS } from '@/data/mockData';
 import { 
   X, 
   Truck, 
@@ -14,7 +13,6 @@ import {
 } from 'lucide-react';
 
 export const OrderTrackingModal: React.FC = () => {
-  const { isOrderModalOpen, closeOrderModal, selectedOrder } = useRouter();
   const order = selectedOrder || MOCK_ORDERS[0];
 
   if (!isOrderModalOpen) return null;
@@ -140,7 +138,7 @@ export const OrderTrackingModal: React.FC = () => {
             </button>
             <button
               onClick={closeOrderModal}
-              className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold cursor-pointer"
+              className="px-5 py-2 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold cursor-pointer"
             >
               Close
             </button>

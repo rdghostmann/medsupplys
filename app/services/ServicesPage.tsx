@@ -1,13 +1,15 @@
+"use client"
 import React from 'react';
 
-import { MOCK_SERVICES } from '../data/mockData';
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { CTASection } from '../components/ui/CTASection';
+import { MOCK_SERVICES } from '@/data/mockData';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
+import { CTASection } from '@/components/ui/CTASection';
 import * as LucideIcons from 'lucide-react';
+import { useRouter } from 'next/navigation';
+const ServicesPage: React.FC = () => {
 
-export const ServicesPage: React.FC = () => {
-  const { navigate, openQuoteModal } = useRouter();
-
+  const router = useRouter();
   const additionalServices = [
     {
       id: 'supplier-mgmt',
@@ -46,7 +48,7 @@ export const ServicesPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Services Hero - Clean White Theme with Brand Accents */}
-      <section className="bg-gradient-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
+      <section className="bg-linear-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-6">
@@ -62,13 +64,13 @@ export const ServicesPage: React.FC = () => {
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <button
-              onClick={() => openQuoteModal()}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
+              onClick={() => { }}
+              className="px-6 py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
             >
               Launch Sourcing Engine
             </button>
             <button
-              onClick={() => navigate('/become-a-supplier')}
+              onClick={() => router.push('/become-a-supplier')}
               className="px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               Become a Verified Supplier
@@ -88,7 +90,7 @@ export const ServicesPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {allServices.map((service, index) => {
-              const IconComponent = (LucideIcons as Record<string, any>)[service.icon] || LucideIcons.Activity;
+              const IconComponent = (LucideIcons as Record<string, unknown>)[service.icon] || LucideIcons.Activity;
               return (
                 <div
                   key={service.id}
@@ -96,8 +98,8 @@ export const ServicesPage: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between gap-3 mb-5">
-                      <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-2xs">
-                        <IconComponent size={24} />
+                      <div className="border w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-2xs">
+                        {/* <IconComponent size={24} /> */}
                       </div>
                       <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                         {service.badge}
@@ -119,11 +121,10 @@ export const ServicesPage: React.FC = () => {
                         Operational Advantages
                       </h4>
                       <ul className="space-y-2.5">
-                        {service.benefits.map((b, i) => (
-                          <li key={i} className="flex items-start gap-2.5 text-xs text-slate-700 leading-normal">
-                            <LucideIcons.CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
-                            <span>{b}</span>
-                          </li>
+                        {service.benefits.map((b: string, i: number) => (<li key={i} className="flex items-start gap-2.5 text-xs text-slate-700 leading-normal">
+                          <LucideIcons.CheckCircle2 size={15} className="text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{b}</span>
+                        </li>
                         ))}
                       </ul>
                     </div>
@@ -136,9 +137,9 @@ export const ServicesPage: React.FC = () => {
                     <button
                       onClick={() => {
                         if (service.id === 'sourcing' || service.id === 'price-intelligence') {
-                          openQuoteModal();
+                          () => { }
                         } else {
-                          navigate('/contact');
+                          router.push('/contact');
                         }
                       }}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-700 hover:text-emerald-700 py-1.5 px-3 rounded-lg hover:bg-blue-50/60 transition-colors cursor-pointer"
@@ -159,3 +160,6 @@ export const ServicesPage: React.FC = () => {
     </div>
   );
 };
+
+
+export default ServicesPage;

@@ -51,13 +51,13 @@ export function CatalogTable({
         id: "product",
         header: "Product & Regulatory Spec",
         accessorFn: (row) =>
-          `${row.name} ${row.activeIngredient} ${row.nafdacRegNumber}`,
+          `${row.name} ${row.activeIngredient}`,
         cell: ({ row }) => {
           const product = row.original;
 
           return (
             <div className="flex items-start gap-2.5">
-              <span className="mt-0.5 shrink-0 text-xl">
+              <span className="hidden mt-0.5 shrink-0 text-xl">
                 {product.emoji || "💊"}
               </span>
 
@@ -66,19 +66,20 @@ export function CatalogTable({
                   {product.name}
                 </span>
 
-                <span className="block text-[11px] text-slate-500">
-                  API:{" "}
+                <span className="flex items-center gap-2 text-[11px] text-slate-500">
+                 
+
                   <span className="font-medium text-slate-700">
                     {product.activeIngredient}
                   </span>
                 </span>
 
-                <div className="mt-1 flex items-center gap-2">
+                {/* <div className="mt-1 flex items-center gap-2">
                   <span className="flex items-center gap-1 rounded border border-emerald-200/80 bg-emerald-50 px-1.5 py-0.2 font-mono text-[10px] font-semibold text-emerald-800">
                     <ShieldCheck className="h-3 w-3 text-emerald-600" />
                     {product.nafdacRegNumber}
                   </span>
-                </div>
+                </div> */}
               </div>
             </div>
           );
@@ -173,14 +174,14 @@ export function CatalogTable({
           const fee = Math.round(
             (Number(product.referenceBasePrice) *
               Number(product.commissionPercent || 0)) /
-              100
+            100
           );
 
           const maxHospitalPrice = Math.round(
             Number(product.referenceBasePrice) *
-              (1 +
-                Number(product.maxMarkupPercent || 0) /
-                  100)
+            (1 +
+              Number(product.maxMarkupPercent || 0) /
+              100)
           );
 
           return (
@@ -328,24 +329,22 @@ export function CatalogTable({
                     (header) => (
                       <th
                         key={header.id}
-                        className={`px-3 py-3.5 ${
-                          header.id === "product"
+                        className={`px-3 py-3.5 ${header.id === "product"
                             ? "pl-4"
                             : ""
-                        } ${
-                          header.id === "actions"
+                          } ${header.id === "actions"
                             ? "pr-4 text-right"
                             : ""
-                        }`}
+                          }`}
                       >
                         {header.isPlaceholder
                           ? null
                           : flexRender(
-                              header.column
-                                .columnDef
-                                .header,
-                              header.getContext()
-                            )}
+                            header.column
+                              .columnDef
+                              .header,
+                            header.getContext()
+                          )}
                       </th>
                     )
                   )}

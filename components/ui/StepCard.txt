@@ -29,7 +29,7 @@ export const StepCard: React.FC<StepCardProps> = ({
       <div>
         <div className="flex items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2">
-            <span className="w-8 h-8 rounded-full bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+            <span className="w-8 h-8 rounded-full bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
               0{stepNumber}
             </span>
             {tag && (

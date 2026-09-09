@@ -9,11 +9,10 @@ import {
   ArrowRight,
   Sparkles
 } from 'lucide-react';
-import { useRouter } from '../../context/RouterContext';
 
 export const ProcurementWorkflow: React.FC = () => {
   const [activeStep, setActiveStep] = useState(1);
-  const { openQuoteModal } = useRouter();
+
 
   const steps = [
     {
@@ -79,7 +78,7 @@ export const ProcurementWorkflow: React.FC = () => {
               onClick={() => setActiveStep(step.number)}
               className={`p-4 rounded-xl border text-left transition-all relative overflow-hidden group cursor-pointer ${
                 isActive
-                  ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white border-transparent shadow-md ring-2 ring-blue-500/30'
+                  ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white border-transparent shadow-md ring-2 ring-blue-500/30'
                   : 'bg-white border-slate-200/90 text-slate-700 hover:border-blue-300 hover:shadow-xs'
               }`}
             >
@@ -134,8 +133,8 @@ export const ProcurementWorkflow: React.FC = () => {
 
                 <div className="mt-8 flex flex-wrap items-center gap-3">
                   <button
-                    onClick={() => openQuoteModal()}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => {}}
+                    className="px-5 py-2.5 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
                   >
                     <span>Test This Step in Live Preview</span>
                     <ArrowRight size={13} />
@@ -151,7 +150,7 @@ export const ProcurementWorkflow: React.FC = () => {
               </div>
 
               {/* Visual Workflow Graphic - Clean White/Light Tech Card */}
-              <div className="lg:col-span-5 bg-gradient-to-br from-slate-50 to-blue-50/50 rounded-2xl p-6 text-slate-900 border border-slate-200 shadow-sm">
+              <div className="lg:col-span-5 bg-linear-to-br from-slate-50 to-blue-50/50 rounded-2xl p-6 text-slate-900 border border-slate-200 shadow-sm">
                 <div className="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-lg bg-blue-100/70 text-blue-700 flex items-center justify-center border border-blue-200">

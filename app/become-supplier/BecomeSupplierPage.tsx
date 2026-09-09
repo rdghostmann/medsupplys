@@ -1,7 +1,10 @@
+"use client"
 import React, { useState } from 'react';
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { FAQAccordion } from '../components/ui/FAQAccordion';
-import { CTASection } from '../components/ui/CTASection';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
+import { FAQAccordion } from '@/components/ui/FAQAccordion';
+
+import { CTASection } from '@/components/ui/CTASection';
 import { 
   Building2, 
   ShieldCheck, 
@@ -17,7 +20,7 @@ import {
   Sparkles
 } from 'lucide-react';
 
-export const BecomeSupplierPage: React.FC = () => {
+const BecomeSupplierPage: React.FC = () => {
   const [submitted, setSubmitted] = useState(false);
   const [formData, setFormData] = useState({
     companyName: '',
@@ -97,7 +100,7 @@ export const BecomeSupplierPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero Section - Clean White Theme */}
-      <section className="bg-gradient-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
+      <section className="bg-linear-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-6">
@@ -156,7 +159,7 @@ export const BecomeSupplierPage: React.FC = () => {
             {verificationStages.map((stage, idx) => (
               <div key={idx} className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-2xs flex flex-col justify-between hover:border-blue-300 transition-all">
                 <div>
-                  <span className="w-9 h-9 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white font-mono font-bold text-xs flex items-center justify-center mb-4 shadow-2xs">
+                  <span className="w-9 h-9 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white font-mono font-bold text-xs flex items-center justify-center mb-4 shadow-2xs">
                     {stage.step}
                   </span>
                   <h4 className="text-base font-bold text-slate-900">
@@ -200,7 +203,7 @@ export const BecomeSupplierPage: React.FC = () => {
               </p>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-6 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white font-bold text-xs cursor-pointer"
+                className="mt-6 px-6 py-2.5 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white font-bold text-xs cursor-pointer"
               >
                 Submit Another Application
               </button>
@@ -373,7 +376,7 @@ export const BecomeSupplierPage: React.FC = () => {
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 <ShieldCheck size={16} />
                 <span>Submit Verified Supplier Application</span>
@@ -401,3 +404,6 @@ export const BecomeSupplierPage: React.FC = () => {
     </div>
   );
 };
+
+
+export default BecomeSupplierPage;

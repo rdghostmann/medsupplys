@@ -3,9 +3,7 @@ import {
   MOCK_PRODUCTS, 
   MOCK_SUPPLIERS, 
   MOCK_ORDERS 
-} from '../../data/mockData';
-import { OrderStatus } from '../../types';
-import { MedSupplyLogo } from './MedSupplyLogo';
+} from '@/data/mockData';
 import { 
   Search, 
   Building2, 
@@ -20,7 +18,6 @@ import {
   Clock,
   ExternalLink
 } from 'lucide-react';
-import { useRouter } from '../../context/RouterContext';
 
 export const DashboardPreview: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'catalogue' | 'suppliers' | 'orders'>('catalogue');
@@ -90,7 +87,7 @@ export const DashboardPreview: React.FC = () => {
             onClick={() => setActiveTab('catalogue')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'catalogue' 
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -101,7 +98,7 @@ export const DashboardPreview: React.FC = () => {
             onClick={() => setActiveTab('suppliers')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'suppliers' 
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -112,7 +109,7 @@ export const DashboardPreview: React.FC = () => {
             onClick={() => setActiveTab('orders')}
             className={`flex-1 sm:flex-none px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'orders' 
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs' 
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -197,7 +194,7 @@ export const DashboardPreview: React.FC = () => {
                   <td className="py-3.5 px-4 text-right">
                     <button
                       onClick={() => openQuoteModal(product)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-[11px] transition-all shadow-xs cursor-pointer"
+                      className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-linear-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-[11px] transition-all shadow-xs cursor-pointer"
                     >
                       <span>Compare</span>
                       <ArrowUpRight size={12} />
@@ -260,7 +257,7 @@ export const DashboardPreview: React.FC = () => {
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     <button
-                      onClick={() => openQuoteModal()}
+                      onClick={() => {}}
                       className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 font-bold text-[11px] transition-colors cursor-pointer"
                     >
                       <span>Request RFQ</span>
@@ -334,7 +331,7 @@ export const DashboardPreview: React.FC = () => {
           Synchronized with hospital procurement formulary. Real-time stock queries updated every 60 seconds.
         </span>
         <button
-          onClick={() => openQuoteModal()}
+          onClick={() => {}}
           className="text-blue-700 hover:text-emerald-700 font-bold underline cursor-pointer"
         >
           Open Interactive Price Comparison Matrix &rarr;

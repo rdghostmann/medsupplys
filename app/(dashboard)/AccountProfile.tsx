@@ -448,7 +448,7 @@ const AccountProfile = () => {
                     <div className="flex items-center gap-4">
 
                         {/* <div className="relative group shrink-0">
-                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl font-bold font-mono shadow-md border-2 border-white">
+                            <div className="w-16 h-16 rounded-2xl bg-linear-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center text-xl font-bold font-mono shadow-md border-2 border-white">
                                 {initials}
                             </div>
 
@@ -1115,7 +1115,7 @@ const AccountProfile = () => {
                                     </div>
 
                                     {/* Save Card */}
-                                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 text-xs text-[#0F172A] space-y-3">
+                                    <div className="bg-linear-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-5 text-xs text-[#0F172A] space-y-3">
 
                                         <div className="flex items-center gap-2">
                                             <Sparkles className="w-4 h-4 text-[#2563EB]" />

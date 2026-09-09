@@ -1,7 +1,9 @@
+"use client"
 import React from 'react';
 
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { CTASection } from '../components/ui/CTASection';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
+import { CTASection } from '@/components/ui/CTASection';
 import { 
   Check, 
   X, 
@@ -16,10 +18,11 @@ import {
   ArrowRight,
   BadgeCheck
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
-export const WhyMedSupplyPage: React.FC = () => {
-  const { openQuoteModal, navigate } = useRouter();
+const WhyMedSupplyPage: React.FC = () => {
 
+  const router = useRouter();
   const comparisonData = [
     {
       feature: 'Supplier Sourcing & Discovery',
@@ -122,13 +125,13 @@ export const WhyMedSupplyPage: React.FC = () => {
 
           <div className="mt-8 flex justify-center gap-3">
             <button
-              onClick={() => openQuoteModal()}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
+              onClick={() => {}}
+              className="px-6 py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
             >
               Test Live Comparison Engine
             </button>
             <button
-              onClick={() => navigate('/contact')}
+              onClick={() => router.push('/contact')}
               className="px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               Schedule Hospital Demo
@@ -153,7 +156,7 @@ export const WhyMedSupplyPage: React.FC = () => {
                   <tr className="border-b border-slate-200 bg-slate-100/90 text-slate-700 uppercase font-bold text-[11px] tracking-wider">
                     <th className="py-4 px-6 w-1/4">Procurement Workflow</th>
                     <th className="py-4 px-6 w-1/3 text-slate-500">Traditional Procurement</th>
-                    <th className="py-4 px-6 w-1/3 bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white">MedSupply Platform</th>
+                    <th className="py-4 px-6 w-1/3 bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white">MedSupply Platform</th>
                     <th className="py-4 px-4 text-center">Institutional Gain</th>
                   </tr>
                 </thead>
@@ -224,3 +227,6 @@ export const WhyMedSupplyPage: React.FC = () => {
     </div>
   );
 };
+
+
+export default WhyMedSupplyPage;

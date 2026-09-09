@@ -1,14 +1,12 @@
 import React from 'react';
-import { PharmaceuticalProduct } from '../../types';
 import { Pill, ThermometerSnowflake, ShieldCheck, Building2, ChevronRight, Layers } from 'lucide-react';
-import { useRouter } from '../../context/RouterContext';
 
-interface ProductCardProps {
-  product: PharmaceuticalProduct;
-}
+// interface ProductCardProps {
+//   product: PharmaceuticalProduct;
+// }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const { openQuoteModal } = useRouter();
+
   const isColdChain = product.storageRequirement.toLowerCase().includes('cold');
 
   return (
@@ -79,8 +77,8 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center gap-2">
         <button
-          onClick={() => openQuoteModal(product)}
-          className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+          onClick={() => {}}
+          className="flex-1 py-2 px-3 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
         >
           <span>Compare Suppliers</span>
           <ChevronRight size={14} />

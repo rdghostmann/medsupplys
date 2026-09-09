@@ -1,10 +1,8 @@
+"use client"
 import React, { useState } from 'react';
 
-import { MOCK_FEATURES } from '../data/mockData';
-import { SectionHeader } from '../components/ui/SectionHeader';
-import { FeatureCard } from '../components/ui/FeatureCard';
-import { DashboardPreview } from '../components/ui/DashboardPreview';
-import { CTASection } from '../components/ui/CTASection';
+import { SectionHeader } from '@/components/ui/SectionHeader';
+
 import { 
   Boxes, 
   Building2, 
@@ -22,9 +20,96 @@ import {
   Sparkles,
   SlidersHorizontal
 } from 'lucide-react';
+import { FeatureCard } from '@/components/ui/FeatureCard';
+import { CTASection } from '@/components/ui/CTASection';
 
+
+const FEATURES = [
+  {
+    id: 'procurement-core',
+    name: 'Procurement & Sourcing',
+    description: 'Core tools designed specifically for hospital and clinic procurement teams',
+    features: [
+      {
+        title: 'Master Pharmaceutical Catalogue',
+        description: 'Standardized national drug formulary with unified generic names, strengths, packaging specs, and approved NAFDAC registrations.',
+        icon: 'Boxes'
+      },
+      {
+        title: 'Supplier Marketplace',
+        description: 'Direct access to vetted importers and distributors with transparent inventory levels and verifiable Good Distribution Practices.',
+        icon: 'Building2'
+      },
+      {
+        title: 'Intelligent Supplier Matching',
+        description: 'Algorithms that match your requisition with suppliers offering the optimal balance of price, stock availability, and delivery proximity.',
+        icon: 'Search',
+        badge: 'Smart Matching'
+      },
+      {
+        title: 'Digital Purchase Orders',
+        description: 'Generate standardized enterprise purchase orders automatically, complete with institutional terms, payment conditions, and tax details.',
+        icon: 'ClipboardList'
+      }
+    ]
+  },
+  {
+    id: 'pricing-inventory',
+    name: 'Pricing & Batch Transparency',
+    description: 'Complete clarity on costs, batch specifics, and clinical viability',
+    features: [
+      {
+        title: 'Real-Time Price Comparison',
+        description: 'Multi-supplier line item pricing comparison to ensure your organization always secures fair, competitive market rates.',
+        icon: 'BarChart3'
+      },
+      {
+        title: 'Batch & Lot Traceability',
+        description: 'Inspect exact batch and lot numbers prior to placing orders, verifying remaining shelf life and factory manufacture dates.',
+        icon: 'BadgeCheck'
+      },
+      {
+        title: 'Expiry Date Visibility',
+        description: 'Guaranteed minimum shelf-life disclosures on every lot to prevent receiving near-expiry inventory.',
+        icon: 'Clock'
+      },
+      {
+        title: 'Storage & Cold-Chain Specs',
+        description: 'Rigorous indicators for controlled room temperature, refrigerated (2-8°C), and light-sensitive compounds.',
+        icon: 'ShieldCheck'
+      }
+    ]
+  },
+  {
+    id: 'operations-security',
+    name: 'Security, Compliance & Governance',
+    description: 'Enterprise security standards built for healthcare institutions',
+    features: [
+      {
+        title: 'Role-Based Access Control',
+        description: 'Configurable permissions for Ward Pharmacists, Chief Pharmacists, Finance Officers, and Hospital Directors.',
+        icon: 'Lock'
+      },
+      {
+        title: 'Immutable Audit Logs',
+        description: 'Full chronological history of every requisition, quote request, PO approval, and goods delivery for compliance audits.',
+        icon: 'FileCheck'
+      },
+      {
+        title: 'Automated Status Notifications',
+        description: 'Instant multi-channel alerts via email, SMS, and portal notifications for order approvals, dispatches, and delivery arrival.',
+        icon: 'CheckCircle2'
+      },
+      {
+        title: 'Encrypted Health Data',
+        description: 'End-to-end 256-bit encryption for all commercial transactions, proprietary supplier pricing, and institutional records.',
+        icon: 'ShieldCheck'
+      }
+    ]
+  }
+];
 export const FeaturesPage: React.FC = () => {
-  const { openQuoteModal } = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const allFeaturesList = [
@@ -182,8 +267,8 @@ export const FeaturesPage: React.FC = () => {
 
           <div className="mt-8 flex justify-center gap-3">
             <button
-              onClick={() => openQuoteModal()}
-              className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
+              onClick={() => {}}
+              className="px-6 py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
             >
               Test Live Feature Console
             </button>
@@ -203,7 +288,7 @@ export const FeaturesPage: React.FC = () => {
                 onClick={() => setSelectedCategory(cat)}
                 className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat
-                    ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
+                    ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
                 }`}
               >
@@ -226,19 +311,7 @@ export const FeaturesPage: React.FC = () => {
         </div>
       </section>
 
-      {/* Live Console Preview */}
-      <section className="py-16 sm:py-24 bg-slate-50 border-t border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <SectionHeader
-            badge="Live Interactive Console"
-            title="Experience the MedSupply Interface"
-            subtitle="Explore how the Master Product Catalogue, Supplier Marketplace, and Procurement Orders integrate into a single unified dashboard."
-          />
-
-          <DashboardPreview />
-        </div>
-      </section>
-
+ 
       {/* CTA Section */}
       <CTASection />
     </div>

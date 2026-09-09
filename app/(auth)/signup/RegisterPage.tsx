@@ -11,10 +11,11 @@ import {
   CheckCircle2,
   FileBadge
 } from 'lucide-react';
-import { MedSupplyLogo } from '../components/ui/MedSupplyLogo';
-
+import { MedSupplyLogo } from '@/components/ui/MedSupplyLogo';
+import { useRouter } from 'next/navigation';
 export const RegisterPage: React.FC = () => {
 
+  const router = useRouter();
   const [role, setRole] = useState<'buyer' | 'supplier'>('buyer');
   const [registered, setRegistered] = useState(false);
   const [formData, setFormData] = useState({
@@ -34,13 +35,13 @@ export const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-blue-50/20 to-white">
+    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/20 to-white">
       <div className="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/90 shadow-xl">
         
         {/* Header with MedSupply Logo */}
         <div className="text-center">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => router.push('/')}
             className="inline-flex items-center justify-center mb-4 group cursor-pointer"
           >
             <MedSupplyLogo variant="horizontal" size="md" />
@@ -50,7 +51,7 @@ export const RegisterPage: React.FC = () => {
             Create an Enterprise Account
           </h2>
           <p className="mt-1 text-xs text-slate-500">
-            Join Nigeria's trusted B2B pharmaceutical procurement network
+            Join Nigeria&apos;s trusted B2B pharmaceutical procurement network
           </p>
         </div>
 
@@ -61,7 +62,7 @@ export const RegisterPage: React.FC = () => {
             onClick={() => setRole('buyer')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               role === 'buyer'
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -72,7 +73,7 @@ export const RegisterPage: React.FC = () => {
             onClick={() => setRole('supplier')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               role === 'supplier'
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -94,8 +95,8 @@ export const RegisterPage: React.FC = () => {
             </div>
             <div className="pt-2">
               <button
-                onClick={() => navigate('/')}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold cursor-pointer"
+                onClick={() => router.push('/')}
+                className="px-6 py-2.5 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold cursor-pointer"
               >
                 Continue to MedSupply Portal
               </button>
@@ -234,7 +235,7 @@ export const RegisterPage: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+              className="w-full py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
             >
               <ShieldCheck size={16} />
               <span>Register Institutional Account</span>
@@ -245,7 +246,7 @@ export const RegisterPage: React.FC = () => {
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
           <span className="text-slate-500">Already have an active account?</span>
           <button
-            onClick={() => navigate('/login')}
+            onClick={() => router.push('/login')}
             className="font-bold text-blue-700 hover:text-emerald-700 cursor-pointer"
           >
             Sign In to Portal &rarr;

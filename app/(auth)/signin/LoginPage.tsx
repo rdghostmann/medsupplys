@@ -8,15 +8,16 @@ import {
   ShieldCheck, 
   CheckCircle2
 } from 'lucide-react';
-import { MedSupplyLogo } from '../components/ui/MedSupplyLogo';
+import { MedSupplyLogo } from '@/components/ui/MedSupplyLogo';
+import { useRouter } from 'next/navigation';
+ const LoginPage: React.FC = () => {
 
-export const LoginPage: React.FC = () => {
-  const { navigate, openQuoteModal } = useRouter();
   const [accountType, setAccountType] = useState<'buyer' | 'supplier'>('buyer');
   const [email, setEmail] = useState('procurement@cedarcrest.org');
   const [password, setPassword] = useState('••••••••••••');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+const router = useRouter();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,13 +29,13 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-blue-50/20 to-white">
+    <div className="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/20 to-white">
       <div className="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/90 shadow-xl">
         
         {/* Header with Official MedSupply Logo */}
         <div className="text-center">
           <button
-            onClick={() => navigate('/')}
+            onClick={() => router.push('/')}
             className="inline-flex items-center justify-center mb-4 group cursor-pointer"
           >
             <MedSupplyLogo variant="horizontal" size="md" />
@@ -58,7 +59,7 @@ export const LoginPage: React.FC = () => {
             }}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               accountType === 'buyer'
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -72,7 +73,7 @@ export const LoginPage: React.FC = () => {
             }}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
               accountType === 'supplier'
-                ? 'bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
+                ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
@@ -95,17 +96,14 @@ export const LoginPage: React.FC = () => {
               <button
                 onClick={() => {
                   setLoggedIn(false);
-                  navigate('/');
+                  router.push('/');
                 }}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold cursor-pointer"
               >
                 Access Main Dashboard
               </button>
               <button
-                onClick={() => {
-                  setLoggedIn(false);
-                  openQuoteModal();
-                }}
+                onClick={() => { }}
                 className="w-full py-2.5 rounded-xl border border-slate-200 text-slate-700 text-xs font-semibold cursor-pointer"
               >
                 Launch Live Quotation Console
@@ -165,7 +163,7 @@ export const LoginPage: React.FC = () => {
             <button
               type="submit"
               disabled={isLoggingIn}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs tracking-wide shadow-md shadow-blue-700/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               {isLoggingIn ? (
                 <span>Authenticating Secure Session...</span>
@@ -182,7 +180,7 @@ export const LoginPage: React.FC = () => {
         <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
           <span className="text-slate-500">Need an institutional account?</span>
           <button
-            onClick={() => navigate('/register')}
+            onClick={() => router.push('/register')}
             className="font-bold text-blue-700 hover:text-emerald-700 cursor-pointer"
           >
             Register Organization &rarr;
@@ -198,3 +196,5 @@ export const LoginPage: React.FC = () => {
     </div>
   );
 };
+
+export default LoginPage;

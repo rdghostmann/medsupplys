@@ -1,213 +1,310 @@
-// components/layout/Footer.tsx
-"use client"
+// components/Footer/Footer.tsx
 
-import Link from "next/link"
-import {
-  Asclepius,
-  InstagramLogo,
-  MessengerLogo,
-  WhatsappLogo,
-  XLogo,
-} from "@phosphor-icons/react/dist/ssr"
-import Image from "next/image"
+import Link from "next/link";
+import { MedSupplyLogo } from "../ui/MedSupplyLogo";
+import { ShieldCheck, Mail, MapPin } from "lucide-react";
 
-const socialLinks = [
-  {
-    label: "X (Twitter)",
-    href: "https://x.com",
-    icon: XLogo,
-  },
-  {
-    label: "Facebook",
-    href: "https://facebook.com",
-    icon: MessengerLogo,
-  },
-  {
-    label: "Instagram",
-    href: "https://instagram.com",
-    icon: InstagramLogo,
-  },
-  {
-    label: "WhatsApp",
-    href: "https://wa.me/2348000000000",
-    icon: WhatsappLogo,
-  },
-]
-
-const footerSections = [
-  {
-    title: "Company",
-    links: [
-      { label: "About MedSupply", href: "/about" },
-      { label: "How It Works", href: "/how-it-works" },
-      // { label: "Careers", href: "/careers" },
-      // { label: "Press & Media", href: "/press" },
-      { label: "Blog", href: "/blog" },
-    ],
-  },
-  {
-    title: "For Buyers",
-    links: [
-      { label: "Create Account", href: "/register" },
-      { label: "Browse Catalog", href: "/catalog" },
-      { label: "Track an Order", href: "/track-order" },
-      { label: "Buyer FAQs", href: "/faqs/buyers" },
-      { label: "Procurement Guide", href: "/procurement-guide" },
-    ],
-  },
-  {
-    title: "For Suppliers",
-    links: [
-      { label: "Apply as Supplier", href: "/become-supplier" },
-      { label: "Supplier Dashboard", href: "/supplier/dashboard" },
-      { label: "Pricing & Commission", href: "/supplier/pricing" },
-      { label: "Verification Process", href: "/verification-process" },
-      { label: "Supplier FAQs", href: "/faqs/suppliers" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy Policy", href: "/privacy-policy" },
-      { label: "Terms of Service", href: "/terms-of-service" },
-      { label: "Cookie Policy", href: "/cookie-policy" },
-      { label: "NAFDAC Compliance", href: "/compliance" },
-      { label: "Contact Support", href: "/support" },
-    ],
-  },
-]
-
-export function Footer() {
+const Footer = () => {
   return (
-    <footer
-      id="site-footer"
-      className="border-t border-slate-800 bg-slate-950 text-slate-300"
-    >
-      <div className="mx-auto max-w-7xl px-4 pt-20 pb-10 sm:px-6 lg:px-8">
-        {/* Main Footer */}
-        <div className="grid grid-cols-1 gap-14 md:grid-cols-2 lg:grid-cols-12 lg:gap-10">
-          {/* Brand */}
-          <div className="space-y-8 lg:col-span-4">
+    <footer className="relative border-t border-slate-200 bg-white text-slate-900">
+      {/* Decorative Brand Gradient Bar */}
+      <div className="h-1.5 w-full bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c]" />
+
+      {/* Main Footer */}
+      <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
+          
+          {/* =========================================================
+              Column 1: Brand & Identity
+          ========================================================= */}
+          <div className="space-y-4 lg:col-span-2">
             <Link
               href="/"
-              className="group inline-flex items-center gap-3"
+              aria-label="MedSupply Home"
+              className="inline-block rounded-md text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
             >
-              <div className="w-10 h-10 rounded-lg flex items-center justify-center">
-                <Image
-                  src="/logo-footer.png"
-                  width={36}
-                  height={36}
-                  alt="Logo"
-                  className="w-full h-full object-cover"
-                  unoptimized
-                  priority
-                />
-              </div>
-
-              <div>
-                <h2 className="text-xl font-bold tracking-tight text-white">
-                  MedSupply
-                </h2>
-                <p className="text-xs text-slate-500">
-                  Verification-First Pharma Marketplace
-                </p>
-              </div>
+              <MedSupplyLogo
+                variant="horizontal"
+                size="lg"
+                showTagline={true}
+              />
             </Link>
 
-            <p className="max-w-md text-sm leading-7 text-slate-400">
-              Africa&apos;s verification-first pharmaceutical B2B marketplace.
-              Connecting licensed buyers with verified suppliers through a
-              secure, pharmacist-approved procurement workflow.
+            <p className="max-w-sm pt-1 text-xs leading-relaxed text-slate-600">
+              Modernizing pharmaceutical procurement and institutional
+              verification through intelligent technology, audited
+              transparency, and trusted supplier networks.
             </p>
 
-            {/* Socials */}
-            <div className="flex flex-wrap items-center gap-4">
-              {socialLinks.map((social) => {
-                const Icon = social.icon
+            {/* Trust / Contact Information */}
+            <div className="space-y-2.5 pt-2 text-xs text-slate-600">
+              {/* Compliance */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                  <ShieldCheck size={13} />
+                </div>
 
-                return (
-                  <Link
-                    key={social.label}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="group flex h-11 w-11 items-center justify-center rounded-full border border-slate-800 bg-slate-900/60 transition-all duration-300 hover:-translate-y-1 hover:border-slate-700 hover:bg-slate-800 hover:text-white"
-                  >
-                    <Icon
-                      size={18}
-                      weight="fill"
-                      className="transition-transform duration-300 group-hover:scale-110"
-                    />
-                  </Link>
-                )
-              })}
+                <span>
+                  Good Distribution Practice (GDP) &amp; NAFDAC Verified
+                  Network
+                </span>
+              </div>
+
+              {/* Location */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+                  <MapPin size={13} />
+                </div>
+
+                <span>
+                  HQ Hub: Victoria Island, Lagos &bull; National Cold-Chain
+                  Depots
+                </span>
+              </div>
+
+              {/* Email */}
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-50 text-blue-700">
+                  <Mail size={13} />
+                </div>
+
+                <a
+                  href="mailto:procure@medsupply.healthcare"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  procure@medsupply.healthcare
+                </a>
+              </div>
             </div>
           </div>
 
-          {/* Footer Links */}
-          {footerSections.map((section) => (
-            <div
-              key={section.title}
-              className="space-y-6 lg:col-span-2"
-            >
-              <h4 className="text-sm font-bold uppercase tracking-[0.2em] text-white">
-                {section.title}
-              </h4>
+          {/* =========================================================
+              Column 2: Platform
+          ========================================================= */}
+          <div>
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+              Platform
+            </h4>
 
-              <ul className="space-y-4">
-                {section.links.map((link) => (
-                  <li key={link.label}>
-                    <Link
-                      href={link.href}
-                      className="text-sm font-medium text-slate-400 transition-colors duration-200 hover:text-blue-400"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+            <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link
+                  href="/"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Home
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/services"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Services
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/features"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Features
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/how-it-works"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  How It Works
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/why-medsupply"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Why MedSupply
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/stats"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Platform Statistics
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* =========================================================
+              Column 3: For Healthcare
+          ========================================================= */}
+          <div>
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+              For Healthcare
+            </h4>
+
+            <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link
+                  href="/become-a-supplier"
+                  className="font-medium transition-colors hover:text-emerald-700"
+                >
+                  Become a Supplier
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/login"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Supplier Portal Sign In
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/register"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Hospital &amp; Clinic Registration
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/contact"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Institutional Sales
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/contact"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  24/7 Clinical Emergency Line
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* =========================================================
+              Column 4: Company & Compliance
+          ========================================================= */}
+          <div>
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+              Company &amp; Audit
+            </h4>
+
+            <ul className="space-y-2.5 text-xs text-slate-600">
+              <li>
+                <Link
+                  href="/about"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  About Us
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/contact"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Contact
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/about"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Regulatory Compliance &amp; PCN
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/about"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Quality Assurance Standards
+                </Link>
+              </li>
+
+              <li>
+                <Link
+                  href="/about"
+                  className="transition-colors hover:text-blue-700"
+                >
+                  Terms of Sourcing &amp; Escrow
+                </Link>
+              </li>
+            </ul>
+          </div>
         </div>
+      </div>
 
-        {/* Bottom Bar */}
-        <div className="mt-16 flex flex-col items-center justify-between gap-5 border-t border-slate-800 pt-8 md:flex-row">
-          <p className="text-center text-sm text-slate-500 md:text-left">
-            © {new Date().getFullYear()} MedSupply Technologies Ltd
+      {/* =========================================================
+          Bottom Bar
+      ========================================================= */}
+      <div className="border-t border-slate-100 bg-slate-50/70 py-6 text-xs text-slate-500">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
+          
+          <p className="text-center sm:text-left">
+            &copy; 2026{" "}
+            <span className="font-bold text-slate-700">
+              MedSupply
+            </span>
+            . All rights reserved. &bull; Enterprise pharmaceutical
+            procurement &amp; verification infrastructure.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-            <Link
-              href="/privacy-policy"
-              className="transition-colors hover:text-white"
+          {/* Social / External Links */}
+          <div className="flex items-center gap-4 font-medium text-slate-500">
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-blue-700"
             >
-              Privacy
-            </Link>
+              LinkedIn
+            </a>
 
-            <Link
-              href="/terms-of-service"
-              className="transition-colors hover:text-white"
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-blue-700"
             >
-              Terms
-            </Link>
+              X / Twitter
+            </a>
 
-            <Link
-              href="/cookie-policy"
-              className="transition-colors hover:text-white"
+            <a
+              href="#"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-blue-700"
             >
-              Cookies
-            </Link>
-
-            <Link
-              href="/accessibility"
-              className="transition-colors hover:text-white"
-            >
-              Accessibility
-            </Link>
+              HealthTech Nigeria
+            </a>
           </div>
         </div>
       </div>
     </footer>
-  )
-}
+  );
+};
+
+export default Footer;
