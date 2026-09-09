@@ -26,7 +26,7 @@ export default function NotFound() {
 
           />
 
-          <h1 className="text-7xl font-extrabold tracking-tight text-blue-600">
+          <h1 className="hidden text-7xl font-extrabold tracking-tight text-blue-600">
             404
           </h1>
           <p className="text-xl font-semibold text-foreground">
