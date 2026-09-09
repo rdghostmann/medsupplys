@@ -63,12 +63,7 @@ export default function MatchingAlgorithmPage({
               <MatchingAlgorithmWeightsTuner
                 matchingWeights={matchingWeights}
               />
-
-
-              {/* Current/default reference */}
-              <MatchingWeightsReference
-                weights={matchingWeights}
-              />
+              <MatchingWeightsReference   />
             </div>
 
           </div>
