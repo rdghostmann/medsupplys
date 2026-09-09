@@ -134,7 +134,10 @@ export default function SigninPage() {
           {/* Header */}
           <div className="space-y-3 mb-10">
             <h1 className="text-4xl font-black text-slate-900 tracking-tight">Welcome back</h1>
-            <p className="text-slate-500 leading-relaxed text-base">
+            <p className="text-slate-500 leading-relaxed text-xs">
+              Secure B2B authentication for healthcare buyers and verified suppliers
+            </p>
+            <p className=" text-slate-500 leading-relaxed text-base">
               Sign in to continue managing procurement workflows, suppliers,
               inventory, and pharmaceutical orders.
             </p>
