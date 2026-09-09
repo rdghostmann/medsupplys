@@ -1,17 +1,10 @@
 "use client";
-import { BlogSection } from "@/components/BlogSection/BlogSection";
-import { CtaSection } from "@/components/CallToAction/CallToAction";
+
 import { FaqSection } from "@/components/FAQ/FAQ";
-import { FeatureSection } from "@/components/Feactures/FeaturesSection";
-import Hero from "@/components/HeroSection/Hero";
 import { LogoCloud } from "@/components/LogoCloud/LogoCloud";
 import Navbar from "@/components/Navbar/Navbar";
-import { StatsSection } from "@/components/StatsSection/StatsSection";
 import TestimonialSection from "@/components/Testimonial/Testimonial";
-import { ValuePropSection } from "@/components/ValuePropsSection/ValueProps";
-import Link from "next/link";
-import { motion } from "framer-motion"
-import { Star, StarAndCrescentIcon } from "@phosphor-icons/react";
+
 import ComplianceSection from "@/components/ComplianceBlock/ComplianceBlock";
 import Image from "next/image";
 import { StatCard } from "@/components/ui/StatCard";
@@ -32,6 +25,7 @@ import { ProcurementWorkflow } from "@/components/ui/ProcurementWorkflow";
 import { CTASection } from "@/components/ui/CTASection";
 import Footer from "@/components/Footer/Footer";
 import HeroSection from "@/components/HeroSection/HeroSection";
+import { StarAndCrescentIcon } from "@phosphor-icons/react";
 
 
 export default function HomePage() {
@@ -109,7 +103,7 @@ export default function HomePage() {
                   subtitle="A comprehensive pharmaceutical supply chain infrastructure engineered for transparency, regulatory compliance, and cost containment."
                />
 
-               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+               <div className="">
                   <Services />
                </div>
 
@@ -190,10 +184,12 @@ export default function HomePage() {
 
                   <div className="lg:col-span-5 relative">
                      <div className="relative rounded-2xl overflow-hidden border border-slate-200/90 shadow-xl bg-white p-2">
-                        <img
-                           src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1000&q=80"
+                        <Image
+                           src="/professional-healthcare-procurement-team-reviewing-pharmaceutical-supplies.png"
                            alt="Professional healthcare procurement team reviewing pharmaceutical supplies"
-                           className="w-full h-[460px] object-cover rounded-xl"
+                           width={1000}
+                           height={667}
+                           className="w-full h-115 object-cover rounded-xl"
                         />
                         <div className="absolute inset-2 rounded-xl bg-linear-to-t from-slate-950/85 via-slate-950/20 to-transparent pointer-events-none" />
                         <div className="absolute bottom-6 left-6 right-6 p-4 rounded-xl bg-white/95 backdrop-blur-md border border-slate-200 text-xs shadow-xl">

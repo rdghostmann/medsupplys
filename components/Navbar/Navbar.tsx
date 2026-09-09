@@ -327,7 +327,7 @@ export default function Navbar() {
 
           </div>
 
-          <div>
+          <div className="hidden lg:flex items-center gap-3">
             {/* =====================================================
                 AUTHENTICATED ACTIONS
             ===================================================== */}
