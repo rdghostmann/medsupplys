@@ -9,7 +9,7 @@ import {
   Command,
 } from "@phosphor-icons/react"
 
-import { NavMain, type NavItem } from "@/components/dashboard/nav-main"
+import { NavMain } from "@/components/dashboard/nav-main"
 import { NavSecondary } from "@/components/nav-secondary"
 import { NavUser } from "@/components/nav-user"
 
@@ -22,7 +22,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { roleNavMain } from "@/lib/roles_nav"
+import { roleNavMain, type NavItem } from "@/lib/role_nav"
 import Image from "next/image"
 
 type UserRole = keyof typeof roleNavMain

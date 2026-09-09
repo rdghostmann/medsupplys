@@ -11,6 +11,7 @@ export default async function Page() {
     findAllSupplierProductInventory(),
   ]);
 
+
   return (
     <MasterCataloguePage
       products={products}

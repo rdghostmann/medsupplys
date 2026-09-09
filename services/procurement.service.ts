@@ -24,7 +24,6 @@ import { WalletTransaction } from "@/models/WalletTransaction";
 import { CreditAccount } from "@/models/CreditAccount";
 import { CreditTransaction } from "@/models/CreditTransaction";
 
-import { Notification } from "@/models/Notification";
 import { AuditLog } from "@/models/AuditLog";
 
 import {
@@ -159,7 +158,7 @@ function generateReference(
 ): string {
     const random =
         crypto
-            .randomBytes(8)
+            .randomBytes(4)
             .toString("hex")
             .toUpperCase();
 
@@ -302,7 +301,6 @@ export async function createProcurement(
                 _id: 1,
                 role: 1,
                 status: 1,
-                fullName: 1,
                 organizationName: 1,
                 name: 1,
                 username: 1,
@@ -897,10 +895,9 @@ export async function createProcurement(
 
                                     /*
                                      * Supplier has been selected
-                                     * and is being contacted.
+                                     * and is being pending.
                                      */
-                                    status:
-                                        "SUPPLIER_CONTACTED",
+                                    status: "SUPPLIER_CONTACTED",
 
                                     supplierCandidates,
 

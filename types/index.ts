@@ -65,6 +65,7 @@ export type VerificationResult =
 export type ProductCategory =
     // Anti-infectives
     | 'ANTIBIOTICS'
+    | 'ANTIBIOTICS'
     | 'ANTIMICROBIALS'
     | 'ANTIFUNGALS'
     | 'ANTIVIRALS'
@@ -1038,36 +1039,20 @@ export type ProductStatus =
 
 export interface MasterProduct {
   id: string;
-
-    emoji?: string;
-
+  emoji?: string;
   name: string;
-
   category: string;
-
   description: string;
-
   activeIngredient: string;
-
   strength: string;
-
   dosageForm: string;
-
   unit: string;
-
   packSize: string;
-
   nafdacRegNumber: string;
-
   referenceBasePrice: number;
-
   commissionPercent: number;
-
   maxMarkupPercent: number;
-
   status: ProductStatus;
-
   storageCondition: string;
-
   image?: string;
 }

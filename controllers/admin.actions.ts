@@ -6,6 +6,8 @@ import { Types } from "mongoose";
 import { authOptions } from "@/auth";
 import { connectToDB } from "@/lib/connectToDB";
 import { User } from "@/models/User";
+import { Order, type OrderStatus } from "@/models/Order";
+import { AuditLog } from "@/models/AuditLog";
 
 export type AdminSupplierStatus =
   | "PENDING"
@@ -156,6 +158,160 @@ export async function getAdminSuppliers(): Promise<AdminSupplier[]> {
     .lean();
 
   return users.map(mapSupplier);
+}
+
+type AdminLogisticsOrderStatus =
+  | "PENDING"
+  | "SUPPLIER_CONTACTED"
+  | "UNDER_VERIFICATION"
+  | "READY_FOR_DISPATCH"
+  | "DISPATCHED"
+  | "IN_TRANSIT"
+  | "DELIVERED"
+  | "COMPLETED"
+  | "REJECTED";
+
+function normalizeOrderStatus(status: OrderStatus): AdminLogisticsOrderStatus {
+  switch (status) {
+    case "VERIFICATION":
+      return "UNDER_VERIFICATION";
+    case "PAYMENT_PENDING":
+    case "PAYMENT_CONFIRMED":
+      return "PENDING";
+    case "CANCELLED":
+    case "REFUNDED":
+      return "REJECTED";
+    default:
+      return status;
+  }
+}
+
+function normalizeOrderSupplierType(
+  supplierType: string
+): "importer" | "distributor" | "retailer" {
+  const normalizedType = supplierType.toLowerCase();
+
+  if (normalizedType === "importer" || normalizedType === "retailer") {
+    return normalizedType;
+  }
+
+  return "distributor";
+}
+
+export async function getAdminOrders() {
+  await requireAdmin();
+  await connectToDB();
+
+  const orders = await Order.find()
+    .sort({ createdAt: -1 })
+    .lean();
+
+  return orders.map((order) => {
+    const firstItem = order.items[0];
+    const status = normalizeOrderStatus(order.status);
+
+    return {
+      id: order._id.toString(),
+      orderNumber: order.orderNumber,
+      status,
+      supplierId: order.supplierId.toString(),
+      supplierName: order.supplierName,
+      supplierType: normalizeOrderSupplierType(order.supplierType),
+      items: order.items.map((item) => ({
+        id: `${order._id.toString()}-${item.productId.toString()}`,
+        name: item.name,
+        category: "",
+        quantity: item.quantity,
+        unit: item.unit,
+        unitPrice: item.unitPrice,
+        total: item.subtotal,
+      })),
+      subtotal: order.subtotal,
+      deliveryFee: Math.max(order.total - order.subtotal, 0),
+      total: order.total,
+      batchNumber: order.batchNumber || firstItem?.batchNumber || "",
+      manufacturingDate: undefined,
+      expiryDate: order.expiryDate?.toISOString() || firstItem?.expiryDate.toISOString() || "",
+      deliveryAddress: order.deliveryAddress,
+      estimatedDeliveryDate: undefined,
+      coldChainRequired: false,
+      temperature: undefined,
+      nafdacNumber: undefined,
+      pharmacistVerification: order.pharmacistVerification
+        ? {
+            verifiedByName: order.pharmacistVerification.verifiedByName,
+            pharmacistLicense: undefined,
+            verifiedAt: order.pharmacistVerification.verifiedAt?.toISOString() || "",
+            notes: order.pharmacistVerification.notes || "",
+            result: order.pharmacistVerification.result,
+          }
+        : undefined,
+      trackingUpdates: order.trackingUpdates.map((update) => ({
+        title: update.title,
+        description: update.description,
+        timestamp: update.timestamp.toISOString(),
+        completed: ["DELIVERED", "COMPLETED"].includes(update.status),
+      })),
+      createdAt: order.createdAt.toISOString(),
+      updatedAt: order.updatedAt.toISOString(),
+    };
+  });
+}
+
+export type AdminAuditLog = {
+  id: string;
+  actorId: string;
+  actorName: string;
+  actorRole: "ADMIN" | "BUYER" | "SUPPLIER" | "PHARMACIST";
+  action: string;
+  entity: string;
+  entityId: string;
+  newValue: string;
+  details: string;
+  ipAddress: string;
+  timestamp: string;
+};
+
+export async function getAdminAuditLogs(): Promise<AdminAuditLog[]> {
+  await requireAdmin();
+  await connectToDB();
+
+  const logs = await AuditLog.find()
+    .sort({ createdAt: -1 })
+    .lean();
+
+  const actorIds = logs
+    .map((log) => log.actorId)
+    .filter((actorId): actorId is Types.ObjectId => Boolean(actorId));
+  const actors = await User.find({ _id: { $in: actorIds } })
+    .select("firstName lastName username email")
+    .lean();
+  const actorNames = new Map(
+    actors.map((actor) => [
+      actor._id.toString(),
+      actor.username ||
+        `${actor.firstName} ${actor.lastName}`.trim() ||
+        actor.email,
+    ])
+  );
+
+  return logs.map((log) => {
+    const actorId = log.actorId?.toString() || "system";
+
+    return {
+      id: log._id.toString(),
+      actorId,
+      actorName: actorNames.get(actorId) || "MediSupply System",
+      actorRole: log.actorType === "SYSTEM" ? "ADMIN" : log.actorType,
+      action: log.action,
+      entity: log.entityType,
+      entityId: log.entityId?.toString() || "",
+      newValue: log.metadata ? JSON.stringify(log.metadata) : "",
+      details: log.description,
+      ipAddress: "",
+      timestamp: log.createdAt.toISOString(),
+    };
+  });
 }
 
 export async function updateSupplierStatus(

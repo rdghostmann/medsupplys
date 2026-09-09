@@ -228,8 +228,41 @@ const AdminOverview = () => {
         return `₦${value.toLocaleString("en-NG")}`;
     };
 
+    const counts = {
+        pending: pendingSuppliersCount,
+    };
+
+
     return (
         <div className="space-y-6">
+
+            {/* Header */}
+                        <div className="relative flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                            <div className="">
+                                <h2 className="font-display font-bold text-slate-900 text-lg flex items-center gap-2">
+                                    <Users className="hidden w-5 h-5 text-blue-600" />
+                                    <span>  
+                                        MediSupply Platform Operations & Governance
+                                    </span>
+                                </h2>
+            
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                   Administer verified supplier pool, NAFDAC master catalog, matching algorithm, platform monetization, and audit trails
+
+                                </p>
+                            </div>
+            
+                            {counts.pending > 0 && (
+                                <div className="hidden lg:flex px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-xl text-xs font-semibold text-amber-800 items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+            
+                                    <span>
+                                        {counts.pending} Application
+                                        {counts.pending > 1 ? "s" : ""} Awaiting Review
+                                    </span>
+                                </div>
+                            )}
+                        </div>
             {/* =====================================================
           Metrics
       ====================================================== */}

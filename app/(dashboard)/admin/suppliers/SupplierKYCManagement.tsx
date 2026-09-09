@@ -36,315 +36,6 @@ import {
 
 type CreditRatingTier = "A" | "B" | "C" | "UNRATED";
 
-type MockSupplier = AdminSupplier;
-
-/**
- * ============================================================
- * MOCK SUPPLIER DATA
- * ============================================================
- */
-
-export const initialMockSuppliers: MockSupplier[] = [
-    {
-        id: "sup-001",
-        name: "Fidson Healthcare",
-        organization: "Fidson Healthcare Plc",
-        email: "compliance@fidson.com",
-        phone: "+234 1 271 7700",
-        role: "SUPPLIER",
-
-        state: "Lagos",
-        lga: "Ikeja",
-        address: "268 Ikorodu Road, Obanikoro, Lagos, Nigeria",
-
-        supplierType: "IMPORTER",
-        supplierApprovalStatus: "PENDING",
-
-        licenseNumber: "PCN-REG-001284",
-        pcnPremisesLicense: "PCN-PREM-2026-00184",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0142",
-        taxIdentificationNumber: "TIN-00192847-0001",
-
-        isColdChainCertified: true,
-        coldChainCapacityM3: 220,
-        backupPowerSpec:
-            "Dual 500kVA Cummins Diesel Generators with Automatic Transfer Switch (ATS).",
-
-        settlementBankName: "Zenith Bank Plc",
-        settlementAccountNumber: "1014892841",
-        settlementAccountName: "Fidson Healthcare Plc",
-
-        assignedCreditLimit: 25000000,
-        creditRatingTier: "A",
-
-        kycReviewNotes:
-            "Complete regulatory submission received. Awaiting final administrative approval.",
-        createdAt: "2026-08-12T09:30:00.000Z",
-    },
-
-    {
-        id: "sup-002",
-        name: "May & Baker Nigeria",
-        organization: "May & Baker Nigeria Plc",
-        email: "regulatory@may-baker.com",
-        phone: "+234 1 279 1000",
-        role: "SUPPLIER",
-
-        state: "Lagos",
-        lga: "Ikeja",
-        address: "3, Sapara Street, Industrial Estate, Ikeja, Lagos",
-
-        supplierType: "IMPORTER",
-        supplierApprovalStatus: "APPROVED",
-
-        licenseNumber: "PCN-REG-000921",
-        pcnPremisesLicense: "PCN-PREM-2026-00421",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0078",
-        taxIdentificationNumber: "TIN-00982177-0002",
-
-        isColdChainCertified: true,
-        coldChainCapacityM3: 310,
-        backupPowerSpec:
-            "Dual 750kVA generators with automatic transfer and monitored backup systems.",
-
-        settlementBankName: "Access Bank Plc",
-        settlementAccountNumber: "1023847291",
-        settlementAccountName: "May & Baker Nigeria Plc",
-
-        assignedCreditLimit: 30000000,
-        creditRatingTier: "A",
-
-        kycReviewNotes:
-            "Regulatory documentation verified. Supplier cleared for institutional procurement.",
-        createdAt: "2026-07-18T10:00:00.000Z",
-    },
-
-    {
-        id: "sup-003",
-        name: "Emzor Pharmaceutical Industries",
-        organization: "Emzor Pharmaceutical Industries Ltd",
-        email: "compliance@emzor.com",
-        phone: "+234 1 773 0714",
-        role: "SUPPLIER",
-
-        state: "Lagos",
-        lga: "Isolo",
-        address: "1A, Henry Carr Street, Ikeja, Lagos, Nigeria",
-
-        supplierType: "DISTRIBUTOR",
-        supplierApprovalStatus: "APPROVED",
-
-        licenseNumber: "PCN-REG-002741",
-        pcnPremisesLicense: "PCN-PREM-2026-00611",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0219",
-        taxIdentificationNumber: "TIN-00281174-0003",
-
-        isColdChainCertified: true,
-        coldChainCapacityM3: 145,
-        backupPowerSpec:
-            "500kVA Cummins generator with ATS and dedicated cold-room backup system.",
-
-        settlementBankName: "GTBank Plc",
-        settlementAccountNumber: "0129847321",
-        settlementAccountName: "Emzor Pharmaceutical Industries Ltd",
-
-        assignedCreditLimit: 15000000,
-        creditRatingTier: "A",
-
-        kycReviewNotes:
-            "Distributor documentation and warehouse compliance successfully verified.",
-        createdAt: "2026-07-24T11:20:00.000Z",
-    },
-
-    {
-        id: "sup-004",
-        name: "Swiss Pharma Nigeria",
-        organization: "Swiss Pharma Nigeria Ltd",
-        email: "operations@swipha.com",
-        phone: "+234 1 774 6900",
-        role: "SUPPLIER",
-
-        state: "Lagos",
-        lga: "Lagos Island",
-        address: "23 Industrial Avenue, Lagos, Nigeria",
-
-        supplierType: "DISTRIBUTOR",
-        supplierApprovalStatus: "PENDING",
-
-        licenseNumber: "PCN-REG-003812",
-        pcnPremisesLicense: "PCN-PREM-2026-00783",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0304",
-        taxIdentificationNumber: "TIN-00372181-0004",
-
-        isColdChainCertified: true,
-        coldChainCapacityM3: 120,
-        backupPowerSpec:
-            "Dual 350kVA generators with automatic transfer switch and cold-room UPS.",
-
-        settlementBankName: "First Bank Nigeria",
-        settlementAccountNumber: "2018374920",
-        settlementAccountName: "Swiss Pharma Nigeria Ltd",
-
-        assignedCreditLimit: 12000000,
-        creditRatingTier: "B",
-
-        kycReviewNotes:
-            "Application submitted and awaiting final statutory verification.",
-        createdAt: "2026-08-20T13:45:00.000Z",
-    },
-
-    {
-        id: "sup-005",
-        name: "Juhel Nigeria Limited",
-        organization: "Juhel Nigeria Limited",
-        email: "admin@juhel.com",
-        phone: "+234 803 000 1100",
-        role: "SUPPLIER",
-
-        state: "Anambra",
-        lga: "Awka",
-        address: "6 Industrial Layout, Awka, Anambra State, Nigeria",
-
-        supplierType: "RETAILER",
-        supplierApprovalStatus: "SUSPENDED",
-
-        licenseNumber: "PCN-REG-004182",
-        pcnPremisesLicense: "PCN-PREM-2025-01922",
-        nafdacGdpLicense: "NAFDAC/GDP/2025/1188",
-        taxIdentificationNumber: "TIN-00491281-0005",
-
-        isColdChainCertified: false,
-        coldChainCapacityM3: 0,
-        backupPowerSpec: "200kVA standby generator with manual transfer system.",
-
-        settlementBankName: "UBA Plc",
-        settlementAccountNumber: "1028374612",
-        settlementAccountName: "Juhel Nigeria Limited",
-
-        assignedCreditLimit: 5000000,
-        creditRatingTier: "C",
-
-        kycReviewNotes:
-            "Supplier placed under compliance review pending documentation update.",
-        kycSuspensionReason:
-            "Expired cold-chain certification and pending regulatory documentation renewal.",
-
-        createdAt: "2026-06-14T08:20:00.000Z",
-    },
-
-    {
-        id: "sup-006",
-        name: "Neimeth Pharmaceuticals",
-        organization: "Neimeth International Pharmaceuticals Plc",
-        email: "regulatory@neimethplc.com",
-        phone: "+234 1 269 4880",
-        role: "SUPPLIER",
-
-        state: "Lagos",
-        lga: "Ikeja",
-        address: "16B, Acme Road, Ogba Industrial Estate, Lagos",
-
-        supplierType: "IMPORTER",
-        supplierApprovalStatus: "REJECTED",
-
-        licenseNumber: "PCN-REG-005291",
-        pcnPremisesLicense: "PCN-PREM-2024-01421",
-        nafdacGdpLicense: "",
-        taxIdentificationNumber: "TIN-00581271-0006",
-
-        isColdChainCertified: false,
-        coldChainCapacityM3: 0,
-        backupPowerSpec: "350kVA standby generator.",
-
-        settlementBankName: "Sterling Bank Plc",
-        settlementAccountNumber: "2019472810",
-        settlementAccountName: "Neimeth International Pharmaceuticals Plc",
-
-        assignedCreditLimit: 0,
-        creditRatingTier: "UNRATED",
-
-        kycReviewNotes:
-            "Application failed mandatory GDP documentation review.",
-        kycRejectionReason:
-            "Required NAFDAC GDP permit documentation was not validated.",
-
-        createdAt: "2026-05-21T15:10:00.000Z",
-    },
-
-    {
-        id: "sup-007",
-        name: "Pharmex Limited",
-        organization: "Pharmex Limited",
-        email: "compliance@pharmex.com",
-        phone: "+234 802 334 1122",
-        role: "SUPPLIER",
-
-        state: "Rivers",
-        lga: "Port Harcourt",
-        address: "42 Aba Road, Port Harcourt, Rivers State, Nigeria",
-
-        supplierType: "DISTRIBUTOR",
-        supplierApprovalStatus: "PENDING",
-
-        licenseNumber: "PCN-REG-006721",
-        pcnPremisesLicense: "PCN-PREM-2026-00891",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0398",
-        taxIdentificationNumber: "TIN-00628192-0007",
-
-        isColdChainCertified: true,
-        coldChainCapacityM3: 85,
-        backupPowerSpec:
-            "250kVA generator with automatic transfer and monitored cold storage.",
-
-        settlementBankName: "Access Bank Plc",
-        settlementAccountNumber: "0138472910",
-        settlementAccountName: "Pharmex Limited",
-
-        assignedCreditLimit: 8000000,
-        creditRatingTier: "B",
-
-        kycReviewNotes:
-            "Supplier application currently undergoing regulatory verification.",
-        createdAt: "2026-08-28T10:15:00.000Z",
-    },
-
-    {
-        id: "sup-008",
-        name: "MedPlus Wholesale",
-        organization: "MedPlus Wholesale Nigeria Ltd",
-        email: "admin@medpluswholesale.com",
-        phone: "+234 809 111 2233",
-        role: "SUPPLIER",
-
-        state: "Abuja",
-        lga: "Garki",
-        address: "18 Procurement District, Garki, Abuja, Nigeria",
-
-        supplierType: "RETAILER",
-        supplierApprovalStatus: "APPROVED",
-
-        licenseNumber: "PCN-REG-007431",
-        pcnPremisesLicense: "PCN-PREM-2026-01022",
-        nafdacGdpLicense: "NAFDAC/GDP/2026/0471",
-        taxIdentificationNumber: "TIN-00718271-0008",
-
-        isColdChainCertified: false,
-        coldChainCapacityM3: 0,
-        backupPowerSpec: "150kVA standby generator.",
-
-        settlementBankName: "Zenith Bank Plc",
-        settlementAccountNumber: "1018273649",
-        settlementAccountName: "MedPlus Wholesale Nigeria Ltd",
-
-        assignedCreditLimit: 6000000,
-        creditRatingTier: "B",
-
-        kycReviewNotes:
-            "Retail supplier verified and cleared for eligible procurement categories.",
-        createdAt: "2026-07-30T09:40:00.000Z",
-    },
-];
-
 /**
  * ============================================================
  * COMPONENT
@@ -355,7 +46,7 @@ const SupplierKYCManagement: React.FC<{
     initialSuppliers: AdminSupplier[];
 }> = ({ initialSuppliers }) => {
     const [allUsers, setAllUsers] =
-        useState<MockSupplier[]>(initialSuppliers);
+        useState<AdminSupplier[]>(initialSuppliers);
 
     // Filter state
     const [searchTerm, setSearchTerm] = useState("");
@@ -366,7 +57,7 @@ const SupplierKYCManagement: React.FC<{
 
     // Dossier modal state
     const [selectedSupplier, setSelectedSupplier] =
-        useState<MockSupplier | null>(null);
+        useState<AdminSupplier | null>(null);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -395,7 +86,7 @@ const SupplierKYCManagement: React.FC<{
     // Action confirmation dialogs
     const [confirmAction, setConfirmAction] = useState<{
         type: "APPROVE" | "REJECT" | "SUSPEND" | "REINSTATE";
-        supplier: MockSupplier;
+        supplier: AdminSupplier;
     } | null>(null);
 
     /**
@@ -479,7 +170,7 @@ const SupplierKYCManagement: React.FC<{
      * ============================================================
      */
 
-    const handleOpenDossier = (supplier: MockSupplier) => {
+    const handleOpenDossier = (supplier: AdminSupplier) => {
         setSelectedSupplier(supplier);
 
         setReviewTier(supplier.supplierType || "DISTRIBUTOR");
@@ -517,7 +208,7 @@ const SupplierKYCManagement: React.FC<{
      */
 
     const handleExecuteStatusChange = async (
-        targetSupplier: MockSupplier,
+        targetSupplier: AdminSupplier,
         newStatus: SupplierApprovalStatus,
         reason?: string,
         tier?: SupplierType

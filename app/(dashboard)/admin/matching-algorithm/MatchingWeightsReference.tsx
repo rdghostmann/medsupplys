@@ -8,11 +8,13 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import type { MatchingWeights } from "@/controllers/platform-config.controller";
-
-interface MatchingWeightsReferenceProps {
-  weights: MatchingWeights;
-}
+const MATCHING_WEIGHTS = {
+  availabilityWeight: 20,
+  priceWeight: 35,
+  supplierTypeWeight: 5,
+  fulfillmentWeight: 15,
+  reliabilityWeight: 25,
+} as const;
 
 const WEIGHT_CONFIG = [
   {
@@ -52,15 +54,13 @@ const WEIGHT_CONFIG = [
   },
 ] as const;
 
-export default function MatchingWeightsReference({
-  weights,
-}: MatchingWeightsReferenceProps) {
+export default function MatchingWeightsReference() {
   const total =
-    weights.availabilityWeight +
-    weights.priceWeight +
-    weights.supplierTypeWeight +
-    weights.fulfillmentWeight +
-    weights.reliabilityWeight;
+    MATCHING_WEIGHTS.availabilityWeight +
+    MATCHING_WEIGHTS.priceWeight +
+    MATCHING_WEIGHTS.supplierTypeWeight +
+    MATCHING_WEIGHTS.fulfillmentWeight +
+    MATCHING_WEIGHTS.reliabilityWeight;
 
   return (
     <div className="rounded-xl border bg-card p-5 shadow-sm">
@@ -97,7 +97,7 @@ export default function MatchingWeightsReference({
       {/* Weight List */}
       <div className="space-y-4">
         {WEIGHT_CONFIG.map((item) => {
-          const value = weights[item.key];
+          const value = MATCHING_WEIGHTS[item.key];
           const Icon = item.icon;
 
           return (
@@ -130,7 +130,7 @@ export default function MatchingWeightsReference({
                     <div
                       className="h-full rounded-full bg-primary transition-all"
                       style={{
-                        width: `${Math.min(value, 100)}%`,
+                        width: `${value}%`,
                       }}
                     />
                   </div>
