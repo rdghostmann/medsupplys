@@ -32,8 +32,6 @@ export interface IProduct extends Document {
 
   category: string;
 
-  nafdacRegNumber?: string;
-
   unit: string;
   packSize?: string;
 
@@ -118,11 +116,6 @@ const ProductSchema = new Schema<IProduct>(
       required: true,
       trim: true,
       index: true,
-    },
-
-    nafdacRegNumber: {
-      type: String,
-      trim: true,
     },
 
     unit: {

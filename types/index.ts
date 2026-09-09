@@ -1048,7 +1048,6 @@ export interface MasterProduct {
   dosageForm: string;
   unit: string;
   packSize: string;
-  nafdacRegNumber: string;
   referenceBasePrice: number;
   commissionPercent: number;
   maxMarkupPercent: number;

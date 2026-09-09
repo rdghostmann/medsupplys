@@ -59,7 +59,6 @@ export interface ProductFormData {
   unit: string;
   packSize: string;
 
-  nafdacRegNumber: string;
 
   referenceBasePrice: number;
   commissionPercent: number;
@@ -151,7 +150,6 @@ const DEFAULT_FORM_DATA: ProductFormData = {
   unit: "Tablets",
   packSize: "100 tablets",
 
-  nafdacRegNumber: "",
 
   referenceBasePrice: 2500,
   commissionPercent: 5,
@@ -209,7 +207,6 @@ export default function CreateEditProductModal({
       dosageForm: editingProduct.dosageForm ?? "",
       unit: editingProduct.unit ?? "",
       packSize: editingProduct.packSize ?? "",
-      nafdacRegNumber: editingProduct.nafdacRegNumber ?? "",
       referenceBasePrice: Number(editingProduct.referenceBasePrice ?? 0),
       commissionPercent: Number(editingProduct.commissionPercent ?? 0),
       maxMarkupPercent: Number(editingProduct.maxMarkupPercent ?? 0),
@@ -562,12 +559,6 @@ export default function CreateEditProductModal({
     }
 
     if (
-      !formData.nafdacRegNumber.trim()
-    ) {
-      return "NAFDAC registration number is required.";
-    }
-
-    if (
       !formData.storageCondition.trim()
     ) {
       return "Storage condition is required.";
@@ -653,9 +644,6 @@ export default function CreateEditProductModal({
 
         unit:
           formData.unit.trim(),
-
-        nafdacRegNumber:
-          formData.nafdacRegNumber.trim(),
 
         storageCondition:
           formData.storageCondition.trim(),
@@ -748,13 +736,7 @@ export default function CreateEditProductModal({
           formData.packSize.trim()
       ),
     ],
-    [
-      "Regulatory data",
-      Boolean(
-        formData.nafdacRegNumber.trim() &&
-          formData.storageCondition.trim()
-      ),
-    ],
+   
     ["Pricing configuration", referenceBasePrice > 0],
   ];
 
@@ -1914,33 +1896,6 @@ export default function CreateEditProductModal({
                     </span>
                   </label>
 
-                  <input
-                    value={
-                      formData.nafdacRegNumber
-                    }
-                    onChange={(event) =>
-                      updateField(
-                        "nafdacRegNumber",
-                        event.target.value
-                      )
-                    }
-                    placeholder="e.g. A4-1234"
-                    className="
-                      h-10
-                      w-full
-                      rounded-lg
-                      border
-                      border-slate-200
-                      px-3
-                      text-sm
-                      uppercase
-                      outline-none
-                      transition
-                      focus:border-emerald-500
-                      focus:ring-2
-                      focus:ring-emerald-500/10
-                    "
-                  />
 
                   <p className="text-[11px] text-slate-400">
                     Store the regulatory registration

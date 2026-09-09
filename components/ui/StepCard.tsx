@@ -1,0 +1,55 @@
+import React from 'react';
+import * as LucideIcons from 'lucide-react';
+
+interface StepCardProps {
+  stepNumber: number;
+  title: string;
+  description: string;
+  iconName: string;
+  tag?: string;
+  active?: boolean;
+}
+
+export const StepCard: React.FC<StepCardProps> = ({
+  stepNumber,
+  title,
+  description,
+  iconName,
+  tag,
+  active = false
+}) => {
+  const IconComponent = (LucideIcons as Record<string, any>)[iconName] || LucideIcons.Activity;
+
+  return (
+    <div className={`relative p-6 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
+      active 
+        ? 'bg-white border-blue-600/60 shadow-md ring-1 ring-blue-500/20' 
+        : 'bg-white border-slate-200/90 shadow-2xs hover:shadow-sm'
+    }`}>
+      <div>
+        <div className="flex items-center justify-between gap-2 mb-4">
+          <div className="flex items-center gap-2">
+            <span className="w-8 h-8 rounded-full bg-gradient-to-r from-[#1e40af] to-[#00b87c] text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+              0{stepNumber}
+            </span>
+            {tag && (
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-slate-100 text-slate-700">
+                {tag}
+              </span>
+            )}
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center border border-blue-100/70">
+            <IconComponent size={18} />
+          </div>
+        </div>
+
+        <h3 className="text-base font-bold text-slate-900 leading-snug">
+          {title}
+        </h3>
+        <p className="mt-2 text-xs leading-relaxed text-slate-600">
+          {description}
+        </p>
+      </div>
+    </div>
+  );
+};

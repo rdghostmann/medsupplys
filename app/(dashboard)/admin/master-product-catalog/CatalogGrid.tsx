@@ -130,11 +130,7 @@ export function CatalogGrid({
 
                 {/* NAFDAC */}
                 <div className="my-2.5 flex flex-wrap items-center gap-2">
-                  <span className="flex items-center gap-1 rounded border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
-                    <ShieldCheck className="h-3 w-3 text-emerald-600" />
-
-                    {product.nafdacRegNumber}
-                  </span>
+                
 
                   <span className="rounded bg-blue-50 px-2 py-0.5 text-[10px] font-semibold text-blue-700">
                     {product.strength}

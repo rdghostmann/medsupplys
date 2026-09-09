@@ -1,0 +1,91 @@
+import React from 'react';
+import { PharmaceuticalProduct } from '../../types';
+import { Pill, ThermometerSnowflake, ShieldCheck, Building2, ChevronRight, Layers } from 'lucide-react';
+import { useRouter } from '../../context/RouterContext';
+
+interface ProductCardProps {
+  product: PharmaceuticalProduct;
+}
+
+export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { openQuoteModal } = useRouter();
+  const isColdChain = product.storageRequirement.toLowerCase().includes('cold');
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-400 hover:shadow-md transition-all p-5 sm:p-6 flex flex-col justify-between">
+      <div>
+        <div className="flex items-start justify-between gap-3 mb-3">
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+            {product.category}
+          </span>
+          {isColdChain ? (
+            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+              <ThermometerSnowflake size={12} className="text-blue-600" />
+              Cold Chain (2-8°C)
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 border border-slate-200">
+              {product.storageRequirement}
+            </span>
+          )}
+        </div>
+
+        <h3 className="text-base font-bold text-slate-900 line-clamp-1">
+          {product.name}
+        </h3>
+        <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+          {product.genericName}
+        </p>
+
+        <div className="mt-4 grid grid-cols-2 gap-2 text-xs bg-slate-50/80 p-3 rounded-xl border border-slate-100">
+          <div>
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Dosage Form</span>
+            <span className="font-semibold text-slate-800 flex items-center gap-1 mt-0.5">
+              <Pill size={12} className="text-blue-700" />
+              {product.dosageForm} ({product.strength})
+            </span>
+          </div>
+          <div>
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Pack Size</span>
+            <span className="font-semibold text-slate-800 flex items-center gap-1 mt-0.5">
+              <Layers size={12} className="text-blue-700" />
+              {product.packSize}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-4 flex items-baseline justify-between">
+          <div>
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Ref Market Price</span>
+            <span className="text-lg font-extrabold text-slate-900">
+              {product.currency}{product.referencePrice.toLocaleString()}
+            </span>
+            <span className="text-[10px] text-slate-500 block">per standard pack</span>
+          </div>
+          <div className="text-right">
+            <span className="text-[10px] text-slate-400 uppercase font-semibold block">Suppliers</span>
+            <span className="inline-flex items-center gap-1 text-xs font-bold text-blue-900 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+              <Building2 size={12} className="text-blue-700" />
+              {product.suppliersAvailable} Available
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-3 text-[11px] font-mono text-slate-400 flex items-center gap-1">
+          <ShieldCheck size={11} className="text-emerald-600" />
+          <span>{product.nafdacRegNumber}</span>
+        </div>
+      </div>
+
+      <div className="mt-5 pt-3.5 border-t border-slate-100 flex items-center gap-2">
+        <button
+          onClick={() => openQuoteModal(product)}
+          className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-[#1e40af] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white text-xs font-bold shadow-xs transition-all flex items-center justify-center gap-1 cursor-pointer"
+        >
+          <span>Compare Suppliers</span>
+          <ChevronRight size={14} />
+        </button>
+      </div>
+    </div>
+  );
+};

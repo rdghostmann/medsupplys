@@ -58,8 +58,6 @@ export async function findAllMasterProducts(): Promise<MasterProduct[]> {
 
       packSize: product.packSize ?? "",
 
-      nafdacRegNumber: product.nafdacRegNumber ?? "",
-
       referenceBasePrice: Number(
         product.referenceBasePrice ?? 0
       ),

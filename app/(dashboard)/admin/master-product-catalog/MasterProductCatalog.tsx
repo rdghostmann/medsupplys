@@ -150,9 +150,6 @@ export const MasterProductCatalog: React.FC<
           product.activeIngredient
             .toLowerCase()
             .includes(query) ||
-          product.nafdacRegNumber
-            .toLowerCase()
-            .includes(query) ||
           product.dosageForm
             .toLowerCase()
             .includes(query) ||
@@ -543,13 +540,7 @@ export const MasterProductCatalog: React.FC<
             </div>
 
             <div className="mt-4 space-y-1 rounded-xl border border-slate-200 bg-slate-50 p-3 font-mono text-xs text-slate-600">
-              <div>
-                NAFDAC:{" "}
-                {
-                  deleteConfirmProduct.nafdacRegNumber
-                }
-              </div>
-
+              
               <div>
                 Reference Base: ₦
                 {Number(
