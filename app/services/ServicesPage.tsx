@@ -5,6 +5,7 @@ import { SectionHeader } from '@/components/ui/SectionHeader';
 
 import { CTASection } from '@/components/ui/CTASection';
 import * as LucideIcons from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const MOCK_SERVICES = [
@@ -243,16 +244,16 @@ const ServicesPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {allServices.map((service, index) => {
-              const IconComponent = (LucideIcons as Record<string, unknown>)[service.icon] || LucideIcons.Activity;
+              const IconComponent: LucideIcon = (LucideIcons as unknown as Record<string, LucideIcon>)[service.icon] || LucideIcons.Activity;
               return (
                 <div
-                  key={service.id}
+                  key={index}
                   className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-300 hover:shadow-md transition-all p-8 flex flex-col justify-between"
                 >
                   <div>
                     <div className="flex items-center justify-between gap-3 mb-5">
                       <div className="border w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-2xs">
-                        {/* <IconComponent size={24} /> */}
+                        <IconComponent size={24} />
                       </div>
                       <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
                         {service.badge}

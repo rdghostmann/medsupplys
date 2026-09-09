@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { FeatureCard } from '@/components/ui/FeatureCard';
 import { CTASection } from '@/components/ui/CTASection';
-
+import { useRouter } from 'next/navigation';
 
 const FEATURES = [
   {
@@ -248,7 +248,9 @@ export const FeaturesPage: React.FC = () => {
     ? allFeaturesList
     : allFeaturesList.filter(f => f.category === selectedCategory);
 
-   return (
+
+    const router = useRouter();
+  return (
     <div className="bg-white">
       {/* Hero Section */}
       <section className="bg-white border-b border-slate-200 py-16 sm:py-24 relative overflow-hidden">
@@ -268,7 +270,7 @@ export const FeaturesPage: React.FC = () => {
 
           <div className="mt-8 flex justify-center gap-3">
             <button
-              onClick={() => { }}
+              onClick={() => router.push('/features/console')}
               className="px-6 py-3 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
             >
               Test Live Feature Console
@@ -281,18 +283,30 @@ export const FeaturesPage: React.FC = () => {
       <section className="py-16 sm:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-12 scrollbar-none">
+          <div
+            className="
+                category-scrollbar
+                flex
+                items-center
+                justify-start
+                sm:justify-center
+                gap-2
+                overflow-x-auto
+                pb-4
+                mb-12
+                w-full
+              "
+          >
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat
-                  ? 'bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200/80'
+                className={`shrink-0 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${selectedCategory === cat
+                    ? "bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white shadow-xs"
+                    : "bg-slate-100 text-slate-600 hover:bg-slate-200/80"
                   }`}
               >
-                {cat === 'all' ? 'All Enterprise Features' : cat}
+                {cat === "all" ? "All Features" : cat}
               </button>
             ))}
           </div>

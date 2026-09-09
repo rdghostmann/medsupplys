@@ -294,7 +294,7 @@ const WhyMedSupplyPage: React.FC = () => {
                     referrerPolicy="no-referrer"
                     width={1200}
                     height={896}
-                    className="w-full h-[420px] object-cover object-center"
+                    className="w-full h-105 object-cover object-center"
                   />
                   <div className="absolute inset-0 bg-linear-to-t from-slate-950/80 via-transparent to-transparent"></div>
                   <div className="absolute bottom-4 left-4 right-4 text-white">

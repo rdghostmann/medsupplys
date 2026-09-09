@@ -143,3 +143,27 @@
   -ms-user-select: none;
   user-select: none;
 }
+
+/* Horizontal category scrollbar */
+.category-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+
+.category-scrollbar::-webkit-scrollbar {
+  height: 8px;
+}
+
+.category-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 9999px;
+}
+
+.category-scrollbar::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 9999px;
+}
+
+.category-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
