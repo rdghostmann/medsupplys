@@ -1513,7 +1513,7 @@ export default function CreateEditProductModal({
                           ) => (
                             <React.Fragment
                               key={
-                                group.label
+                                group.group
                               }
                             >
                               {groupIndex >
@@ -1524,7 +1524,7 @@ export default function CreateEditProductModal({
                               <SelectGroup>
                                 <SelectLabel>
                                   {
-                                    group.label
+                                    group.group
                                   }
                                 </SelectLabel>
 
@@ -1632,7 +1632,7 @@ export default function CreateEditProductModal({
                           ) => (
                             <React.Fragment
                               key={
-                                group.label
+                                group.group
                               }
                             >
                               {groupIndex >
@@ -1643,7 +1643,7 @@ export default function CreateEditProductModal({
                               <SelectGroup>
                                 <SelectLabel>
                                   {
-                                    group.label
+                                    group.group
                                   }
                                 </SelectLabel>
 
@@ -2399,7 +2399,7 @@ export default function CreateEditProductModal({
                       ([
                         label,
                         complete,
-                      ]) => (
+                      ]: [string, boolean]) => (
                         <div
                           key={label}
                           className="flex items-center justify-between gap-3"
