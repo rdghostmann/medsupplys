@@ -32,9 +32,11 @@ const HeroSection = () => {
           <div className="text-center max-w-3xl mx-auto">
             {/* Top Brand Pill with Logo */}
             <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white border border-slate-200 shadow-xs text-slate-800 text-xs font-semibold uppercase tracking-wider mb-6">
-              <MedSupplyLogo variant="iconOnly" size="sm" />
+              {/* <MedSupplyLogo variant="iconOnly" size="sm" /> */}
+              🔬
               <span className="text-slate-900 font-bold">Enterprise Pharmaceutical Procurement Network</span>
-              <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold">VERIFIED</span>
+              {/* <span className="text-slate-900 font-bold"> Verification-Based B2B Platform</span> */}
+              <span className="hidden text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold">VERIFIED</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-tight text-slate-900">
