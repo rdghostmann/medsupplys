@@ -23,7 +23,7 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({
     <div className="group relative bg-white p-6 sm:p-7 rounded-2xl border border-slate-200/80 shadow-xs hover:border-blue-500/40 hover:shadow-md transition-all duration-200 flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between gap-2 mb-4">
-          <div className="border w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 group-hover:bg-linear-to-br group-hover:from-[#1e40af] group-hover:to-[#00b87c] group-hover:text-white transition-all duration-200 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 group-hover:bg-linear-to-br group-hover:from-[#1e40af] group-hover:to-[#00b87c] group-hover:text-white transition-all duration-200 shadow-xs">
             <IconComponent size={22} />
           </div>
           {badge && (
