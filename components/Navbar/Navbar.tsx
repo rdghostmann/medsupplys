@@ -323,8 +323,11 @@ export default function Navbar() {
               )
             })}
 
-            <div className="w-px h-6 bg-slate-200 mx-3" />
 
+
+          </div>
+
+          <div>
             {/* =====================================================
                 AUTHENTICATED ACTIONS
             ===================================================== */}
