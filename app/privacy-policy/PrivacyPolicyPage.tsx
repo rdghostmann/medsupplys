@@ -447,7 +447,7 @@ const [searchQuery, setSearchQuery] = useState('');
               </button>
 
               <button
-                onClick={() => router.push('/terms-and-conditions')}
+                onClick={() => router.push('/terms-conditionss')}
                 className="px-4 py-2 rounded-xl bg-linear-to-r from-[#1e40af] to-[#00b87c] text-white text-xs font-bold flex items-center gap-1.5 shadow-xs hover:opacity-95 transition-all cursor-pointer"
               >
                 <span>Terms &amp; Conditions</span>
@@ -612,7 +612,7 @@ const [searchQuery, setSearchQuery] = useState('');
                 </p>
               </div>
               <button
-                onClick={() => router.push('/terms-and-conditions')}
+                onClick={() => router.push('/terms-conditionss')}
                 className="shrink-0 px-5 py-3 rounded-xl bg-white text-blue-900 font-bold text-xs hover:bg-blue-50 transition-colors shadow-md cursor-pointer flex items-center gap-2"
               >
                 <span>Read Terms &amp; Conditions</span>
