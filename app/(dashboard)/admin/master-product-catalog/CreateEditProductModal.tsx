@@ -1,7 +1,8 @@
+// CreatditProductModal.tsx
+
 "use client";
 
 import React, {
-  useEffect,
   useMemo,
   useRef,
   useState,
@@ -37,6 +38,7 @@ import {
 
 import type { MasterProduct, ProductStatus } from "@/types";
 import { DOSAGE_FORM_GROUPS, PACK_SIZE_GROUPS } from "@/lib/catalogOptions";
+import { CATEGORIES } from "@/lib/categories";
 
 /* =========================================================
    TYPES
@@ -193,14 +195,36 @@ export default function CreateEditProductModal({
   editingProduct,
   onSaveProduct,
 }: CreateEditProductModalProps) {
-  const [formData, setFormData] =
-    useState<ProductFormData>(DEFAULT_FORM_DATA);
+  const [formData, setFormData] = useState<ProductFormData>(() => {
+    if (!editingProduct) return { ...DEFAULT_FORM_DATA };
 
-  const [isCustomDosage, setIsCustomDosage] =
-    useState(false);
+    return {
+      emoji: editingProduct.emoji ?? EMOJI_OPTIONS[0],
+      image: editingProduct.image ?? "",
+      name: editingProduct.name ?? "",
+      category: editingProduct.category ?? "ANTI_INFECTIVES",
+      description: editingProduct.description ?? "",
+      activeIngredient: editingProduct.activeIngredient ?? "",
+      strength: editingProduct.strength ?? "",
+      dosageForm: editingProduct.dosageForm ?? "",
+      unit: editingProduct.unit ?? "",
+      packSize: editingProduct.packSize ?? "",
+      nafdacRegNumber: editingProduct.nafdacRegNumber ?? "",
+      referenceBasePrice: Number(editingProduct.referenceBasePrice ?? 0),
+      commissionPercent: Number(editingProduct.commissionPercent ?? 0),
+      maxMarkupPercent: Number(editingProduct.maxMarkupPercent ?? 0),
+      status: editingProduct.status,
+      storageCondition: editingProduct.storageCondition ?? "",
+    };
+  });
 
-  const [isCustomPackSize, setIsCustomPackSize] =
-    useState(false);
+  const [isCustomDosage, setIsCustomDosage] = useState(() =>
+    editingProduct ? !isKnownDosageForm(editingProduct.dosageForm) : false
+  );
+
+  const [isCustomPackSize, setIsCustomPackSize] = useState(() =>
+    editingProduct ? !isKnownPackSize(editingProduct.packSize) : false
+  );
 
   const [isSubmitting, setIsSubmitting] =
     useState(false);
@@ -221,117 +245,12 @@ export default function CreateEditProductModal({
      MEMOS
   ======================================================= */
 
-  const dosageForms = useMemo(
-    () => flattenDosageForms(),
-    []
-  );
-
   const packSizes = useMemo(
     () => flattenPackSizes(),
     []
   );
 
   const isEditing = Boolean(editingProduct);
-
-  /* =======================================================
-     INITIALIZE FORM
-  ======================================================= */
-
-  useEffect(() => {
-    if (!isCreateEditModalOpen) return;
-
-    setErrorMessage("");
-
-    if (editingProduct) {
-      const dosageIsCustom = !isKnownDosageForm(
-        editingProduct.dosageForm
-      );
-
-      const packIsCustom = !isKnownPackSize(
-        editingProduct.packSize
-      );
-
-      setIsCustomDosage(dosageIsCustom);
-      setIsCustomPackSize(packIsCustom);
-
-      setFormData({
-        emoji:
-          editingProduct.emoji ??
-          EMOJI_OPTIONS[0],
-
-        image:
-          editingProduct.image ?? "",
-
-        name:
-          editingProduct.name ?? "",
-
-        category:
-          editingProduct.category ??
-          "ANTI_INFECTIVES",
-
-        description:
-          editingProduct.description ?? "",
-
-        activeIngredient:
-          editingProduct.activeIngredient ?? "",
-
-        strength:
-          editingProduct.strength ?? "",
-
-        dosageForm:
-          editingProduct.dosageForm ?? "",
-
-        unit:
-          editingProduct.unit ?? "",
-
-        packSize:
-          editingProduct.packSize ?? "",
-
-        nafdacRegNumber:
-          editingProduct.nafdacRegNumber ?? "",
-
-        referenceBasePrice:
-          Number(
-            editingProduct.referenceBasePrice ?? 0
-          ),
-
-        commissionPercent:
-          Number(
-            editingProduct.commissionPercent ?? 0
-          ),
-
-        maxMarkupPercent:
-          Number(
-            editingProduct.maxMarkupPercent ?? 0
-          ),
-
-        status:
-          editingProduct.status,
-
-        storageCondition:
-          editingProduct.storageCondition ?? "",
-      });
-    } else {
-      setFormData({
-        ...DEFAULT_FORM_DATA,
-      });
-
-      setIsCustomDosage(false);
-      setIsCustomPackSize(false);
-    }
-
-    setActiveSectionIndex(0);
-
-    requestAnimationFrame(() => {
-      horizontalScrollRef.current?.scrollTo({
-        left: 0,
-        behavior: "instant",
-      });
-    });
-  }, [
-    isCreateEditModalOpen,
-    editingProduct,
-  ]);
 
   /* =======================================================
      SECTION NAVIGATION
@@ -2434,7 +2353,7 @@ export default function CreateEditProductModal({
                       Supplier-specific prices should
                       remain in the supplier inventory
                       layer. These values define the
-                      master catalogue's reference
+                      master catalogues reference
                       pricing configuration.
                     </p>
                   </div>

@@ -489,6 +489,7 @@ export const MasterProductCatalog: React.FC<
       )}
 
       <CreateEditProductModal
+        key={`${isCreateEditModalOpen ? "open" : "closed"}-${editingProduct?.id ?? "new"}`}
         isCreateEditModalOpen={isCreateEditModalOpen}
         setIsCreateEditModalOpen={setIsCreateEditModalOpen}
         editingProduct={editingProduct}

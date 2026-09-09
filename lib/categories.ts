@@ -1,4 +1,4 @@
-
+// /lib/catergories.ts
 
 export const CATEGORIES: { label: string; value: string }[] = [
     { label: "All Categories", value: "ALL" },
