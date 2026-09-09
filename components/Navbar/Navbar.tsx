@@ -24,7 +24,7 @@ import {
   Menu,
   X,
   LayoutDashboard,
-  } from "lucide-react"
+} from "lucide-react"
 
 import {
   PackageIcon,
@@ -49,13 +49,13 @@ export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const { data: session, status } =    useSession()
+  const { data: session, status } = useSession()
 
-  const isAuthenticated =    status === "authenticated"
+  const isAuthenticated = status === "authenticated"
 
-  const [isOpen, setIsOpen] =    useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
-  const [scrolled, setScrolled] =    useState(false)
+  const [scrolled, setScrolled] = useState(false)
 
   /* =========================================================
      EFFECTS
@@ -111,8 +111,8 @@ export default function Navbar() {
 
   const navLinks: NavLink[] = [
     {
-      name: "Products",
-      href: "/signin",
+      name: "Home",
+      href: "/",
       icon: (
         <PackageIcon
           size={18}
@@ -122,8 +122,8 @@ export default function Navbar() {
     },
 
     {
-      name: "How It Works",
-      href: "Signin",
+      name: "About",
+      href: "/about",
       icon: (
         <ProhibitInsetIcon
           size={18}
@@ -131,10 +131,39 @@ export default function Navbar() {
         />
       ),
     },
-
     {
-      name: "Suppliers",
-      href: "/signup",
+      name: "Why MedSupply",
+      href: "/why-medsupply",
+      icon: (
+        <StorefrontIcon
+          size={18}
+          weight="duotone"
+        />
+      ),
+    },
+    {
+      name: "Features",
+      href: "/features",
+      icon: (
+        <StorefrontIcon
+          size={18}
+          weight="duotone"
+        />
+      ),
+    },
+    {
+      name: "How it Works",
+      href: "/how-it-works",
+      icon: (
+        <StorefrontIcon
+          size={18}
+          weight="duotone"
+        />
+      ),
+    },
+    {
+      name: "Become a Supplier",
+      href: "/become-supplier",
       icon: (
         <TruckIcon
           size={18}
@@ -142,10 +171,9 @@ export default function Navbar() {
         />
       ),
     },
-
-    {
-      name: "Marketplace",
-      href: "/signin",
+     {
+      name: "Contact",
+      href: "/contact",
       icon: (
         <StorefrontIcon
           size={18}
@@ -165,7 +193,7 @@ export default function Navbar() {
   const handleDashboard = () => {
     closeMenu()
     const role = session?.user?.role // Typed from next-auth.d.ts
-    
+
     const routes: Record<string, string> = {
       supplier: "/supplier",
       buyer: "/buyer",

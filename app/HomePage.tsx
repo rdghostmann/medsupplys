@@ -17,38 +17,22 @@ import Image from "next/image";
 import { StatCard } from "@/components/ui/StatCard";
 import {
    ShieldCheck,
-   BadgeCheck,
-   Truck,
    ArrowRight,
    Package,
    Building2,
    Users,
    CheckCircle2,
    Clock,
-   Lock,
    ChevronRight,
-   Award
 } from 'lucide-react';
 import { SectionHeader } from "@/components/ui/SectionHeader";
-import ServiceCard from "@/components/ui/ServiceCard";
 import { useRouter } from "next/navigation";
 import Services from "@/components/ui/ServiceCard";
 import { ProcurementWorkflow } from "@/components/ui/ProcurementWorkflow";
 import { CTASection } from "@/components/ui/CTASection";
 import Footer from "@/components/Footer/Footer";
+import HeroSection from "@/components/HeroSection/HeroSection";
 
-const RoleCard = ({ emoji, title, desc, bg, color, linkUrl }: { emoji: string, title: string, desc: string, bg: string, color: string, linkUrl: string }) => (
-   <Link href={linkUrl} className="p-7 rounded-2xl border border-slate-200 text-center cursor-pointer hover:border-blue-500 hover:shadow-lg transition-all group">
-      <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl mx-auto mb-4 ${bg}`}>
-         {emoji}
-      </div>
-      <h3 className="font-sora font-semibold text-[15px] mb-2">{title}</h3>
-      <p className="text-xs text-slate-600 mb-4">{desc}</p>
-      <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-[11px] font-medium ${color}`}>
-         Preview Dashboard →
-      </span>
-   </Link>
-);
 
 export default function HomePage() {
    const router = useRouter();
@@ -59,7 +43,9 @@ export default function HomePage() {
 
          <Hero />
 
-         <section className="hidden  pt-36 pb-20 px-6 max-w-7xl mx-auto  md:grid-cols-2 gap-16 items-center">
+         <HeroSection />
+
+         <section className="hidden pt-36 pb-20 px-6 max-w-7xl mx-auto md:grid-cols-2 gap-16 items-center">
             <div>
                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-600 border border-blue-200 px-4 py-1.5 rounded-full text-xs font-medium mb-5">
                   <span className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />
@@ -112,7 +98,7 @@ export default function HomePage() {
             </div>
          </section>
 
-         <StatsSection />
+         {/* <StatsSection /> */}
 
          <LogoCloud />
 
@@ -125,7 +111,7 @@ export default function HomePage() {
                   subtitle="Powering verified drug supplies across tertiary teaching hospitals, private clinic groups, and state healthcare networks."
                />
 
-               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
                   <StatCard
                      label="Verified Products"
                      value="1,500+"
@@ -201,9 +187,6 @@ export default function HomePage() {
             </div>
          </section>
 
-
-         {/* FEATURES SECTION */}
-         <ValuePropSection />
 
          {/* WHY MEDSUPPLY SECTION - REFACTORED TO WHITE / LIGHT SOPHISTICATED THEME */}
          <section className="py-16 sm:py-24 bg-linear-to-b from-white to-slate-50/80 border-t border-slate-200/80 relative overflow-hidden">

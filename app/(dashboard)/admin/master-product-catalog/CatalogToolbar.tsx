@@ -162,6 +162,7 @@ export function CatalogToolbar({
             </button>
           </div>
         </div>
+        
       </div>
 
       {/* Status Chips */}
