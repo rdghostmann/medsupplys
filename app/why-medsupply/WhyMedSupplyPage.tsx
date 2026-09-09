@@ -16,9 +16,14 @@ import {
   TrendingDown, 
   Sparkles,
   ArrowRight,
-  BadgeCheck
+  BadgeCheck,
+  ChevronRight,
+  RotateCcw,
+  Thermometer,
+  CreditCard
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 const WhyMedSupplyPage: React.FC = () => {
 
@@ -103,6 +108,33 @@ const WhyMedSupplyPage: React.FC = () => {
       desc: 'Whether operating a 20-bed private clinic or a 1,200-bed university teaching hospital network, MedSupply scales seamlessly.',
       icon: ShieldCheck
     }
+  ];
+
+    const whyPillars = [
+    {
+      title: 'Zero-Counterfeit Guarantee',
+      desc: 'Informal open drug markets carry up to 30% counterfeit risk. MedSupply operates a strictly verified, closed-loop supply chain where every batch is scanned and confirmed by licensed pharmacists.',
+      icon: ShieldCheck,
+      badge: 'NAFDAC Regulated',
+    },
+    {
+      title: 'Automated Sourcing Fallback',
+      desc: 'When critical pharmaceuticals are scarce or a primary supplier experiences stock constraints, our intelligent engine instantly redirects the order to pre-vetted secondary suppliers without delay.',
+      icon: RotateCcw,
+      badge: 'Zero Stockouts',
+    },
+    {
+      title: 'Institutional Revolving Credit',
+      desc: 'Overcome hospital cash-flow bottlenecks with revolving Net-15, Net-30, and Net-45 credit lines up to ₦50M, structured specifically for accredited clinical procurement.',
+      icon: CreditCard,
+      badge: 'Working Capital',
+    },
+    {
+      title: 'Validated Cold-Chain Integrity',
+      desc: 'Biologics, vaccines, and temperature-sensitive injectables are transported in calibrated refrigerated containers equipped with IoT thermal sensors and verifiable logs.',
+      icon: Thermometer,
+      badge: 'IoT Monitored',
+    },
   ];
 
   return (
@@ -191,6 +223,99 @@ const WhyMedSupplyPage: React.FC = () => {
           </div>
         </div>
       </section>
+
+         {/* 3. WHY MEDISUPPLY SECTION */}
+      <section id="why-medsupply" className="scroll-mt-24 py-6">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="bg-slate-900 text-white rounded-3xl p-8 sm:p-12 lg:p-16 overflow-hidden relative shadow-xl">
+            {/* Background Glow */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div className="lg:col-span-6 space-y-6">
+                <span className="text-xs font-bold text-blue-400 uppercase tracking-widest bg-blue-950 px-3 py-1 rounded-full border border-blue-800">
+                  Transforming Healthcare Procurement
+                </span>
+
+                <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white tracking-tight leading-tight">
+                  Why Leading Nigerian Hospitals Choose MediSupply
+                </h2>
+
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Traditional pharmaceutical procurement in Nigeria forces healthcare providers to navigate fragmented
+                  open-market wholesalers, risking counterfeit contamination, irregular price gouging, and unpredictable
+                  delays. MediSupply establishes a closed, auditable, and financially enabled digital procurement rail.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  {whyPillars.map((pillar, idx) => {
+                    const Icon = pillar.icon;
+                    return (
+                      <div
+                        key={idx}
+                        className="bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-2 hover:border-blue-500/50 transition"
+                      >
+                        <div className="flex items-center justify-between">
+                          <Icon className="w-5 h-5 text-blue-400" />
+                          <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-800">
+                            {pillar.badge}
+                          </span>
+                        </div>
+                        <h4 className="font-bold text-sm text-white">{pillar.title}</h4>
+                        <p className="text-[11px] text-slate-300 leading-relaxed">{pillar.desc}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-4 flex items-center gap-4">
+                  <button
+                    onClick={() => router.push('services')}
+                    className="px-5 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer shadow-xs"
+                  >
+                    <span>Explore Institutional Services</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => router.push('about')}
+                    className="text-xs font-semibold text-slate-300 hover:text-white transition flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Read Vision & Mission</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Right Visual / QA Pharmacist Image */}
+              <div className="lg:col-span-6">
+                <div className="relative rounded-2xl overflow-hidden border border-slate-700 shadow-2xl">
+                  <Image
+                    src="/pharmaceutical_qa_lab_1788851135049.jpg"
+                    alt="Pharmacist Quality Assurance Inspection"
+                    referrerPolicy="no-referrer"
+                    width={1200}
+                    height={896}
+                    className="w-full h-[420px] object-cover object-center"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <p className="text-xs font-mono text-emerald-400 uppercase tracking-wider font-semibold">
+                      ● Clinical Verification Gate
+                    </p>
+                    <p className="font-display font-bold text-sm text-white">
+                      Physical Quarantine & Batch Seal Inspection
+                    </p>
+                    <p className="text-[11px] text-slate-300 mt-0.5">
+                      No medication is released for delivery without dual pharmacist sign-off and NAFDAC authenticity validation.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
 
       {/* Benefits Grid */}
       <section className="py-16 sm:py-24 bg-slate-50/70 border-t border-slate-200/80">
