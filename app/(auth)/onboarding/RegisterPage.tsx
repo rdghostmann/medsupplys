@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { MedSupplyLogo } from '@/components/ui/MedSupplyLogo';
 import { useRouter } from 'next/navigation';
-export const RegisterPage: React.FC = () => {
+const RegisterPage: React.FC = () => {
 
   const router = useRouter();
   const [role, setRole] = useState<'buyer' | 'supplier'>('buyer');
@@ -257,3 +257,5 @@ export const RegisterPage: React.FC = () => {
     </div>
   );
 };
+
+export default RegisterPage;
