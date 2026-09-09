@@ -35,6 +35,8 @@ export default function NotFound() {
           className="glass-card rounded-2xl p-6 space-y-4"
         >
           <p className="text-sm text-muted-foreground">
+                      <Search className="w-3 h-3" />
+
             You can navigate back or explore the platform.
           </p>
 
@@ -57,11 +59,6 @@ export default function NotFound() {
           </div>
         </motion.div>
 
-        {/* Optional quick search hint */}
-        <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
-          <Search className="w-3 h-3" />
-          Try checking the URL or navigating from dashboard
-        </div>
       </div>
     </div>
   );
