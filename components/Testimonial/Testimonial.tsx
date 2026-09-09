@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { motion, useAnimation } from "framer-motion";
-import { Star, Quote } from "lucide-react";
+import { Star, Quote, Building2 } from "lucide-react";
 
 interface Testimonial {
   id: string;
@@ -201,10 +201,9 @@ export default function Testimonial() {
                     transition-all duration-500
                     sm:w-[45vw] sm:p-8
                     lg:w-[30vw]
-                    ${
-                      testimonial.featured
-                        ? "translate-y-2 border-blue-500 bg-blue-600 text-white shadow-2xl shadow-blue-500/20"
-                        : "border-slate-100 bg-slate-50 text-slate-900 hover:-translate-y-2 hover:border-blue-100 hover:bg-white hover:shadow-xl"
+                    ${testimonial.featured
+                      ? "translate-y-2 border-blue-500 bg-blue-600 text-white shadow-2xl shadow-blue-500/20"
+                      : "border-slate-100 bg-slate-50 text-slate-900 hover:-translate-y-2 hover:border-blue-100 hover:bg-white hover:shadow-xl"
                     }
                   `}
                 >
@@ -249,10 +248,9 @@ export default function Testimonial() {
                       aria-hidden="true"
                       className={`
                         absolute -left-2 -top-2 h-8 w-8 opacity-10
-                        ${
-                          testimonial.featured
-                            ? "text-white"
-                            : "text-blue-600"
+                        ${testimonial.featured
+                          ? "text-white"
+                          : "text-blue-600"
                         }
                       `}
                     />
@@ -263,23 +261,21 @@ export default function Testimonial() {
                   </div>
 
                   {/* Organization */}
-                  <div className="mb-6">
+                  <div className="hidden mb-6">
                     <p
-                      className={`text-xs font-semibold ${
-                        testimonial.featured
-                          ? "text-blue-100"
-                          : "text-blue-700"
-                      }`}
+                      className={`text-xs font-semibold ${testimonial.featured
+                        ? "text-blue-100"
+                        : "text-blue-700"
+                        }`}
                     >
                       {testimonial.organization}
                     </p>
 
                     <p
-                      className={`mt-1 text-[11px] ${
-                        testimonial.featured
-                          ? "text-blue-200"
-                          : "text-slate-500"
-                      }`}
+                      className={`mt-1 text-[11px] ${testimonial.featured
+                        ? "text-blue-200"
+                        : "text-slate-500"
+                        }`}
                     >
                       {testimonial.organizationType}
                     </p>
@@ -303,10 +299,9 @@ export default function Testimonial() {
                         className={`
                           flex h-12 w-12 shrink-0 items-center justify-center
                           rounded-full border text-sm font-bold
-                          ${
-                            testimonial.featured
-                              ? "border-white/30 bg-white/20 text-white"
-                              : "border-blue-100 bg-blue-50 text-blue-700"
+                          ${testimonial.featured
+                            ? "border-white/30 bg-white/20 text-white"
+                            : "border-blue-100 bg-blue-50 text-blue-700"
                           }
                         `}
                         aria-hidden="true"
@@ -320,10 +315,9 @@ export default function Testimonial() {
                       <div
                         className={`
                           truncate text-sm font-bold
-                          ${
-                            testimonial.featured
-                              ? "text-white"
-                              : "text-slate-900"
+                          ${testimonial.featured
+                            ? "text-white"
+                            : "text-slate-900"
                           }
                         `}
                       >
@@ -333,14 +327,17 @@ export default function Testimonial() {
                       <div
                         className={`
                           mt-0.5 text-xs
-                          ${
-                            testimonial.featured
-                              ? "text-blue-100"
-                              : "text-slate-500"
+                          ${testimonial.featured
+                            ? "text-blue-100"
+                            : "text-slate-500"
                           }
                         `}
                       >
+                        <Building2 size={11} />
+
                         {testimonial.role}
+                        {/* {testimonial.organization} */}
+
                       </div>
                     </div>
                   </div>

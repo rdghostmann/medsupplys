@@ -18,7 +18,7 @@ const COMPLIANCE_BADGES: ComplianceBadge[] = [
   {
     id: "nafdac",
     name: "NAFDAC",
-    fullName: "National Agency for Food & Drug Admin",
+    fullName: "National Agency Food & Drug Commission",
     image: "/nafdac-logo.png",
     description:
       "Fully compliant with Nigerian pharmaceutical registration and safety protocols.",
@@ -119,20 +119,17 @@ export default function ComplianceSection() {
                   w-30
                   h-30
                   rounded-full
-                  border-2
-                  border-slate-200
                   bg-white
                   flex
                   items-center
                   justify-center
-                  p-5
+                  p-2
                   mb-6
                   transition-all
                   duration-300
-                  // group-hover:border-blue-500
-                  // group-hover:bg-blue-50
-                  // group-hover:shadow-xl
-                  // group-hover:shadow-blue-500/10
+                  group-hover:bg-white
+                  group-hover:shadow-xl
+                  group-hover:shadow-white
                   relative
                   overflow-hidden
                 "

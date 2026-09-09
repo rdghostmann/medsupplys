@@ -50,7 +50,7 @@ export default function HomePage() {
                   subtitle="Powering verified drug supplies across tertiary teaching hospitals, private clinic groups, and state healthcare networks."
                />
 
-               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6">
+               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   <StatCard
                      label="Verified Products"
                      value="1,500+"
