@@ -1,12 +1,135 @@
 "use client"
 import React from 'react';
 
-import { MOCK_SERVICES } from '@/data/mockData';
 import { SectionHeader } from '@/components/ui/SectionHeader';
 
 import { CTASection } from '@/components/ui/CTASection';
 import * as LucideIcons from 'lucide-react';
 import { useRouter } from 'next/navigation';
+
+ const MOCK_SERVICES = [
+  {
+    id: 'sourcing',
+    title: 'Pharmaceutical Sourcing',
+    tagline: 'Source over 1,500+ verified pharmaceutical products directly',
+    description: 'Find prescription pharmaceuticals, OTC formulations, critical care injectables, and hospital consumables from verified manufacturers, authorized importers, and licensed wholesale distributors.',
+    icon: 'Search',
+    benefits: [
+      'Search by Brand, Active Pharmaceutical Ingredient (API), or NAFDAC Reg',
+      'View real-time factory and warehouse batch availability',
+      'Direct access to cold-chain biologics and controlled medicines',
+      'Filter by dosage form, therapeutic category, and storage requirements'
+    ],
+    keyMetrics: '1,500+ Verified SKUs',
+    badge: 'Core Sourcing'
+  },
+  {
+    id: 'marketplace',
+    title: 'Supplier Marketplace',
+    tagline: 'Multi-tier qualified supplier network categorized by trade tier',
+    description: 'Discover qualified pharmaceutical suppliers segmented into licensed Importers, national Distributors, and verified Retailers with transparent minimum order quantities (MOQ).',
+    icon: 'Building2',
+    benefits: [
+      'Segmented supplier profiles with license numbers and warehouse locations',
+      'Audited ratings, fulfillment rates, and historical lead-times',
+      'Direct RFQ (Request for Quotation) transmission to multiple vendors',
+      'Verified Good Distribution Practice (GDP) certification badges'
+    ],
+    keyMetrics: '250+ Verified Suppliers',
+    badge: 'Marketplace'
+  },
+  {
+    id: 'verification',
+    title: 'Supplier Verification & Compliance',
+    tagline: 'Multi-stage regulatory compliance and license verification',
+    description: 'Mitigate counterfeit risk and regulatory penalties. Every supplier on MedSupply undergoes stringent regulatory validation including NAFDAC licensing and physical warehouse auditing.',
+    icon: 'ShieldCheck',
+    benefits: [
+      'Live validation of Pharmacists Council and NAFDAC premises licenses',
+      'Periodic physical cold-chain and storage inspection audits',
+      'Automated expiration tracking for supplier accreditation documents',
+      'Zero-tolerance anti-counterfeit traceability enforcement'
+    ],
+    keyMetrics: '100% Verified Vendors',
+    badge: 'Compliance First'
+  },
+  {
+    id: 'price-intelligence',
+    title: 'Price Intelligence & Comparison',
+    tagline: 'Compare supplier price points and terms transparently',
+    description: 'Eliminate arbitrary broker markups. Compare line-item pricing across competing suppliers side-by-side with volume-based tiered discounts clearly displayed.',
+    icon: 'BarChart3',
+    benefits: [
+      'Side-by-side unit pricing comparison across verified vendors',
+      'Historical price trend indicators for therapeutic categories',
+      'Volume tier discounting matrices for large institutional buyers',
+      'Exportable price audit sheets for hospital finance review'
+    ],
+    keyMetrics: 'Up to 22% Cost Savings',
+    badge: 'Transparent Pricing'
+  },
+  {
+    id: 'procurement-mgmt',
+    title: 'Procurement Management',
+    tagline: 'Centralize purchase requisitions, approvals, and PO generation',
+    description: 'Modernize hospital procurement with structured digital workflows. Route requisitions from ward pharmacists to finance controllers and automatically issue legal Purchase Orders.',
+    icon: 'ClipboardList',
+    benefits: [
+      'Multi-level institutional approval matrices with spending limits',
+      'Automated digital Purchase Order (PO) creation with legal terms',
+      'Consolidated multi-supplier billing and reconciliation statements',
+      'ERP / Hospital Information System (HIS) export compatibility'
+    ],
+    keyMetrics: '4x Faster Approvals',
+    badge: 'Workflow Automation'
+  },
+  {
+    id: 'order-tracking',
+    title: 'Order Tracking & Delivery Logistics',
+    tagline: 'Live tracking from warehouse dispatch to pharmacy receiving dock',
+    description: 'Gain total visibility into your healthcare supply chain with GPS-enabled tracking, cold-chain temperature telemetry, and digital Proof-of-Delivery signing.',
+    icon: 'Truck',
+    benefits: [
+      'End-to-end timeline tracking with live status notifications',
+      'Cold-chain temperature data logger verification upon delivery',
+      'Digital receiving confirmation and batch discrepancy reporting',
+      'Dedicated logistics escalation team for urgent critical care orders'
+    ],
+    keyMetrics: '98% On-Time Delivery',
+    badge: 'Full Visibility'
+  },
+  {
+    id: 'analytics',
+    title: 'Procurement Analytics',
+    tagline: 'Data-driven pharmaceutical spend optimization and forecasting',
+    description: 'Unlock enterprise business intelligence. Analyze category spend, supplier performance, stock run-out risks, and seasonal demand fluctuations across your facility.',
+    icon: 'TrendingUp',
+    benefits: [
+      'Executive dashboard tracking therapeutic category expenditure',
+      'Supplier on-time fulfillment and quality dispute scorecards',
+      'Lead-time forecasting to prevent critical drug stock-outs',
+      'Downloadable audit-ready financial and regulatory compliance reports'
+    ],
+    keyMetrics: '360° Spend Analytics',
+    badge: 'Intelligence'
+  },
+  {
+    id: 'compliance-support',
+    title: 'Regulatory & Compliance Support',
+    tagline: 'Full audit trails, batch release records, and certificates',
+    description: 'Maintain compliance with health authorities. Every batch procured on MedSupply comes with digital Certificates of Analysis (CoA) and tamper-proof audit trails.',
+    icon: 'FileCheck',
+    benefits: [
+      'Instant access to digital Certificates of Analysis (CoA) for all batches',
+      'Tamper-evident audit logging for all procurement actions and approvals',
+      'Automated batch recall notification broadcasting system',
+      'Support for national pharmacovigilance adverse event reporting'
+    ],
+    keyMetrics: 'Audit-Proof System',
+    badge: 'Safe & Secure'
+  }
+];
+
 const ServicesPage: React.FC = () => {
 
   const router = useRouter();
