@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Home, Search, ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 
 export default function NotFound() {
   return (
@@ -16,6 +17,15 @@ export default function NotFound() {
           transition={{ duration: 0.5 }}
           className="space-y-2"
         >
+          <Image
+            src="/404.gif"
+            alt="404 Illustration"
+            width={300}
+            height={200}
+            className="mx-auto"
+
+          />
+
           <h1 className="text-7xl font-extrabold tracking-tight text-blue-600">
             404
           </h1>
@@ -35,7 +45,7 @@ export default function NotFound() {
           className="glass-card rounded-2xl p-6 space-y-4"
         >
           <p className="text-sm text-muted-foreground">
-                      <Search className="w-3 h-3" />
+            <Search className="w-3 h-3" />
 
             You can navigate back or explore the platform.
           </p>
