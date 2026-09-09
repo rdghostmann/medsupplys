@@ -25,11 +25,11 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
 
   // SVG Icon Component of the Pill / Capsule with Network and Checkmark
   const LogoIcon = (
-    <svg 
-      width={currentIconSize} 
-      height={currentIconSize} 
-      viewBox="0 0 320 320" 
-      fill="none" 
+    <svg
+      width={currentIconSize}
+      height={currentIconSize}
+      viewBox="0 0 320 320"
+      fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className="shrink-0 transition-transform duration-200 group-hover:scale-105"
     >
@@ -53,13 +53,13 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
 
       <g transform="translate(160, 160) rotate(-45)">
         {/* Capsule Base */}
-        <rect 
-          x="-115" 
-          y="-55" 
-          width="230" 
-          height="110" 
-          rx="55" 
-          ry="55" 
+        <rect
+          x="-115"
+          y="-55"
+          width="230"
+          height="110"
+          rx="55"
+          ry="55"
           fill="url(#capsuleGrad)"
           filter="url(#capsuleShadow)"
         />
@@ -103,8 +103,8 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
         </g>
 
         {/* Bold Modern Checkmark */}
-        <path 
-          d="M -50 -1 L -15 34 L 105 -34 L 90 -34 L -15 17 L -38 -12 Z" 
+        <path
+          d="M -50 -1 L -15 34 L 105 -34 L 90 -34 L -15 17 L -38 -12 Z"
           fill="#ffffff"
         />
       </g>
@@ -157,10 +157,9 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
       {LogoIcon}
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight leading-none`}>
-            <span className="text-[#1e3a8a]">Med</span>
-            <span className="text-[#00b87c]">Supply</span>
-          </span>
+          <h3 className={`${titleSizes[size]} bg-linear-to-r from-blue-600 via-teal-500 to-emerald-500 bg-clip-text font-extrabold tracking-tight text-transparent`}>
+            MedSupply
+          </h3>
           <span className="hidden sm:inline-flex text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
             B2B
           </span>

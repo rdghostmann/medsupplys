@@ -43,21 +43,21 @@ const CAROUSEL_ITEMS = [
   {
     title: "Verified Global Network",
     description: "Connect with licensed pharmaceutical partners across Africa and beyond.",
-    image: "https://images.unsplash.com/photo-1587854692152-cbe660dbbb88?auto=format&fit=crop&q=80&w=1200",
+    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200",
     icon: <ShieldCheck className="w-8 h-8" />,
   },
   {
     title: "Seamless Procurement",
     description: "Post requirements and receive competitive bids from qualified suppliers instantly.",
-    image: "https://images.unsplash.com/photo-1554224155-1696413575b3?auto=format&fit=crop&q=80&w=1200",
+    image: "/cold_chain_logistics_1788851150748.png",
     icon: <PackageCheck className="w-8 h-8" />,
   },
   {
     title: "Cold-Chain Logistics",
     description: "Real-time tracking of medications from the manufacturer directly to the ward.",
-    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200",
+    image: "/cold_chain_logistics_1788851150748.png",
     icon: <Truck className="w-8 h-8" />,
-  },
+  }
 ]
 
 export default function SigninPage() {

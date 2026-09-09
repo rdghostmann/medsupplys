@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+"use client"
+import React, { useState } from 'react'
+
 
 import { 
   Building2, 
@@ -35,8 +37,10 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/20 to-white">
-      <div className="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/90 shadow-xl">
+    <div className="flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/20 to-white">
+    {/* <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-linear-to-b from-white via-blue-50/20 to-white"> */}
+      <div className="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10">
+      {/* <div className="max-w-xl w-full space-y-8 bg-white p-8 sm:p-10 rounded-2xl border border-slate-200/90 shadow-xl"> */}
         
         {/* Header with MedSupply Logo */}
         <div className="text-center">
@@ -66,7 +70,7 @@ const RegisterPage: React.FC = () => {
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Healthcare Buyer (Hospital / Clinic)
+            Healthcare Procurer
           </button>
           <button
             type="button"

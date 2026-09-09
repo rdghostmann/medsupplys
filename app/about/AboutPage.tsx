@@ -282,7 +282,7 @@ const AboutPage: React.FC = () => {
       </section>
 
         {/* LEADERSHIP & ADVISORY */}
-      <section className="mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section className="hidden mt-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
             Governance & Leadership

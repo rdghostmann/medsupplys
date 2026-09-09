@@ -43,8 +43,6 @@ import PhoneInput, {
 
 import countryNames from "react-phone-number-input/locale/en.json"
 
-import "react-phone-number-input/style.css"
-
 import { Input } from "@/components/ui/input"
 
 import { Button } from "@/components/ui/button"
@@ -71,6 +69,7 @@ import { UseFormReturn } from "react-hook-form"
 
 // IMPORT signIn to auto-login after signup
 import { signIn } from "next-auth/react"
+import { MedSupplyLogo } from "@/components/ui/MedSupplyLogo"
 
 /* =========================================================
    VALIDATION SCHEMA
@@ -344,11 +343,11 @@ export default function SignupPage() {
         const name =
           code
             ? (
-                countryNames as Record<
-                  string,
-                  string
-                >
-              )[code]
+              countryNames as Record<
+                string,
+                string
+              >
+            )[code]
             : ""
 
         if (name) {
@@ -533,7 +532,7 @@ export default function SignupPage() {
             ) {
               throw new Error(
                 data.message ||
-                  "Registration failed"
+                "Registration failed"
               )
             }
 
@@ -597,7 +596,7 @@ export default function SignupPage() {
 
             const errorMessage =
               error instanceof
-              Error
+                Error
                 ? error.message
                 : "Something went wrong. Please try again."
 
@@ -626,7 +625,7 @@ export default function SignupPage() {
           <div className="space-y-8">
             <h2 className="text-4xl font-semibold text-white leading-tight">
               {role ===
-              "buyer"
+                "buyer"
                 ? "Submit your medicine and health product needs."
                 : "Browse procurement opportunities."}
             </h2>
@@ -641,28 +640,32 @@ export default function SignupPage() {
       <div className="w-full lg:w-[55%] p-8 lg:p-16 flex flex-col min-h-screen overflow-y-auto bg-white">
         <div className="max-w-md mx-auto w-full my-auto py-8">
 
-          {/* =================================================
-              LOGO
-          ================================================= */}
+          {/* Header with MedSupply Logo */}
+          <div className="text-center">
+            <button
+              onClick={() => router.push('/')}
+              className="inline-flex items-center justify-center mb-4 group cursor-pointer"
+            >
+              <MedSupplyLogo variant="horizontal" size="md" />
+            </button>
 
-          <Link
-            href="/"
-            className="mb-5 w-fit mx-auto cursor-pointer flex items-center font-sora font-bold text-lg"
-          >
-            <h3 className="text-2xl bg-linear-to-r from-blue-600 via-teal-500 to-emerald-500 bg-clip-text font-extrabold tracking-tight text-transparent">
-              MedSupply
-            </h3>
-          </Link>
-
-          {/* =================================================
+            <h2 className="hidden text-2xl font-extrabold text-slate-900 tracking-tight">
+              Create an Enterprise Account
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Join Nigeria&apos;s trusted B2B pharmaceutical procurement network
+            </p>
+            {/* =================================================
               TITLE
           ================================================= */}
 
-          <div className="mb-10 text-center lg:text-left">
-            <h1 className="text-4xl font-semibold text-slate-900 mb-2">
-              I am looking to...
-            </h1>
+            <div className="my-10 text-center lg:text-left">
+              <h1 className="text-4xl font-semibold text-slate-900 mb-2">
+                I am looking to...
+              </h1>
+            </div>
           </div>
+
 
           {/* =================================================
               FORM
@@ -703,40 +706,40 @@ export default function SignupPage() {
 
                 {step ===
                   1 && (
-                  <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
 
-                    <RoleCard
-                      active={
-                        role ===
-                        "buyer"
-                      }
-                      onClick={() =>
-                        setValue(
-                          "role",
+                      <RoleCard
+                        active={
+                          role ===
                           "buyer"
-                        )
-                      }
-                      title="Procure Medicines"
-                      description="Post your requirements and receive competitive bids from qualified suppliers"
-                    />
+                        }
+                        onClick={() =>
+                          setValue(
+                            "role",
+                            "buyer"
+                          )
+                        }
+                        title="Procure Medicines"
+                        description="Post your requirements and receive competitive bids from qualified suppliers"
+                      />
 
-                    <RoleCard
-                      active={
-                        role ===
-                        "supplier"
-                      }
-                      onClick={() =>
-                        setValue(
-                          "role",
+                      <RoleCard
+                        active={
+                          role ===
                           "supplier"
-                        )
-                      }
-                      title="Supply Medicines"
-                      description="Discover open tenders and bid on procurement opportunities"
-                    />
+                        }
+                        onClick={() =>
+                          setValue(
+                            "role",
+                            "supplier"
+                          )
+                        }
+                        title="Supply Medicines"
+                        description="Discover open tenders and bid on procurement opportunities"
+                      />
 
-                  </div>
-                )}
+                    </div>
+                  )}
 
                 {/* =================================================
                     STEP 2
@@ -744,149 +747,149 @@ export default function SignupPage() {
 
                 {step ===
                   2 && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
 
-                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <InputField
+                          form={form}
+                          name="firstName"
+                          label="First Name"
+                          placeholder="John"
+                          icon={
+                            <User className="w-4 h-4" />
+                          }
+                        />
+
+                        <InputField
+                          form={form}
+                          name="lastName"
+                          label="Last Name"
+                          placeholder="Doe"
+                          icon={
+                            <User className="w-4 h-4" />
+                          }
+                        />
+                      </div>
+
                       <InputField
                         form={form}
-                        name="firstName"
-                        label="First Name"
-                        placeholder="John"
+                        name="email"
+                        label="Email Address"
+                        placeholder="john@example.com"
                         icon={
-                          <User className="w-4 h-4" />
+                          <Mail className="w-4 h-4" />
                         }
                       />
 
-                      <InputField
-                        form={form}
-                        name="lastName"
-                        label="Last Name"
-                        placeholder="Doe"
-                        icon={
-                          <User className="w-4 h-4" />
+                      <Controller
+                        control={
+                          control
                         }
-                      />
-                    </div>
+                        name="phone"
+                        render={({
+                          field,
+                        }) => (
+                          <div className="space-y-1.5">
 
-                    <InputField
-                      form={form}
-                      name="email"
-                      label="Email Address"
-                      placeholder="john@example.com"
-                      icon={
-                        <Mail className="w-4 h-4" />
-                      }
-                    />
+                            <Label className="text-sm">
+                              Phone Number
+                            </Label>
 
-                    <Controller
-                      control={
-                        control
-                      }
-                      name="phone"
-                      render={({
-                        field,
-                      }) => (
-                        <div className="space-y-1.5">
-
-                          <Label className="text-sm">
-                            Phone Number
-                          </Label>
-
-                          <div
-                            className={cn(
-                              "flex items-center rounded-md border border-input bg-background px-3",
-                              errors.phone &&
+                            <div
+                              className={cn(
+                                "flex items-center rounded-md border border-input bg-background px-3",
+                                errors.phone &&
                                 "border-red-500"
+                              )}
+                            >
+                              <Phone className="w-4 h-4 text-slate-400 mr-2" />
+
+                              <PhoneInput
+                                international
+                                defaultCountry="NG"
+                                value={
+                                  field.value
+                                }
+                                onChange={(
+                                  value
+                                ) =>
+                                  handlePhoneChange(
+                                    value,
+                                    field.onChange
+                                  )
+                                }
+                                className="w-full py-3 outline-none"
+                              />
+                            </div>
+
+                            {errors.phone && (
+                              <p className="text-xs text-red-500">
+                                {
+                                  errors
+                                    .phone
+                                    .message
+                                }
+                              </p>
                             )}
-                          >
-                            <Phone className="w-4 h-4 text-slate-400 mr-2" />
 
-                            <PhoneInput
-                              international
-                              defaultCountry="NG"
-                              value={
-                                field.value
-                              }
-                              onChange={(
-                                value
-                              ) =>
-                                handlePhoneChange(
-                                  value,
-                                  field.onChange
-                                )
-                              }
-                              className="w-full py-3 outline-none"
-                            />
                           </div>
-
-                          {errors.phone && (
-                            <p className="text-xs text-red-500">
-                              {
-                                errors
-                                  .phone
-                                  .message
-                              }
-                            </p>
-                          )}
-
-                        </div>
-                      )}
-                    />
-
-                    <div className="grid grid-cols-1 gap-4">
-
-                      <InputField
-                        form={form}
-                        name="password"
-                        type={
-                          showPassword
-                            ? "text"
-                            : "password"
-                        }
-                        label="Password"
-                        placeholder="••••••••"
-                        icon={
-                          <Lock className="w-4 h-4" />
-                        }
-                        isPassword
-                        showPassword={
-                          showPassword
-                        }
-                        togglePassword={() =>
-                          setShowPassword(
-                            !showPassword
-                          )
-                        }
+                        )}
                       />
 
-                      <InputField
-                        form={form}
-                        name="confirmPassword"
-                        type={
-                          showConfirmPassword
-                            ? "text"
-                            : "password"
-                        }
-                        label="Confirm Password"
-                        placeholder="••••••••"
-                        icon={
-                          <Lock className="w-4 h-4" />
-                        }
-                        isPassword
-                        showPassword={
-                          showConfirmPassword
-                        }
-                        togglePassword={() =>
-                          setShowConfirmPassword(
-                            !showConfirmPassword
-                          )
-                        }
-                      />
+                      <div className="grid grid-cols-1 gap-4">
+
+                        <InputField
+                          form={form}
+                          name="password"
+                          type={
+                            showPassword
+                              ? "text"
+                              : "password"
+                          }
+                          label="Password"
+                          placeholder="••••••••"
+                          icon={
+                            <Lock className="w-4 h-4" />
+                          }
+                          isPassword
+                          showPassword={
+                            showPassword
+                          }
+                          togglePassword={() =>
+                            setShowPassword(
+                              !showPassword
+                            )
+                          }
+                        />
+
+                        <InputField
+                          form={form}
+                          name="confirmPassword"
+                          type={
+                            showConfirmPassword
+                              ? "text"
+                              : "password"
+                          }
+                          label="Confirm Password"
+                          placeholder="••••••••"
+                          icon={
+                            <Lock className="w-4 h-4" />
+                          }
+                          isPassword
+                          showPassword={
+                            showConfirmPassword
+                          }
+                          togglePassword={() =>
+                            setShowConfirmPassword(
+                              !showConfirmPassword
+                            )
+                          }
+                        />
+
+                      </div>
 
                     </div>
-
-                  </div>
-                )}
+                  )}
 
                 {/* =================================================
                     STEP 3
@@ -894,220 +897,220 @@ export default function SignupPage() {
 
                 {step ===
                   3 && (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
+                    <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-500">
 
-                    <InputField
-                      form={form}
-                      name="organizationName"
-                      label="Organization Name"
-                      placeholder="MedHealth Solutions"
-                      icon={
-                        <Building className="w-4 h-4" />
-                      }
-                    />
+                      <InputField
+                        form={form}
+                        name="organizationName"
+                        label="Organization / Facility Name *"
+                        placeholder="MedHealth Solutions"
+                        icon={
+                          <Building className="w-4 h-4" />
+                        }
+                      />
 
-                    <SelectField
-                      form={form}
-                      name="organizationType"
-                      label="Organization Type"
-                      placeholder="Select type"
-                      icon={
-                        <Building className="w-4 h-4" />
-                      }
-                      options={[
-                        {
-                          label:
-                            "Manufacturer",
-                          value:
-                            "manufacturer",
-                        },
-                        {
-                          label:
-                            "Distributor",
-                          value:
-                            "distributor",
-                        },
-                        {
-                          label:
-                            "Wholesaler",
-                          value:
-                            "wholesaler",
-                        },
-                        {
-                          label:
-                            "Retail Pharmacy",
-                          value:
-                            "pharmacy",
-                        },
-                      ]}
-                    />
+                      <SelectField
+                        form={form}
+                        name="organizationType"
+                        label="Organization Type"
+                        placeholder="Select type"
+                        icon={
+                          <Building className="w-4 h-4" />
+                        }
+                        options={[
+                          {
+                            label:
+                              "Manufacturer",
+                            value:
+                              "manufacturer",
+                          },
+                          {
+                            label:
+                              "Distributor",
+                            value:
+                              "distributor",
+                          },
+                          {
+                            label:
+                              "Wholesaler",
+                            value:
+                              "wholesaler",
+                          },
+                          {
+                            label:
+                              "Retail Pharmacy Chain",
+                            value:
+                              "pharmacy",
+                          },
+                        ]}
+                      />
 
-                    <SelectField
-                      form={form}
-                      name="roleInOrganization"
-                      label="Your Role"
-                      placeholder="Select your role"
-                      icon={
-                        <Briefcase className="w-4 h-4" />
-                      }
-                      options={[
-                        {
-                          label:
-                            "Supply Chain & Export",
-                          value:
-                            "Supply Chain & Export",
-                        },
-                        {
-                          label:
-                            "Procurement Officer",
-                          value:
-                            "Procurement Officer",
-                        },
-                      ]}
-                    />
+                      <SelectField
+                        form={form}
+                        name="roleInOrganization"
+                        label="Your Role"
+                        placeholder="Select your role"
+                        icon={
+                          <Briefcase className="w-4 h-4" />
+                        }
+                        options={[
+                          {
+                            label:
+                              "Supply Chain & Export",
+                            value:
+                              "Supply Chain & Export",
+                          },
+                          {
+                            label:
+                              "Procurement Officer",
+                            value:
+                              "Procurement Officer",
+                          },
+                        ]}
+                      />
 
-                    <InputField
-                      form={form}
-                      name="country"
-                      label="Country"
-                      placeholder="e.g Nigeria"
-                      icon={
-                        <Globe className="w-4 h-4" />
-                      }
-                      readOnly={
-                        !!detectedCountry
-                      }
-                    />
+                      <InputField
+                        form={form}
+                        name="country"
+                        label="Country"
+                        placeholder="e.g Nigeria"
+                        icon={
+                          <Globe className="w-4 h-4" />
+                        }
+                        readOnly={
+                          !!detectedCountry
+                        }
+                      />
 
-                    {/* =================================================
+                      {/* =================================================
                         TERMS + PRIVACY CONSENT
                     ================================================= */}
 
-                    <div className="pt-2">
+                      <div className="pt-2">
 
-                      <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3">
 
-                        {/* ---------------------------------------------
+                          {/* ---------------------------------------------
                             Checkbox
                         --------------------------------------------- */}
 
-                        <div className="flex items-center h-5 mt-0.5 shrink-0">
-                          <input
-                            {...register(
-                              "agreeToTerms"
-                            )}
-                            type="checkbox"
-                            id="terms-privacy"
-                            checked={
-                              consentChecked
-                            }
-                            onChange={(
-                              event
-                            ) => {
-                              const checked =
+                          <div className="flex items-center h-5 mt-0.5 shrink-0">
+                            <input
+                              {...register(
+                                "agreeToTerms"
+                              )}
+                              type="checkbox"
+                              id="terms-privacy"
+                              checked={
+                                consentChecked
+                              }
+                              onChange={(
                                 event
-                                  .target
-                                  .checked
+                              ) => {
+                                const checked =
+                                  event
+                                    .target
+                                    .checked
 
-                              /*
-                               * One checkbox controls both
-                               * legal consent fields.
-                               */
-                              setValue(
-                                "agreeToTerms",
-                                checked,
-                                {
-                                  shouldValidate:
-                                    true,
-                                  shouldDirty:
-                                    true,
-                                }
-                              )
+                                /*
+                                 * One checkbox controls both
+                                 * legal consent fields.
+                                 */
+                                setValue(
+                                  "agreeToTerms",
+                                  checked,
+                                  {
+                                    shouldValidate:
+                                      true,
+                                    shouldDirty:
+                                      true,
+                                  }
+                                )
 
-                              setValue(
-                                "agreeToPrivacy",
-                                checked,
-                                {
-                                  shouldValidate:
-                                    true,
-                                  shouldDirty:
-                                    true,
-                                }
-                              )
-                            }}
-                            className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
-                          />
-                        </div>
+                                setValue(
+                                  "agreeToPrivacy",
+                                  checked,
+                                  {
+                                    shouldValidate:
+                                      true,
+                                    shouldDirty:
+                                      true,
+                                  }
+                                )
+                              }}
+                              className="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 transition-all cursor-pointer"
+                            />
+                          </div>
 
-                        {/* ---------------------------------------------
+                          {/* ---------------------------------------------
                             Consent Text
                         --------------------------------------------- */}
 
-                        <label
-                          htmlFor="terms-privacy"
-                          className="text-sm text-slate-500 font-medium cursor-pointer leading-relaxed"
-                        >
-                          I agree to the{" "}
-
-                          <Link
-                            href="/terms"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-900 font-semibold hover:underline"
+                          <label
+                            htmlFor="terms-privacy"
+                            className="text-sm text-slate-500 font-medium cursor-pointer leading-relaxed"
                           >
-                            Terms & Conditions
-                          </Link>
+                            I agree to the{" "}
 
-                          {" "}and{" "}
+                            <Link
+                              href="/terms"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-900 font-semibold hover:underline"
+                            >
+                              Terms & Conditions
+                            </Link>
 
-                          <Link
-                            href="/privacy"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-slate-900 font-semibold hover:underline"
-                          >
-                            Privacy Policy
-                          </Link>
-                          .
-                        </label>
+                            {" "}and{" "}
 
-                      </div>
+                            <Link
+                              href="/privacy"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-slate-900 font-semibold hover:underline"
+                            >
+                              Privacy Policy
+                            </Link>
+                            .
+                          </label>
 
-                      {/* ---------------------------------------------
+                        </div>
+
+                        {/* ---------------------------------------------
                           Validation Errors
                       --------------------------------------------- */}
 
-                      {(errors.agreeToTerms ||
-                        errors.agreeToPrivacy) && (
-                        <p className="text-red-500 text-xs font-medium ml-8 mt-2">
-                          You must agree to the Terms & Conditions and Privacy Policy.
-                        </p>
-                      )}
+                        {(errors.agreeToTerms ||
+                          errors.agreeToPrivacy) && (
+                            <p className="text-red-500 text-xs font-medium ml-8 mt-2">
+                              You must agree to the Terms & Conditions and Privacy Policy.
+                            </p>
+                          )}
 
-                    </div>
+                      </div>
 
-                    {/* =================================================
+                      {/* =================================================
                         SUBMIT
                     ================================================= */}
 
-                    <div className="pt-4">
+                      <div className="pt-4">
 
-                      <Button
-                        type="submit"
-                        disabled={
-                          isPending
-                        }
-                        className="w-full h-14 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold"
-                      >
-                        {isPending
-                          ? "Processing..."
-                          : "Complete Signup"}
-                      </Button>
+                        <Button
+                          type="submit"
+                          disabled={
+                            isPending
+                          }
+                          className="w-full h-14 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold"
+                        >
+                          {isPending
+                            ? "Processing..."
+                            : "Complete Signup"}
+                        </Button>
+
+                      </div>
 
                     </div>
-
-                  </div>
-                )}
+                  )}
 
               </motion.div>
             </AnimatePresence>
@@ -1120,30 +1123,30 @@ export default function SignupPage() {
 
               {step <
                 3 && (
-                <Button
-                  type="button"
-                  onClick={
-                    nextStep
-                  }
-                  className="w-full h-14 bg-blue-700 text-white"
-                >
-                  Continue
-                </Button>
-              )}
+                  <Button
+                    type="button"
+                    onClick={
+                      nextStep
+                    }
+                    className="w-full h-14 bg-blue-700 text-white"
+                  >
+                    Continue
+                  </Button>
+                )}
 
               {step >
                 1 && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={
-                    prevStep
-                  }
-                  className="w-full h-12 text-slate-500"
-                >
-                  Go Back
-                </Button>
-              )}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={
+                      prevStep
+                    }
+                    className="w-full h-12 text-slate-500"
+                  >
+                    Go Back
+                  </Button>
+                )}
 
             </div>
 
@@ -1192,8 +1195,8 @@ function InputField({
 
   const error =
     errors[name]?.message as
-      | string
-      | undefined
+    | string
+    | undefined
 
   return (
     <div className="space-y-1.5">
@@ -1220,7 +1223,7 @@ function InputField({
           className={cn(
             "pl-12 h-12",
             error &&
-              "border-red-500"
+            "border-red-500"
           )}
         />
 
@@ -1287,8 +1290,8 @@ function SelectField({
 
   const error =
     errors[name]?.message as
-      | string
-      | undefined
+    | string
+    | undefined
 
   return (
     <div className="space-y-1.5">
@@ -1315,19 +1318,19 @@ function SelectField({
               }
               value={
                 typeof field.value ===
-                "string"
+                  "string"
                   ? field.value
                   : String(
-                      field.value ||
-                        ""
-                    )
+                    field.value ||
+                    ""
+                  )
               }
             >
               <SelectTrigger
                 className={cn(
                   "pl-12 h-12",
                   error &&
-                    "border-red-500"
+                  "border-red-500"
                 )}
               >
                 <SelectValue
@@ -1392,11 +1395,10 @@ function RoleCard({
     <button
       type="button"
       onClick={onClick}
-      className={`w-full p-6 text-left flex justify-between gap-5 border-2 rounded-xl transition-all ${
-        active
-          ? "border-blue-700 bg-blue-50"
-          : "border-slate-100"
-      }`}
+      className={`w-full p-6 text-left flex justify-between gap-5 border-2 rounded-xl transition-all ${active
+        ? "border-blue-700 bg-blue-50"
+        : "border-slate-100"
+        }`}
     >
       <div>
         <h4 className="font-semibold">
@@ -1409,11 +1411,10 @@ function RoleCard({
       </div>
 
       <div
-        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${
-          active
-            ? "border-blue-700 bg-blue-700"
-            : "border-slate-200"
-        }`}
+        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${active
+          ? "border-blue-700 bg-blue-700"
+          : "border-slate-200"
+          }`}
       >
         {active && (
           <CheckCircle2 className="w-4 h-4 text-white" />
