@@ -83,11 +83,10 @@ export default function MatchingWeightsReference() {
           </p>
 
           <p
-            className={`text-lg font-bold ${
-              total === 100
+            className={`text-lg font-bold ${total === 100
                 ? "text-foreground"
                 : "text-destructive"
-            }`}
+              }`}
           >
             {total}%
           </p>
