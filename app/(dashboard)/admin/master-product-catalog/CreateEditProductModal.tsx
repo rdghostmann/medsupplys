@@ -732,6 +732,32 @@ export default function CreateEditProductModal({
   const estimatedPlatformRevenue =
     platformFee;
 
+  const preflightChecks: [string, boolean][] = [
+    [
+      "Product identity",
+      Boolean(
+        formData.name.trim() &&
+          formData.activeIngredient.trim()
+      ),
+    ],
+    [
+      "Product specification",
+      Boolean(
+        formData.strength.trim() &&
+          formData.dosageForm.trim() &&
+          formData.packSize.trim()
+      ),
+    ],
+    [
+      "Regulatory data",
+      Boolean(
+        formData.nafdacRegNumber.trim() &&
+          formData.storageCondition.trim()
+      ),
+    ],
+    ["Pricing configuration", referenceBasePrice > 0],
+  ];
+
   /* =======================================================
      RENDER
   ======================================================= */
@@ -2367,39 +2393,8 @@ export default function CreateEditProductModal({
                   </p>
 
                   <div className="mt-3 space-y-2">
-                    {[
-                      [
-                        "Product identity",
-                        Boolean(
-                          formData.name.trim() &&
-                            formData.activeIngredient.trim()
-                        ),
-                      ],
-                      [
-                        "Product specification",
-                        Boolean(
-                          formData.strength.trim() &&
-                            formData.dosageForm.trim() &&
-                            formData.packSize.trim()
-                        ),
-                      ],
-                      [
-                        "Regulatory data",
-                        Boolean(
-                          formData.nafdacRegNumber.trim() &&
-                            formData.storageCondition.trim()
-                        ),
-                      ],
-                      [
-                        "Pricing configuration",
-                        referenceBasePrice >
-                          0,
-                      ],
-                    ].map(
-                      ([
-                        label,
-                        complete,
-                      ]: [string, boolean]) => (
+                    {preflightChecks.map(
+                      ([label, complete]) => (
                         <div
                           key={label}
                           className="flex items-center justify-between gap-3"
