@@ -252,7 +252,7 @@ const ServicesPage: React.FC = () => {
                 >
                   <div>
                     <div className="flex items-center justify-between gap-3 mb-5">
-                      <div className="border w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-2xs">
+                      <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-700 shadow-2xs">
                         <IconComponent size={24} />
                       </div>
                       <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
@@ -291,7 +291,7 @@ const ServicesPage: React.FC = () => {
                     <button
                       onClick={() => {
                         if (service.id === 'sourcing' || service.id === 'price-intelligence') {
-                          () => { }
+                          router.push('/contact');
                         } else {
                           router.push('/contact');
                         }
