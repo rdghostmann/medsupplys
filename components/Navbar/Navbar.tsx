@@ -1,23 +1,14 @@
 // Navbar.tsx
 "use client"
 
-import React, {
-  useEffect,
-  useState,
-} from "react"
+import React, { useEffect, useState } from "react"
 
 import Link from "next/link"
 import Image from "next/image"
 
-import {
-  usePathname,
-  useRouter,
-} from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 
-import {
-  AnimatePresence,
-  motion,
-} from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 
 import {
   ChevronRight,
@@ -27,11 +18,13 @@ import {
 } from "lucide-react"
 
 import {
-  PackageIcon,
-  ProhibitInsetIcon,
-  SignOut,
+  HouseIcon,
+  InfoIcon,
   StorefrontIcon,
+  GearIcon,
+  ListChecksIcon,
   TruckIcon,
+  PhoneIcon,
 } from "@phosphor-icons/react"
 
 import { signOut, useSession } from "next-auth/react"
@@ -43,6 +36,7 @@ interface NavLink {
   name: string
   href: string
   icon?: React.ReactNode
+  desktop?: boolean
 }
 
 export default function Navbar() {
@@ -54,7 +48,6 @@ export default function Navbar() {
   const isAuthenticated = status === "authenticated"
 
   const [isOpen, setIsOpen] = useState(false)
-
   const [scrolled, setScrolled] = useState(false)
 
   /* =========================================================
@@ -72,50 +65,35 @@ export default function Navbar() {
       setScrolled(window.scrollY > 8)
     }
 
-    window.addEventListener(
-      "resize",
-      handleResize
-    )
-
-    window.addEventListener(
-      "scroll",
-      handleScroll
-    )
+    window.addEventListener("resize", handleResize)
+    window.addEventListener("scroll", handleScroll)
 
     return () => {
-      window.removeEventListener(
-        "resize",
-        handleResize
-      )
-
-      window.removeEventListener(
-        "scroll",
-        handleScroll
-      )
+      window.removeEventListener("resize", handleResize)
+      window.removeEventListener("scroll", handleScroll)
     }
   }, [])
 
   useEffect(() => {
-    document.body.style.overflow =
-      isOpen ? "hidden" : "unset"
+    document.body.style.overflow = isOpen ? "hidden" : "unset"
 
     return () => {
-      document.body.style.overflow =
-        "unset"
+      document.body.style.overflow = "unset"
     }
   }, [isOpen])
 
   /* =========================================================
-     NAV LINKS
+     NAVIGATION LINKS
   ========================================================= */
 
   const navLinks: NavLink[] = [
     {
       name: "Home",
       href: "/",
+      desktop: true,
       icon: (
-        <PackageIcon
-          size={18}
+        <HouseIcon
+          size={19}
           weight="duotone"
         />
       ),
@@ -124,69 +102,78 @@ export default function Navbar() {
     {
       name: "About",
       href: "/about",
+      desktop: true,
       icon: (
-        <ProhibitInsetIcon
-          size={18}
+        <InfoIcon
+          size={19}
           weight="duotone"
         />
       ),
     },
+
     {
       name: "Why MedSupply",
       href: "/why-medsupply",
       icon: (
         <StorefrontIcon
-          size={18}
+          size={19}
           weight="duotone"
         />
       ),
     },
+
     {
       name: "Features",
       href: "/features",
       icon: (
-        <StorefrontIcon
-          size={18}
+        <ListChecksIcon
+          size={19}
           weight="duotone"
         />
       ),
     },
+
     {
       name: "Services",
       href: "/services",
+      desktop: true,
       icon: (
-        <StorefrontIcon
-          size={18}
+        <GearIcon
+          size={19}
           weight="duotone"
         />
       ),
     },
+
     {
       name: "How it Works",
       href: "/how-it-works",
       icon: (
-        <StorefrontIcon
-          size={18}
+        <ListChecksIcon
+          size={19}
           weight="duotone"
         />
       ),
     },
+
     {
       name: "Become a Supplier",
       href: "/become-supplier",
       icon: (
         <TruckIcon
-          size={18}
+          size={19}
           weight="duotone"
         />
       ),
     },
-     {
+
+    {
       name: "Contact",
       href: "/contact",
+      desktop: true,
       icon: (
-        <StorefrontIcon
-          size={18}
+        <PhoneIcon
+          size={19}
           weight="duotone"
         />
       ),
@@ -194,23 +181,37 @@ export default function Navbar() {
   ]
 
   /* =========================================================
+     FILTERED NAVIGATION
+  ========================================================= */
+
+  const desktopNavLinks = navLinks.filter(
+    (link) => link.desktop
+  )
+
+  const mobileNavLinks = navLinks
+
+  /* =========================================================
      HELPERS
   ========================================================= */
 
-  const closeMenu = () =>
+  const closeMenu = () => {
     setIsOpen(false)
+  }
 
   const handleDashboard = () => {
     closeMenu()
-    const role = session?.user?.role // Typed from next-auth.d.ts
+
+    const role = session?.user?.role
 
     const routes: Record<string, string> = {
       supplier: "/supplier",
       buyer: "/buyer",
-      admin: "/admin"
+      admin: "/admin",
     }
 
-    router.push(routes[role as string] || "/buyer")
+    router.push(
+      routes[role as string] || "/buyer"
+    )
   }
 
   const handleSignOut = async () => {
@@ -227,34 +228,30 @@ export default function Navbar() {
 
   return (
     <>
+      {/* =========================================================
+          DESKTOP / MAIN NAVBAR
+      ========================================================= */}
+
       <nav
         className={cn(
           "fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-300",
-
           scrolled
             ? "bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm"
             : "bg-white/80 backdrop-blur-md border-b border-slate-100"
         )}
       >
         <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+
           {/* =========================================================
               LOGO
           ========================================================= */}
 
           <div
             className="flex items-center gap-3 shrink-0 select-none"
-            onContextMenu={(e) =>
-              e.preventDefault()
-            }
-            onCopy={(e) =>
-              e.preventDefault()
-            }
-            onCut={(e) =>
-              e.preventDefault()
-            }
-            onDragStart={(e) =>
-              e.preventDefault()
-            }
+            onContextMenu={(e) => e.preventDefault()}
+            onCopy={(e) => e.preventDefault()}
+            onCut={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
           >
             <Link
               href="/"
@@ -286,10 +283,16 @@ export default function Navbar() {
 
           {/* =========================================================
               DESKTOP NAVIGATION
+              
+              Desktop:
+              Home
+              About
+              Services
+              Contact
           ========================================================= */}
 
           <div className="hidden lg:flex items-center gap-1">
-            {navLinks.map((link) => {
+            {desktopNavLinks.map((link) => {
               const active =
                 pathname === link.href
 
@@ -299,7 +302,6 @@ export default function Navbar() {
                   href={link.href}
                   className={cn(
                     "group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
-
                     active
                       ? "bg-blue-50 text-blue-700"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -308,7 +310,6 @@ export default function Navbar() {
                   <span
                     className={cn(
                       "transition-colors",
-
                       active
                         ? "text-blue-600"
                         : "text-slate-400 group-hover:text-blue-600"
@@ -324,12 +325,15 @@ export default function Navbar() {
 
             <div className="w-px h-6 bg-slate-200 mx-3" />
 
+            {/* =====================================================
+                AUTHENTICATED ACTIONS
+            ===================================================== */}
+
             {isAuthenticated ? (
               <div className="flex items-center gap-3">
                 <button
-                  onClick={
-                    handleDashboard
-                  }
+                  type="button"
+                  onClick={handleDashboard}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
                 >
                   <LayoutDashboard className="w-4 h-4" />
@@ -338,12 +342,11 @@ export default function Navbar() {
                 </button>
 
                 <button
-                  onClick={
-                    handleSignOut
-                  }
+                  type="button"
+                  onClick={handleSignOut}
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-all"
                 >
-                  <SignOut className="w-4 h-4" />
+                  <X className="w-4 h-4" />
 
                   Sign Out
                 </button>
@@ -374,11 +377,11 @@ export default function Navbar() {
           ========================================================= */}
 
           <button
-            onClick={() =>
-              setIsOpen(true)
-            }
+            type="button"
+            onClick={() => setIsOpen(true)}
             className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
             aria-label="Open Menu"
+            aria-expanded={isOpen}
           >
             <Menu className="w-5 h-5" />
           </button>
@@ -387,12 +390,24 @@ export default function Navbar() {
 
       {/* =========================================================
           MOBILE NAVIGATION
+          
+          Mobile:
+          Home
+          About
+          Why MedSupply
+          Features
+          Services
+          How it Works
+          Become a Supplier
+          Contact
       ========================================================= */}
 
       <AnimatePresence>
         {isOpen && (
           <>
-            {/* BACKDROP */}
+            {/* =====================================================
+                BACKDROP
+            ===================================================== */}
 
             <motion.div
               initial={{
@@ -408,7 +423,9 @@ export default function Navbar() {
               className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 lg:hidden"
             />
 
-            {/* DRAWER */}
+            {/* =====================================================
+                DRAWER
+            ===================================================== */}
 
             <motion.div
               initial={{
@@ -427,7 +444,9 @@ export default function Navbar() {
               }}
               className="fixed top-0 left-0 h-screen w-full max-w-sm bg-white z-70 lg:hidden flex flex-col shadow-2xl"
             >
-              {/* HEADER */}
+              {/* =================================================
+                  HEADER
+              ================================================= */}
 
               <div className="h-16 px-5 border-b border-slate-200 flex items-center justify-between">
                 <Link
@@ -459,6 +478,7 @@ export default function Navbar() {
                 </Link>
 
                 <button
+                  type="button"
                   onClick={closeMenu}
                   className="w-10 h-10 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-all"
                   aria-label="Close Menu"
@@ -467,15 +487,16 @@ export default function Navbar() {
                 </button>
               </div>
 
-              {/* NAV LINKS */}
+              {/* =================================================
+                  NAV LINKS
+              ================================================= */}
 
               <div className="flex-1 overflow-y-auto px-5 py-6">
-                <div className="space-y-4">
-                  {navLinks.map(
+                <div className="space-y-3">
+                  {mobileNavLinks.map(
                     (link, index) => {
                       const active =
-                        pathname ===
-                        link.href
+                        pathname === link.href
 
                       return (
                         <motion.div
@@ -489,16 +510,12 @@ export default function Navbar() {
                             x: 0,
                           }}
                           transition={{
-                            delay:
-                              index *
-                              0.08,
+                            delay: index * 0.06,
                           }}
                         >
                           <Link
                             href={link.href}
-                            onClick={
-                              closeMenu
-                            }
+                            onClick={closeMenu}
                             className={cn(
                               "group flex items-center justify-between px-5 py-4 rounded-2xl border transition-all",
 
@@ -510,22 +527,18 @@ export default function Navbar() {
                             <div className="flex items-center gap-3">
                               <div
                                 className={cn(
-                                  "transition-colors",
+                                  "flex items-center justify-center w-9 h-9 rounded-xl transition-colors",
 
                                   active
-                                    ? "text-blue-600"
-                                    : "text-slate-400 group-hover:text-blue-600"
+                                    ? "bg-blue-100 text-blue-600"
+                                    : "bg-slate-50 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
                                 )}
                               >
-                                {
-                                  link.icon
-                                }
+                                {link.icon}
                               </div>
 
                               <span className="text-lg font-semibold text-slate-800">
-                                {
-                                  link.name
-                                }
+                                {link.name}
                               </span>
                             </div>
 
@@ -538,15 +551,16 @@ export default function Navbar() {
                 </div>
               </div>
 
-              {/* FOOTER ACTIONS */}
+              {/* =================================================
+                  FOOTER ACTIONS
+              ================================================= */}
 
               <div className="border-t border-slate-200 p-5 space-y-3">
                 {isAuthenticated ? (
                   <>
                     <button
-                      onClick={
-                        handleDashboard
-                      }
+                      type="button"
+                      onClick={handleDashboard}
                       className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-50 transition-all"
                     >
                       <LayoutDashboard className="w-5 h-5" />
@@ -555,25 +569,12 @@ export default function Navbar() {
                     </button>
 
                     <LogoutButton />
-
-                    {/* <button
-                      onClick={
-                        handleSignOut
-                      }
-                      className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl border border-red-200 text-red-600 font-bold hover:bg-red-50 transition-all"
-                    >
-                      <SignOut className="w-5 h-5" />
-
-                      Sign Out
-                    </button> */}
                   </>
                 ) : (
                   <>
                     <Link
                       href="/signin"
-                      onClick={
-                        closeMenu
-                      }
+                      onClick={closeMenu}
                       className="flex items-center justify-center w-full py-4 rounded-2xl border-2 border-slate-100 font-bold text-slate-700 hover:bg-slate-50 transition-all text-lg"
                     >
                       Sign In
@@ -581,9 +582,7 @@ export default function Navbar() {
 
                     <Link
                       href="/signup"
-                      onClick={
-                        closeMenu
-                      }
+                      onClick={closeMenu}
                       className="flex items-center justify-center w-full py-4 rounded-2xl bg-linear-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-xl shadow-blue-500/20 hover:opacity-95 transition-all active:scale-[0.98] text-lg"
                     >
                       Get Started

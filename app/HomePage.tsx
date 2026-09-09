@@ -39,7 +39,7 @@ export default function HomePage() {
    return (
       <div className="bg-slate-50 min-h-screen text-slate-900 font-dm-sans">
 
-         {/* <Navbar /> */}
+         <Navbar />
 
          {/* <Hero /> */}
 
@@ -228,7 +228,7 @@ export default function HomePage() {
          {/* CALL TO ACTION */}
          <CTASection />
          {/* FOOTER */}
-         {/* <Footer /> */}
+         <Footer />
       </div>
    );
 }
