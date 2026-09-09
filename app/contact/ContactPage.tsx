@@ -56,7 +56,7 @@ const ContactPage: React.FC = () => {
   ];
 
   return (
-    <div className="bg-white">
+    <div className="bg-white pt-4">
       {/* Hero Section - Clean White Theme */}
       <section className="bg-linear-to-b from-blue-50/40 via-white to-white py-16 sm:py-24 relative overflow-hidden border-b border-slate-200/80">
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />

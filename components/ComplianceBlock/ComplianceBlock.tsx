@@ -4,7 +4,9 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import {
   ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
+import { SectionHeader } from "../ui/SectionHeader";
 
 interface ComplianceBadge {
   id: string;
@@ -75,15 +77,22 @@ export default function ComplianceSection() {
           }}
           className="mb-16"
         >
-          <h2 className="text-2xl md:text-3xl font-semibold font-sora tracking-tight text-slate-900 mb-6">
-            Industry-Leading Safety & Compliance
-          </h2>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-5">
+            <ShieldCheck size={14} className="text-emerald-600" />
+            <span>Compliance & Safety</span>
+          </div>
+          <SectionHeader
+            badge=""
+            title="Meeting the Highest Pharmaceutical & Data Security Standards"
+            subtitle="Ensuring patient safety and supply chain integrity through rigorous compliance with regulatory standards."
+          />
+        
 
-          <p className="text-slate-600 max-w-2xl mx-auto">
+          {/* <p className="text-slate-600 max-w-2xl mx-auto">
             Meeting the highest pharmaceutical and data security
             requirements to ensure patient safety and supply chain
             integrity.
-          </p>
+          </p> */}
         </motion.div>
 
         {/* =========================================================

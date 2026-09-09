@@ -26,7 +26,6 @@ import { CTASection } from "@/components/ui/CTASection";
 import Footer from "@/components/Footer/Footer";
 import HeroSection from "@/components/HeroSection/HeroSection";
 import { StarAndCrescentIcon } from "@phosphor-icons/react";
-import Hero from "@/components/HeroSection/Hero";
 
 
 export default function HomePage() {
