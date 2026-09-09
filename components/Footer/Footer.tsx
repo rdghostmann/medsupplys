@@ -142,7 +142,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  href="/terms-conditions"
+                  href="/terms-conditionss"
                   className="transition-colors hover:text-blue-700"
                 >
                   Terms & Conditions
