@@ -162,7 +162,7 @@ const Footer = () => {
             <ul className="space-y-2.5 text-xs text-slate-600">
               <li>
                 <Link
-                  href="/become-a-supplier"
+                  href="/become-supplier"
                   className="font-medium transition-colors hover:text-emerald-700"
                 >
                   Become a Supplier

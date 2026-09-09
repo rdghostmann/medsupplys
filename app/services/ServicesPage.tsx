@@ -224,7 +224,7 @@ const ServicesPage: React.FC = () => {
               Launch Sourcing Engine
             </button>
             <button
-              onClick={() => router.push('/become-a-supplier')}
+              onClick={() => router.push('/become-supplier')}
               className="px-6 py-3 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-200 font-bold text-xs transition-colors cursor-pointer shadow-2xs"
             >
               Become a Verified Supplier

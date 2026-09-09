@@ -229,7 +229,7 @@ export const HowItWorksPage: React.FC = () => {
               </button>
             ) : (
               <button
-                onClick={() => router.push('/become-a-supplier')}
+                onClick={() => router.push('/become-supplier')}
                 className="inline-flex items-center gap-2 px-8 py-3.5 rounded-xl bg-linear-to-r from-[#1e40af] via-[#0284c7] to-[#00b87c] hover:from-[#1d4ed8] hover:to-[#059669] text-white font-bold text-xs shadow-md shadow-blue-700/20 transition-all cursor-pointer"
               >
                 <span>Apply as a Pharmaceutical Supplier</span>

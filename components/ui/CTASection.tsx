@@ -42,7 +42,7 @@ const router = useRouter();
           </button>
 
           <button
-            onClick={() => router.push('/become-a-supplier')}
+            onClick={() => router.push('/become-supplier')}
             className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 font-bold text-sm transition-all shadow-xs flex items-center justify-center gap-2 cursor-pointer"
           >
             <Building2 size={16} className="text-blue-700" />
