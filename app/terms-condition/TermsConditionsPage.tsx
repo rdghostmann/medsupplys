@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { 
   Scale, 
-  ShieldCheck, 
   FileText, 
   Building2, 
   ThermometerSnowflake, 
@@ -12,13 +11,10 @@ import {
   Printer, 
   ArrowRight, 
   ChevronRight, 
-  HelpCircle,
   Clock,
   Mail,
   Phone,
-  Banknote,
-  Truck,
-  RotateCcw,
+ 
   Gavel
 } from 'lucide-react';
 
