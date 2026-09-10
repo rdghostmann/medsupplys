@@ -1,7 +1,7 @@
 // BuyerCredit.tsx
-"use client";
+"use client"
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react"
 import {
   CreditCard,
   Calendar,
@@ -10,21 +10,21 @@ import {
   History,
   ShieldCheck,
   Clock,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
 import type {
   CurrentBuyerCreditAccount,
   CurrentBuyerCreditTransaction,
-} from "@/controllers/buyer.actions";
+} from "@/controllers/buyer.actions"
 
 /* -------------------------------------------------------------------------- */
 /* Props                                                                      */
 /* -------------------------------------------------------------------------- */
 
 interface BuyerCreditProps {
-  creditAccount: CurrentBuyerCreditAccount | null;
-  creditTransactions: CurrentBuyerCreditTransaction[];
+  creditAccount: CurrentBuyerCreditAccount | null
+  creditTransactions: CurrentBuyerCreditTransaction[]
 }
 
 /* -------------------------------------------------------------------------- */
@@ -35,49 +35,42 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
   creditAccount,
   creditTransactions,
 }) => {
-  const [repayAmount, setRepayAmount] =
-    useState<number>(100_000);
+  const [repayAmount, setRepayAmount] = useState<number>(100_000)
 
-  const [isRepaying, setIsRepaying] =
-    useState<boolean>(false);
+  const [isRepaying, setIsRepaying] = useState<boolean>(false)
 
-  const [showRepayModal, setShowRepayModal] =
-    useState<boolean>(false);
+  const [showRepayModal, setShowRepayModal] = useState<boolean>(false)
 
   /* ------------------------------------------------------------------------ */
   /* Derived Values                                                           */
   /* ------------------------------------------------------------------------ */
 
-  const limit = creditAccount?.creditLimit ?? 0;
+  const limit = creditAccount?.creditLimit ?? 0
 
-  const used = creditAccount?.creditUsed ?? 0;
+  const used = creditAccount?.creditUsed ?? 0
 
-  const avail = creditAccount?.availableCredit ?? 0;
+  const avail = creditAccount?.availableCredit ?? 0
 
-  const outstandingBalance =
-    creditAccount?.outstandingBalance ?? 0;
+  const outstandingBalance = creditAccount?.outstandingBalance ?? 0
 
   const percentUsed = useMemo(() => {
-    if (limit <= 0) return 0;
+    if (limit <= 0) return 0
 
-    return Math.min(
-      100,
-      Math.round((used / limit) * 100)
-    );
-  }, [limit, used]);
+    return Math.min(100, Math.round((used / limit) * 100))
+  }, [limit, used])
 
   const formatCurrency = (amount: number) =>
-    `₦${amount.toLocaleString("en-NG")}`;
+    `₦${amount.toLocaleString("en-NG")}`
 
   const formatDate = (date?: string) => {
-    if (!date) return "N/A";
+    if (!date) return "N/A"
 
     return new Date(date).toLocaleDateString("en-NG", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    });
-  };
+    })
+  }
 
   /* ------------------------------------------------------------------------ */
   /* No Credit Facility                                                       */
@@ -92,8 +85,8 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500">
-            Admin-approved deferred settlement facility for
-            verified healthcare systems.
+            Admin-approved deferred settlement facility for verified healthcare
+            systems.
           </p>
         </div>
 
@@ -107,16 +100,15 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
               </h2>
 
               <p className="mt-1 text-xs leading-relaxed text-amber-800">
-                Your buyer account does not currently have an
-                approved revolving credit facility. Contact
-                MedSupply administration if you believe this is
-                an error.
+                Your buyer account does not currently have an approved revolving
+                credit facility. Contact MedSupply administration if you believe
+                this is an error.
               </p>
             </div>
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   /* ------------------------------------------------------------------------ */
@@ -126,11 +118,10 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
   const handleRepay = async () => {
     if (repayAmount <= 0) {
       toast.error("Invalid amount", {
-        description:
-          "Repayment must be greater than zero.",
-      });
+        description: "Repayment must be greater than zero.",
+      })
 
-      return;
+      return
     }
 
     if (repayAmount > outstandingBalance) {
@@ -138,12 +129,12 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
         description: `You cannot repay more than the outstanding balance of ${formatCurrency(
           outstandingBalance
         )}.`,
-      });
+      })
 
-      return;
+      return
     }
 
-    setIsRepaying(true);
+    setIsRepaying(true)
 
     try {
       /*
@@ -154,30 +145,28 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
        * Server Action that creates a CreditTransaction
        * and atomically updates CreditAccount.
        */
-      await new Promise((resolve) =>
-        setTimeout(resolve, 900)
-      );
+      await new Promise((resolve) => setTimeout(resolve, 900))
 
-      setShowRepayModal(false);
+      setShowRepayModal(false)
 
       toast.success("Repayment Request Submitted", {
         description: `${formatCurrency(
           repayAmount
         )} repayment has been submitted for settlement.`,
-      });
+      })
 
-      setRepayAmount(100_000);
+      setRepayAmount(100_000)
     } catch (error) {
       toast.error("Repayment failed", {
         description:
           error instanceof Error
             ? error.message
             : "Unable to process the repayment.",
-      });
+      })
     } finally {
-      setIsRepaying(false);
+      setIsRepaying(false)
     }
-  };
+  }
 
   return (
     <div className="space-y-6">
@@ -192,8 +181,8 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500">
-            Admin-approved Net 30-day deferred settlement
-            facility for verified healthcare systems
+            Admin-approved Net 30-day deferred settlement facility for verified
+            healthcare systems
           </p>
         </div>
 
@@ -201,16 +190,13 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           type="button"
           onClick={() => setShowRepayModal(true)}
           disabled={
-            creditAccount.status !== "ACTIVE" ||
-            outstandingBalance <= 0
+            creditAccount.status !== "ACTIVE" || outstandingBalance <= 0
           }
           className="flex cursor-pointer items-center gap-1.5 self-start rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <CreditCard className="h-4 w-4" />
 
-          <span className="text-[11px]">
-            Credit Facility Repayment
-          </span>
+          <span className="text-[11px]">Credit Facility Repayment</span>
         </button>
       </div>
 
@@ -221,7 +207,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {/* Available Credit */}
         <div className="relative rounded-2xl bg-linear-to-br from-slate-900 via-emerald-950 to-slate-900 p-6 text-white shadow-lg">
-          <div className="mb-1 text-xs font-bold uppercase tracking-wider text-emerald-300">
+          <div className="mb-1 text-xs font-bold tracking-wider text-emerald-300 uppercase">
             Available Credit Limit
           </div>
 
@@ -230,13 +216,10 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           </div>
 
           <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-[11px] text-emerald-200/80">
-            <span>
-              Approved Limit: {formatCurrency(limit)}
-            </span>
+            <span>Approved Limit: {formatCurrency(limit)}</span>
 
             <span>
-              Terms: Net{" "}
-              {"30 Days"}
+              Terms: Net {"30 Days"}
               {/* {creditAccount.terms || "30 Days"} */}
             </span>
           </div>
@@ -245,7 +228,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
         {/* Outstanding Balance */}
         <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="mb-1 text-xs font-semibold tracking-wider text-slate-500 uppercase">
               Outstanding Balance Due
             </div>
 
@@ -257,9 +240,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] text-slate-500">
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" />
-
-              Due Date:{" "}
-              {formatDate(creditAccount.dueDate)}
+              Due Date: {formatDate(creditAccount.dueDate)}
             </span>
 
             <span className="font-semibold text-emerald-700">
@@ -271,7 +252,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
         {/* Utilization Gauge */}
         <div className="flex flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-500">
+            <div className="mb-1 flex items-center justify-between text-xs font-semibold tracking-wider text-slate-500 uppercase">
               <span>Facility Utilization</span>
 
               <span className="font-mono font-bold text-slate-900">
@@ -281,12 +262,13 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
 
             <div className="mt-2 h-2.5 w-full overflow-hidden rounded-full bg-slate-100">
               <div
-                className={`h-full rounded-full transition-all duration-300 ${percentUsed > 80
+                className={`h-full rounded-full transition-all duration-300 ${
+                  percentUsed > 80
                     ? "bg-red-500"
                     : percentUsed > 50
                       ? "bg-amber-500"
                       : "bg-emerald-500"
-                  }`}
+                }`}
                 style={{
                   width: `${percentUsed}%`,
                 }}
@@ -297,9 +279,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           <div className="mt-3 flex items-center gap-1.5 border-t border-slate-100 pt-3 text-[11px] text-slate-400">
             <ShieldCheck className="h-3.5 w-3.5 text-blue-600" />
 
-            <span>
-              Admin-guaranteed institutional facility
-            </span>
+            <span>Admin-guaranteed institutional facility</span>
           </div>
         </div>
       </div>
@@ -324,8 +304,8 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
               </p>
 
               <p className="text-[11px] text-slate-500">
-                Your institutional credit facility is available
-                for eligible procurement orders.
+                Your institutional credit facility is available for eligible
+                procurement orders.
               </p>
             </div>
           </div>
@@ -336,8 +316,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
             </span>
 
             <span className="text-slate-400">
-              Updated{" "}
-              {formatDate(creditAccount.updatedAt)}
+              Updated {formatDate(creditAccount.updatedAt)}
             </span>
           </div>
         </div>
@@ -357,8 +336,8 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
                 </h3>
 
                 <p className="mt-1 text-xs text-slate-500">
-                  Restore your revolving facility availability by
-                  settling an outstanding credit balance.
+                  Restore your revolving facility availability by settling an
+                  outstanding credit balance.
                 </p>
               </div>
 
@@ -371,9 +350,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
               {/* Outstanding */}
               <div className="rounded-xl border border-slate-100 bg-slate-50 p-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-500">
-                    Current Outstanding
-                  </span>
+                  <span className="text-slate-500">Current Outstanding</span>
 
                   <span className="font-mono font-bold text-amber-700">
                     {formatCurrency(outstandingBalance)}
@@ -389,8 +366,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
                     {formatCurrency(
                       Math.min(
                         creditAccount.creditLimit,
-                        creditAccount.availableCredit +
-                        repayAmount
+                        creditAccount.availableCredit + repayAmount
                       )
                     )}
                   </span>
@@ -409,20 +385,15 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
                   max={outstandingBalance}
                   value={repayAmount}
                   onChange={(event) =>
-                    setRepayAmount(
-                      Number(event.target.value)
-                    )
+                    setRepayAmount(Number(event.target.value))
                   }
-                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 font-mono text-sm font-bold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  className="w-full rounded-xl border border-slate-200 px-3 py-2.5 font-mono text-sm font-bold focus:border-emerald-400 focus:ring-2 focus:ring-emerald-500/20 focus:outline-none"
                 />
 
                 <div className="mt-1.5 flex items-center justify-between text-[10px] text-slate-400">
                   <span>Minimum: ₦1</span>
 
-                  <span>
-                    Maximum:{" "}
-                    {formatCurrency(outstandingBalance)}
-                  </span>
+                  <span>Maximum: {formatCurrency(outstandingBalance)}</span>
                 </div>
               </div>
 
@@ -431,14 +402,12 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
 
                 <div className="text-[11px] text-blue-800">
-                  <p className="font-bold">
-                    Institutional Settlement
-                  </p>
+                  <p className="font-bold">Institutional Settlement</p>
 
                   <p className="mt-0.5 text-blue-700">
-                    Repayments are applied against your outstanding
-                    credit balance and restore equivalent available
-                    credit after settlement.
+                    Repayments are applied against your outstanding credit
+                    balance and restore equivalent available credit after
+                    settlement.
                   </p>
                 </div>
               </div>
@@ -447,9 +416,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
               <div className="flex gap-2 pt-1">
                 <button
                   type="button"
-                  onClick={() =>
-                    setShowRepayModal(false)
-                  }
+                  onClick={() => setShowRepayModal(false)}
                   disabled={isRepaying}
                   className="flex-1 cursor-pointer rounded-xl border border-slate-200 py-2.5 font-semibold text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
                 >
@@ -490,36 +457,27 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-slate-500" />
 
-            <h2 className="font-display text-sm font-bold uppercase tracking-wider text-slate-900">
-              Credit Facility Activity & Charges (
-              {creditTransactions.length})
+            <h2 className="font-display text-sm font-bold tracking-wider text-slate-900 uppercase">
+              Credit Facility Activity & Charges ({creditTransactions.length})
             </h2>
           </div>
 
-          <div className="text-[10px] font-semibold uppercase tracking-wider text-slate-400">
+          <div className="text-[10px] font-semibold tracking-wider text-slate-400 uppercase">
             Net 30 Facility
           </div>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="border-b border-slate-100 bg-slate-50 text-[10.5px] uppercase tracking-wider text-slate-500">
+            <thead className="border-b border-slate-100 bg-slate-50 text-[10.5px] tracking-wider text-slate-500 uppercase">
               <tr>
-                <th className="px-4 py-3 font-semibold">
-                  Reference
-                </th>
+                <th className="px-4 py-3 font-semibold">Reference</th>
 
-                <th className="px-4 py-3 font-semibold">
-                  Type & Description
-                </th>
+                <th className="px-4 py-3 font-semibold">Type & Description</th>
 
-                <th className="px-4 py-3 font-semibold">
-                  Timestamp
-                </th>
+                <th className="px-4 py-3 font-semibold">Timestamp</th>
 
-                <th className="px-4 py-3 text-right font-semibold">
-                  Amount
-                </th>
+                <th className="px-4 py-3 text-right font-semibold">Amount</th>
 
                 <th className="px-4 py-3 text-right font-semibold">
                   Outstanding Balance
@@ -530,24 +488,17 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
             <tbody className="divide-y divide-slate-100">
               {creditTransactions.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="py-8 text-center text-slate-400"
-                  >
+                  <td colSpan={5} className="py-8 text-center text-slate-400">
                     No credit transactions on record.
                   </td>
                 </tr>
               ) : (
                 creditTransactions.map((tx) => {
-                  const isPayment =
-                    tx.direction === "PAYMENT";
+                  const isPayment = tx.direction === "PAYMENT"
 
                   return (
-                    <tr
-                      key={tx.id}
-                      className="transition hover:bg-slate-50"
-                    >
-                      <td className="whitespace-nowrap px-4 py-3 font-mono font-bold text-slate-900">
+                    <tr key={tx.id} className="transition hover:bg-slate-50">
+                      <td className="px-4 py-3 font-mono font-bold whitespace-nowrap text-slate-900">
                         {tx.reference}
                       </td>
 
@@ -561,10 +512,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
 
                           <div>
                             <div className="font-semibold text-slate-900">
-                              {tx.type.replace(
-                                /_/g,
-                                " "
-                              )}
+                              {tx.type.replace(/_/g, " ")}
                             </div>
 
                             <div className="text-[11px] text-slate-500">
@@ -574,25 +522,24 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
                         </div>
                       </td>
 
-                      <td className="whitespace-nowrap px-4 py-3 font-mono text-[11px] text-slate-500">
+                      <td className="px-4 py-3 font-mono text-[11px] whitespace-nowrap text-slate-500">
                         {formatDate(tx.createdAt)}
                       </td>
 
                       <td
-                        className={`whitespace-nowrap px-4 py-3 text-right font-mono font-bold ${isPayment
-                            ? "text-emerald-700"
-                            : "text-amber-800"
-                          }`}
+                        className={`px-4 py-3 text-right font-mono font-bold whitespace-nowrap ${
+                          isPayment ? "text-emerald-700" : "text-amber-800"
+                        }`}
                       >
                         {isPayment ? "-" : "+"}
                         {formatCurrency(tx.amount)}
                       </td>
 
-                      <td className="whitespace-nowrap px-4 py-3 text-right font-mono font-bold text-slate-900">
+                      <td className="px-4 py-3 text-right font-mono font-bold whitespace-nowrap text-slate-900">
                         {formatCurrency(tx.balanceAfter)}
                       </td>
                     </tr>
-                  );
+                  )
                 })
               )}
             </tbody>
@@ -600,7 +547,7 @@ const BuyerCredit: React.FC<BuyerCreditProps> = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default BuyerCredit;
+export default BuyerCredit

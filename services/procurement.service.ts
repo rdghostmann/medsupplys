@@ -1,83 +1,77 @@
 // /services/procurement.service.ts
 
-"use server";
+"use server"
 
-import crypto from "crypto";
-import { Types } from "mongoose";
-import { getServerSession } from "next-auth";
+import crypto from "crypto"
+import { Types } from "mongoose"
+import { getServerSession } from "next-auth"
 
-import { connectToDB } from "@/lib/connectToDB";
-import { authOptions } from "@/auth";
+import { connectToDB } from "@/lib/connectToDB"
+import { authOptions } from "@/auth"
 
-import { Product } from "@/models/Product";
-import { SupplierProduct } from "@/models/SupplierProduct";
-import { User } from "@/models/User";
+import { Product } from "@/models/Product"
+import { SupplierProduct } from "@/models/SupplierProduct"
+import { User } from "@/models/User"
 
-import {
-    Procurement,
-    type SupplierCandidateStatus,
-} from "@/models/Procurement";
+import { Procurement, type SupplierCandidateStatus } from "@/models/Procurement"
 
-import { Wallet } from "@/models/Wallet";
-import { WalletTransaction } from "@/models/WalletTransaction";
+import { Wallet } from "@/models/Wallet"
+import { WalletTransaction } from "@/models/WalletTransaction"
 
-import { CreditAccount } from "@/models/CreditAccount";
-import { CreditTransaction } from "@/models/CreditTransaction";
+import { CreditAccount } from "@/models/CreditAccount"
+import { CreditTransaction } from "@/models/CreditTransaction"
 
-import { AuditLog } from "@/models/AuditLog";
+import { AuditLog } from "@/models/AuditLog"
 
 import {
-    matchSuppliers,
-    type SupplierScoreBreakdown,
-} from "@/services/supplier-matching.service";
+  matchSuppliers,
+  type SupplierScoreBreakdown,
+} from "@/services/supplier-matching.service"
 
 /* =========================================================
    Types
    ========================================================= */
 
-export type ProcurementPaymentMethod =
-    | "WALLET"
-    | "CREDIT"
-    | "WALLET_AND_CREDIT";
+export type ProcurementPaymentMethod = "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
 
 export interface CreateProcurementInput {
-    productId: string;
-    supplierProductId: string;
-    quantity: number;
+  productId: string
+  supplierProductId: string
+  quantity: number
 
-    paymentMethod: ProcurementPaymentMethod;
+  paymentMethod: ProcurementPaymentMethod
 
-    /**
-     * Required only when paymentMethod ===
-     * "WALLET_AND_CREDIT".
-     *
-     * The server still clamps and validates the
-     * final allocation against totalAmount.
-     */
-    splitWalletAmount?: number;
+  /**
+   * Required only when paymentMethod ===
+   * "WALLET_AND_CREDIT".
+   *
+   * The server still clamps and validates the
+   * final allocation against totalAmount.
+   */
+  splitWalletAmount?: number
 
-    deliveryAddress: string;
-    notes?: string;
+  deliveryAddress: string
+  notes?: string
 }
 
 export interface CreateProcurementResult {
-    success: true;
+  success: true
 
-    procurement: {
-        id: string;
-        procurementNumber: string;
-        status: string;
+  procurement: {
+    id: string
+    procurementNumber: string
+    status: string
 
-        totalAmount: number;
-        walletAmount: number;
-        creditAmount: number;
+    totalAmount: number
+    walletAmount: number
+    creditAmount: number
 
-        supplierName: string;
-        supplierType: string;
+    supplierName: string
+    supplierType: string
 
-        quantity: number;
-        unitPrice: number;
-    };
+    quantity: number
+    unitPrice: number
+  }
 }
 
 /**
@@ -87,17 +81,17 @@ export interface CreateProcurementResult {
  * does not widen "CONTACTED" / "QUEUED" to string.
  */
 type ProcurementSupplierCandidateSnapshot = {
-    supplierId: Types.ObjectId;
-    supplierName: string;
-    supplierType: string;
-    supplierProductId: Types.ObjectId;
-    unitPrice: number;
-    totalPrice: number;
-    stock: number;
-    rank: number;
-    score: number;
-    status: SupplierCandidateStatus;
-};
+  supplierId: Types.ObjectId
+  supplierName: string
+  supplierType: string
+  supplierProductId: Types.ObjectId
+  unitPrice: number
+  totalPrice: number
+  stock: number
+  rank: number
+  score: number
+  status: SupplierCandidateStatus
+}
 
 /* =========================================================
    Constants
@@ -107,13 +101,13 @@ type ProcurementSupplierCandidateSnapshot = {
  * Must remain aligned with the supplier matching engine.
  */
 const MATCHING_WEIGHTS = {
-    priceWeight: 35,
-    stockWeight: 20,
-    ratingWeight: 15,
-    fulfillmentWeight: 15,
-    deliveryWeight: 10,
-    supplierTypeWeight: 5,
-} as const;
+  priceWeight: 35,
+  stockWeight: 20,
+  ratingWeight: 15,
+  fulfillmentWeight: 15,
+  deliveryWeight: 10,
+  supplierTypeWeight: 5,
+} as const
 
 /**
  * Procurement reservation expiry.
@@ -121,77 +115,48 @@ const MATCHING_WEIGHTS = {
  * The current workflow reserves wallet/credit funds while
  * the supplier is being contacted.
  */
-const PROCUREMENT_EXPIRY_MS =
-    24 * 60 * 60 * 1000;
+const PROCUREMENT_EXPIRY_MS = 24 * 60 * 60 * 1000
 
 /* =========================================================
    Helpers
    ========================================================= */
 
 function generateProcurementNumber(): string {
-    const date = new Date();
+  const date = new Date()
 
-    const yyyy =
-        date.getFullYear();
+  const yyyy = date.getFullYear()
 
-    const mm =
-        String(
-            date.getMonth() + 1
-        ).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0")
 
-    const dd =
-        String(
-            date.getDate()
-        ).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0")
 
-    const random =
-        crypto
-            .randomBytes(4)
-            .toString("hex")
-            .toUpperCase();
+  const random = crypto.randomBytes(4).toString("hex").toUpperCase()
 
-    return `PROC-${yyyy}${mm}${dd}-${random}`;
+  return `PROC-${yyyy}${mm}${dd}-${random}`
 }
 
-function generateReference(
-    prefix: string
-): string {
-    const random =
-        crypto
-            .randomBytes(4)
-            .toString("hex")
-            .toUpperCase();
+function generateReference(prefix: string): string {
+  const random = crypto.randomBytes(4).toString("hex").toUpperCase()
 
-    return `${prefix}-${Date.now()}-${random}`;
+  return `${prefix}-${Date.now()}-${random}`
 }
 
-function assertObjectId(
-    value: string,
-    field: string
-): Types.ObjectId {
-    if (
-        !Types.ObjectId.isValid(value)
-    ) {
-        throw new Error(
-            `Invalid ${field}.`
-        );
-    }
+function assertObjectId(value: string, field: string): Types.ObjectId {
+  if (!Types.ObjectId.isValid(value)) {
+    throw new Error(`Invalid ${field}.`)
+  }
 
-    return new Types.ObjectId(value);
+  return new Types.ObjectId(value)
 }
 
-function normalizeId(
-    value: unknown
-): string {
-    return String(value);
+function normalizeId(value: unknown): string {
+  return String(value)
 }
 
-function normalizeString(
-    value: unknown
-): string {
-    return String(value ?? "")
-        .trim()
-        .toLowerCase();
+function normalizeString(value: unknown): string {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase()
 }
 
 /* =========================================================
@@ -199,170 +164,112 @@ function normalizeString(
    ========================================================= */
 
 export async function createProcurement(
-    input: CreateProcurementInput
+  input: CreateProcurementInput
 ): Promise<CreateProcurementResult> {
-    /* =======================================================
+  /* =======================================================
        Authentication
        ======================================================= */
 
-    const authSession =
-        await getServerSession(
-            authOptions
-        );
+  const authSession = await getServerSession(authOptions)
 
-    const currentUser =
-        authSession?.user;
+  const currentUser = authSession?.user
 
-    if (!currentUser?.id) {
-        throw new Error(
-            "You must be authenticated to create a procurement."
-        );
-    }
+  if (!currentUser?.id) {
+    throw new Error("You must be authenticated to create a procurement.")
+  }
 
-    const buyerId =
-        assertObjectId(
-            String(currentUser.id),
-            "buyer"
-        );
+  const buyerId = assertObjectId(String(currentUser.id), "buyer")
 
-    /* =======================================================
+  /* =======================================================
        Input Validation
        ======================================================= */
 
-    const productId =
-        assertObjectId(
-            input.productId,
-            "product"
-        );
+  const productId = assertObjectId(input.productId, "product")
 
-    const supplierProductId =
-        assertObjectId(
-            input.supplierProductId,
-            "supplier listing"
-        );
+  const supplierProductId = assertObjectId(
+    input.supplierProductId,
+    "supplier listing"
+  )
 
-    const quantity =
-        Math.floor(
-            Number(input.quantity)
-        );
+  const quantity = Math.floor(Number(input.quantity))
 
-    if (
-        !Number.isFinite(quantity) ||
-        quantity <= 0
-    ) {
-        throw new Error(
-            "Procurement quantity must be greater than zero."
-        );
-    }
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    throw new Error("Procurement quantity must be greater than zero.")
+  }
 
-    const deliveryAddress =
-        String(
-            input.deliveryAddress ?? ""
-        ).trim();
+  const deliveryAddress = String(input.deliveryAddress ?? "").trim()
 
-    if (!deliveryAddress) {
-        throw new Error(
-            "Delivery address is required."
-        );
-    }
+  if (!deliveryAddress) {
+    throw new Error("Delivery address is required.")
+  }
 
-    const paymentMethods: ProcurementPaymentMethod[] =
-        [
-            "WALLET",
-            "CREDIT",
-            "WALLET_AND_CREDIT",
-        ];
+  const paymentMethods: ProcurementPaymentMethod[] = [
+    "WALLET",
+    "CREDIT",
+    "WALLET_AND_CREDIT",
+  ]
 
-    if (
-        !paymentMethods.includes(
-            input.paymentMethod
-        )
-    ) {
-        throw new Error(
-            "Invalid procurement payment method."
-        );
-    }
+  if (!paymentMethods.includes(input.paymentMethod)) {
+    throw new Error("Invalid procurement payment method.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Database
        ======================================================= */
 
-    await connectToDB();
+  await connectToDB()
 
-    /* =======================================================
+  /* =======================================================
        Buyer
        ======================================================= */
 
-    const buyer =
-        await User.findById(
-            buyerId
-        )
-            .select({
-                _id: 1,
-                role: 1,
-                status: 1,
-                organizationName: 1,
-                name: 1,
-                username: 1,
-            })
-            .lean();
+  const buyer = await User.findById(buyerId)
+    .select({
+      _id: 1,
+      role: 1,
+      status: 1,
+      organizationName: 1,
+      name: 1,
+      username: 1,
+    })
+    .lean()
 
-    if (!buyer) {
-        throw new Error(
-            "Buyer account could not be found."
-        );
-    }
+  if (!buyer) {
+    throw new Error("Buyer account could not be found.")
+  }
 
-    if (
-        normalizeString(
-            buyer.role
-        ) !== "buyer"
-    ) {
-        throw new Error(
-            "Only buyer accounts can create procurements."
-        );
-    }
+  if (normalizeString(buyer.role) !== "buyer") {
+    throw new Error("Only buyer accounts can create procurements.")
+  }
 
-    if (
-        buyer.status &&
-        normalizeString(
-            buyer.status
-        ) !== "active"
-    ) {
-        throw new Error(
-            "Buyer account is not active."
-        );
-    }
+  if (buyer.status && normalizeString(buyer.status) !== "active") {
+    throw new Error("Buyer account is not active.")
+  }
 
-    const buyerName =
-        String(
-            buyer.organizationName ??
-            buyer.username ?? "Buyer"
-        ).trim();
+  const buyerName = String(
+    buyer.organizationName ?? buyer.username ?? "Buyer"
+  ).trim()
 
-    /* =======================================================
+  /* =======================================================
        Product
        ======================================================= */
 
-    const product =
-        await Product.findOne({
-            _id: productId,
-            status: "ACTIVE",
-        })
-            .select({
-                _id: 1,
-                name: 1,
-                unit: 1,
-            })
-            .lean();
+  const product = await Product.findOne({
+    _id: productId,
+    status: "ACTIVE",
+  })
+    .select({
+      _id: 1,
+      name: 1,
+      unit: 1,
+    })
+    .lean()
 
-    if (!product) {
-        throw new Error(
-            "The requested product is no longer available."
-        );
-    }
+  if (!product) {
+    throw new Error("The requested product is no longer available.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Re-run Matching Engine
        
        The browser selection is advisory only.
@@ -371,397 +278,243 @@ export async function createProcurement(
        supplier pool before creating the procurement.
        ======================================================= */
 
-    const matches =
-        await matchSuppliers(
-            productId.toString(),
-            quantity
-        );
+  const matches = await matchSuppliers(productId.toString(), quantity)
 
-    const eligibleMatches =
-        matches.filter(
-            (
-                match: SupplierScoreBreakdown
-            ) =>
-                match.isEligible
-        );
+  const eligibleMatches = matches.filter(
+    (match: SupplierScoreBreakdown) => match.isEligible
+  )
 
-    if (
-        eligibleMatches.length === 0
-    ) {
-        throw new Error(
-            "No eligible supplier is currently available for this quantity."
-        );
-    }
+  if (eligibleMatches.length === 0) {
+    throw new Error(
+      "No eligible supplier is currently available for this quantity."
+    )
+  }
 
-    /* =======================================================
+  /* =======================================================
        Selected Supplier
        ======================================================= */
 
-    const selectedSupplier =
-        eligibleMatches.find(
-            (
-                supplier: SupplierScoreBreakdown
-            ) =>
-                normalizeId(
-                    supplier.supplierProductId
-                ) ===
-                supplierProductId.toString()
-        );
+  const selectedSupplier = eligibleMatches.find(
+    (supplier: SupplierScoreBreakdown) =>
+      normalizeId(supplier.supplierProductId) === supplierProductId.toString()
+  )
 
-    if (!selectedSupplier) {
-        throw new Error(
-            "The selected supplier is no longer eligible for this quantity."
-        );
-    }
+  if (!selectedSupplier) {
+    throw new Error(
+      "The selected supplier is no longer eligible for this quantity."
+    )
+  }
 
-    /* =======================================================
+  /* =======================================================
        Selected Supplier Rank
        ======================================================= */
 
-    const selectedIndex =
-        eligibleMatches.findIndex(
-            (
-                match: SupplierScoreBreakdown
-            ) =>
-                normalizeId(
-                    match.supplierProductId
-                ) ===
-                supplierProductId.toString()
-        );
+  const selectedIndex = eligibleMatches.findIndex(
+    (match: SupplierScoreBreakdown) =>
+      normalizeId(match.supplierProductId) === supplierProductId.toString()
+  )
 
-    if (
-        selectedIndex < 0
-    ) {
-        throw new Error(
-            "Selected supplier is not present in the eligible supplier pool."
-        );
-    }
+  if (selectedIndex < 0) {
+    throw new Error(
+      "Selected supplier is not present in the eligible supplier pool."
+    )
+  }
 
-    /* =======================================================
+  /* =======================================================
        Authoritative SupplierProduct
        ======================================================= */
 
-    const supplierProduct =
-        await SupplierProduct.findOne({
-            _id: supplierProductId,
-            productId,
-        }).lean();
+  const supplierProduct = await SupplierProduct.findOne({
+    _id: supplierProductId,
+    productId,
+  }).lean()
 
-    if (!supplierProduct) {
-        throw new Error(
-            "The selected supplier listing no longer exists."
-        );
-    }
+  if (!supplierProduct) {
+    throw new Error("The selected supplier listing no longer exists.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Authoritative Supplier ID
        ======================================================= */
 
-    const supplierId =
-        assertObjectId(
-            selectedSupplier.supplierId,
-            "supplier"
-        );
+  const supplierId = assertObjectId(selectedSupplier.supplierId, "supplier")
 
-    /*
-     * Ensure the selected listing actually belongs to
-     * the supplier returned by the matching engine.
-     *
-     * This protects against stale or inconsistent matching
-     * data.
-     */
-    if (
-        normalizeId(
-            supplierProduct.supplierId
-        ) !== supplierId.toString()
-    ) {
-        throw new Error(
-            "Supplier listing ownership could not be verified."
-        );
-    }
+  /*
+   * Ensure the selected listing actually belongs to
+   * the supplier returned by the matching engine.
+   *
+   * This protects against stale or inconsistent matching
+   * data.
+   */
+  if (normalizeId(supplierProduct.supplierId) !== supplierId.toString()) {
+    throw new Error("Supplier listing ownership could not be verified.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Authoritative Supplier
        ======================================================= */
 
-    const supplier =
-        await User.findById(
-            supplierId
-        )
-            .select({
-                _id: 1,
-                role: 1,
-                status: 1,
-                supplierApprovalStatus: 1,
-                organizationName: 1,
-                fullName: 1,
-                name: 1,
-            })
-            .lean();
+  const supplier = await User.findById(supplierId)
+    .select({
+      _id: 1,
+      role: 1,
+      status: 1,
+      supplierApprovalStatus: 1,
+      organizationName: 1,
+      fullName: 1,
+      name: 1,
+    })
+    .lean()
 
-    if (!supplier) {
-        throw new Error(
-            "The selected supplier account no longer exists."
-        );
-    }
+  if (!supplier) {
+    throw new Error("The selected supplier account no longer exists.")
+  }
 
-    if (
-        normalizeString(
-            supplier.role
-        ) !== "supplier"
-    ) {
-        throw new Error(
-            "The selected account is not a valid supplier."
-        );
-    }
+  if (normalizeString(supplier.role) !== "supplier") {
+    throw new Error("The selected account is not a valid supplier.")
+  }
 
-    if (
-        normalizeString(
-            supplier.status
-        ) !== "active"
-    ) {
-        throw new Error(
-            "The selected supplier is not active."
-        );
-    }
+  if (normalizeString(supplier.status) !== "active") {
+    throw new Error("The selected supplier is not active.")
+  }
 
-    if (
-        normalizeString(
-            supplier.supplierApprovalStatus
-        ) !== "approved"
-    ) {
-        throw new Error(
-            "The selected supplier is not approved."
-        );
-    }
+  if (normalizeString(supplier.supplierApprovalStatus) !== "approved") {
+    throw new Error("The selected supplier is not approved.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Authoritative Listing Validation
        ======================================================= */
 
-    if (
-        supplierProduct.status !==
-        "AVAILABLE"
-    ) {
-        throw new Error(
-            "The selected supplier listing is no longer available."
-        );
-    }
+  if (supplierProduct.status !== "AVAILABLE") {
+    throw new Error("The selected supplier listing is no longer available.")
+  }
 
-    if (
-        supplierProduct.isFlagged
-    ) {
-        throw new Error(
-            "The selected supplier listing is currently unavailable."
-        );
-    }
+  if (supplierProduct.isFlagged) {
+    throw new Error("The selected supplier listing is currently unavailable.")
+  }
 
-    if (
-        quantity <
-        supplierProduct.minOrderQuantity
-    ) {
-        throw new Error(
-            `Minimum order quantity is ${supplierProduct.minOrderQuantity}.`
-        );
-    }
+  if (quantity < supplierProduct.minOrderQuantity) {
+    throw new Error(
+      `Minimum order quantity is ${supplierProduct.minOrderQuantity}.`
+    )
+  }
 
-    if (
-        quantity >
-        supplierProduct.maxOrderQuantity
-    ) {
-        throw new Error(
-            `Maximum order quantity is ${supplierProduct.maxOrderQuantity}.`
-        );
-    }
+  if (quantity > supplierProduct.maxOrderQuantity) {
+    throw new Error(
+      `Maximum order quantity is ${supplierProduct.maxOrderQuantity}.`
+    )
+  }
 
-    if (
-        supplierProduct.stock <
-        quantity
-    ) {
-        throw new Error(
-            "The selected supplier no longer has sufficient stock."
-        );
-    }
+  if (supplierProduct.stock < quantity) {
+    throw new Error("The selected supplier no longer has sufficient stock.")
+  }
 
-    if (
-        !supplierProduct.nafdacRegNumber
-            ?.trim()
-    ) {
-        throw new Error(
-            "Supplier NAFDAC registration is missing."
-        );
-    }
+  if (!supplierProduct.nafdacRegNumber?.trim()) {
+    throw new Error("Supplier NAFDAC registration is missing.")
+  }
 
-    if (
-        !supplierProduct.batchNumber
-            ?.trim()
-    ) {
-        throw new Error(
-            "Supplier batch information is missing."
-        );
-    }
+  if (!supplierProduct.batchNumber?.trim()) {
+    throw new Error("Supplier batch information is missing.")
+  }
 
-    const now =
-        new Date();
+  const now = new Date()
 
-    const expiryDate =
-        new Date(
-            supplierProduct.expiryDate
-        );
+  const expiryDate = new Date(supplierProduct.expiryDate)
 
-    if (
-        !Number.isFinite(
-            expiryDate.getTime()
-        ) ||
-        expiryDate <= now
-    ) {
-        throw new Error(
-            "The selected supplier batch has expired."
-        );
-    }
+  if (!Number.isFinite(expiryDate.getTime()) || expiryDate <= now) {
+    throw new Error("The selected supplier batch has expired.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Price Validation
        ======================================================= */
 
-    const unitPrice =
-        Number(
-            supplierProduct.finalPrice
-        );
+  const unitPrice = Number(supplierProduct.finalPrice)
 
-    if (
-        !Number.isFinite(
-            unitPrice
-        ) ||
-        unitPrice <= 0
-    ) {
-        throw new Error(
-            "Supplier pricing is invalid."
-        );
-    }
+  if (!Number.isFinite(unitPrice) || unitPrice <= 0) {
+    throw new Error("Supplier pricing is invalid.")
+  }
 
-    /*
-     * Matching determines supplier eligibility/ranking,
-     * but price is always re-read from the authoritative
-     * SupplierProduct document.
-     */
-    if (
-        Number(
-            selectedSupplier.finalPrice
-        ) !== unitPrice
-    ) {
-        throw new Error(
-            "Supplier pricing changed. Please refresh the supplier pool and try again."
-        );
-    }
+  /*
+   * Matching determines supplier eligibility/ranking,
+   * but price is always re-read from the authoritative
+   * SupplierProduct document.
+   */
+  if (Number(selectedSupplier.finalPrice) !== unitPrice) {
+    throw new Error(
+      "Supplier pricing changed. Please refresh the supplier pool and try again."
+    )
+  }
 
-    const totalAmount =
-        Math.round(
-            unitPrice * quantity
-        );
+  const totalAmount = Math.round(unitPrice * quantity)
 
-    if (
-        totalAmount <= 0
-    ) {
-        throw new Error(
-            "Procurement total must be greater than zero."
-        );
-    }
+  if (totalAmount <= 0) {
+    throw new Error("Procurement total must be greater than zero.")
+  }
 
-    /* =======================================================
+  /* =======================================================
        Payment Allocation
        ======================================================= */
 
-    let walletAmount = 0;
-    let creditAmount = 0;
+  let walletAmount = 0
+  let creditAmount = 0
 
-    switch (
-    input.paymentMethod
-    ) {
-        case "WALLET": {
-            walletAmount =
-                totalAmount;
+  switch (input.paymentMethod) {
+    case "WALLET": {
+      walletAmount = totalAmount
 
-            break;
-        }
-
-        case "CREDIT": {
-            creditAmount =
-                totalAmount;
-
-            break;
-        }
-
-        case "WALLET_AND_CREDIT": {
-            const requestedWalletAmount =
-                Math.round(
-                    Number(
-                        input.splitWalletAmount ??
-                        0
-                    )
-                );
-
-            if (
-                !Number.isFinite(
-                    requestedWalletAmount
-                )
-            ) {
-                throw new Error(
-                    "Invalid wallet amount for split payment."
-                );
-            }
-
-            walletAmount =
-                Math.min(
-                    totalAmount,
-                    Math.max(
-                        0,
-                        requestedWalletAmount
-                    )
-                );
-
-            creditAmount =
-                totalAmount -
-                walletAmount;
-
-            break;
-        }
-
-        default: {
-            throw new Error(
-                "Invalid procurement payment method."
-            );
-        }
+      break
     }
 
-    if (
-        walletAmount < 0 ||
-        creditAmount < 0 ||
-        walletAmount +
-        creditAmount !==
-        totalAmount
-    ) {
-        throw new Error(
-            "Payment allocation does not equal the procurement total."
-        );
+    case "CREDIT": {
+      creditAmount = totalAmount
+
+      break
     }
 
-    /*
-     * A split payment must contain at least one
-     * actual funding source.
-     */
-    if (
-        input.paymentMethod ===
-        "WALLET_AND_CREDIT" &&
-        walletAmount <= 0 &&
-        creditAmount <= 0
-    ) {
-        throw new Error(
-            "At least one payment source must contain funds."
-        );
+    case "WALLET_AND_CREDIT": {
+      const requestedWalletAmount = Math.round(
+        Number(input.splitWalletAmount ?? 0)
+      )
+
+      if (!Number.isFinite(requestedWalletAmount)) {
+        throw new Error("Invalid wallet amount for split payment.")
+      }
+
+      walletAmount = Math.min(totalAmount, Math.max(0, requestedWalletAmount))
+
+      creditAmount = totalAmount - walletAmount
+
+      break
     }
 
-    /* =======================================================
+    default: {
+      throw new Error("Invalid procurement payment method.")
+    }
+  }
+
+  if (
+    walletAmount < 0 ||
+    creditAmount < 0 ||
+    walletAmount + creditAmount !== totalAmount
+  ) {
+    throw new Error("Payment allocation does not equal the procurement total.")
+  }
+
+  /*
+   * A split payment must contain at least one
+   * actual funding source.
+   */
+  if (
+    input.paymentMethod === "WALLET_AND_CREDIT" &&
+    walletAmount <= 0 &&
+    creditAmount <= 0
+  ) {
+    throw new Error("At least one payment source must contain funds.")
+  }
+
+  /* =======================================================
        Supplier Candidate Snapshot
        
        IMPORTANT:
@@ -770,687 +523,533 @@ export async function createProcurement(
        to string.
        ======================================================= */
 
-    const supplierCandidates:
-        ProcurementSupplierCandidateSnapshot[] =
-        eligibleMatches.map(
-            (
-                match: SupplierScoreBreakdown,
-                index: number
-            ) => ({
-                supplierId:
-                    assertObjectId(
-                        match.supplierId,
-                        "supplier"
-                    ),
+  const supplierCandidates: ProcurementSupplierCandidateSnapshot[] =
+    eligibleMatches.map((match: SupplierScoreBreakdown, index: number) => ({
+      supplierId: assertObjectId(match.supplierId, "supplier"),
 
-                supplierName:
-                    match.supplierName,
+      supplierName: match.supplierName,
 
-                supplierType:
-                    match.supplierType,
+      supplierType: match.supplierType,
 
-                supplierProductId:
-                    assertObjectId(
-                        match.supplierProductId,
-                        "supplier listing"
-                    ),
+      supplierProductId: assertObjectId(
+        match.supplierProductId,
+        "supplier listing"
+      ),
 
-                unitPrice:
-                    Number(
-                        match.finalPrice
-                    ),
+      unitPrice: Number(match.finalPrice),
 
-                totalPrice:
-                    Math.round(
-                        Number(
-                            match.finalPrice
-                        ) *
-                        quantity
-                    ),
+      totalPrice: Math.round(Number(match.finalPrice) * quantity),
 
-                stock:
-                    match.stock,
+      stock: match.stock,
 
-                rank:
-                    index + 1,
+      rank: index + 1,
 
-                score:
-                    Math.round(
-                        match.totalScore *
-                        100
-                    ) / 100,
+      score: Math.round(match.totalScore * 100) / 100,
 
-                status:
-                    index ===
-                        selectedIndex
-                        ? ("CONTACTED" as SupplierCandidateStatus)
-                        : ("QUEUED" as SupplierCandidateStatus),
-            })
-        );
+      status:
+        index === selectedIndex
+          ? ("CONTACTED" as SupplierCandidateStatus)
+          : ("QUEUED" as SupplierCandidateStatus),
+    }))
 
-    /* =======================================================
+  /* =======================================================
        Procurement Number
        ======================================================= */
 
-    const procurementNumber =
-        generateProcurementNumber();
+  const procurementNumber = generateProcurementNumber()
 
-    /* =======================================================
+  /* =======================================================
        MongoDB Transaction
        ======================================================= */
 
-    const session =
-        await Procurement.db.startSession();
+  const session = await Procurement.db.startSession()
 
-    try {
-        const createdProcurement =
-            await session.withTransaction(
-                async () => {
-                    /* ==============================================
+  try {
+    const createdProcurement = await session.withTransaction(async () => {
+      /* ==============================================
                        Create Procurement
                        ============================================== */
 
-                    const procurementDocs =
-                        await Procurement.create(
-                            [
-                                {
-                                    procurementNumber,
+      const procurementDocs = await Procurement.create(
+        [
+          {
+            procurementNumber,
 
-                                    buyerId,
+            buyerId,
 
-                                    buyerName,
+            buyerName,
 
-                                    items: [
-                                        {
-                                            productId,
+            items: [
+              {
+                productId,
 
-                                            productName:
-                                                product.name,
+                productName: product.name,
 
-                                            supplierProductId,
+                supplierProductId,
 
-                                            supplierId,
+                supplierId,
 
-                                            supplierName:
-                                                selectedSupplier.supplierName,
+                supplierName: selectedSupplier.supplierName,
 
-                                            supplierType:
-                                                selectedSupplier.supplierType,
+                supplierType: selectedSupplier.supplierType,
 
-                                            quantity,
+                quantity,
 
-                                            unit:
-                                                supplierProduct.unit ??
-                                                product.unit,
+                unit: supplierProduct.unit ?? product.unit,
 
-                                            unitPrice,
+                unitPrice,
 
-                                            totalPrice:
-                                                totalAmount,
+                totalPrice: totalAmount,
 
-                                            preferredSupplierType:
-                                                selectedSupplier.supplierType,
-                                        },
-                                    ],
+                preferredSupplierType: selectedSupplier.supplierType,
+              },
+            ],
 
-                                    /*
-                                     * Supplier has been selected
-                                     * and is being pending.
-                                     */
-                                    status: "SUPPLIER_CONTACTED",
+            /*
+             * Supplier has been selected
+             * and is being pending.
+             */
+            status: "SUPPLIER_CONTACTED",
 
-                                    supplierCandidates,
+            supplierCandidates,
 
-                                    currentSupplierIndex:
-                                        selectedIndex,
+            currentSupplierIndex: selectedIndex,
 
-                                    currentSupplierId:
-                                        supplierId,
+            currentSupplierId: supplierId,
 
-                                    currentSupplierName:
-                                        selectedSupplier.supplierName,
+            currentSupplierName: selectedSupplier.supplierName,
 
-                                    attemptHistory: [
-                                        {
-                                            attemptNumber:
-                                                1,
+            attemptHistory: [
+              {
+                attemptNumber: 1,
 
-                                            supplierId,
+                supplierId,
 
-                                            supplierName:
-                                                selectedSupplier.supplierName,
+                supplierName: selectedSupplier.supplierName,
 
-                                            supplierType:
-                                                selectedSupplier.supplierType,
+                supplierType: selectedSupplier.supplierType,
 
-                                            offeredPrice:
-                                                unitPrice,
+                offeredPrice: unitPrice,
 
-                                            status:
-                                                "CONTACTED",
+                status: "CONTACTED",
 
-                                            contactedAt:
-                                                new Date(),
-                                        },
-                                    ],
+                contactedAt: new Date(),
+              },
+            ],
 
-                                    deliveryAddress,
+            deliveryAddress,
 
-                                    notes:
-                                        input.notes
-                                            ?.trim() ||
-                                        undefined,
+            notes: input.notes?.trim() || undefined,
 
-                                    /*
-                                     * Snapshot the exact weights
-                                     * used by the matching engine.
-                                     */
-                                    matchingWeightsSnapshot:
-                                        MATCHING_WEIGHTS,
+            /*
+             * Snapshot the exact weights
+             * used by the matching engine.
+             */
+            matchingWeightsSnapshot: MATCHING_WEIGHTS,
 
-                                    /*
-                                     * Financial snapshot.
-                                     */
-                                    financials: {
-                                        paymentMethod:
-                                            input.paymentMethod,
+            /*
+             * Financial snapshot.
+             */
+            financials: {
+              paymentMethod: input.paymentMethod,
 
-                                        totalAmount,
+              totalAmount,
 
-                                        walletAmount,
+              walletAmount,
 
-                                        creditAmount,
+              creditAmount,
 
-                                        currency:
-                                            "NGN",
-                                    },
+              currency: "NGN",
+            },
 
-                                    expiresAt:
-                                        new Date(
-                                            Date.now() +
-                                            PROCUREMENT_EXPIRY_MS
-                                        ),
-                                },
-                            ],
-                            {
-                                session,
-                            }
-                        );
+            expiresAt: new Date(Date.now() + PROCUREMENT_EXPIRY_MS),
+          },
+        ],
+        {
+          session,
+        }
+      )
 
-                    const createdProcurement = procurementDocs[0];
+      const createdProcurement = procurementDocs[0]
 
-                    const procurementId = createdProcurement._id;
+      const procurementId = createdProcurement._id
 
-                    /* ==============================================
+      /* ==============================================
                        Wallet Reservation
                        ============================================== */
 
-                    if (
-                        walletAmount > 0
-                    ) {
-                        /*
-                         * Atomic balance check + update.
-                         *
-                         * This prevents two simultaneous procurement
-                         * requests from spending the same wallet balance.
-                         */
-                        const wallet =
-                            await Wallet.findOneAndUpdate(
-                                {
-                                    buyerId,
-                                    status: "ACTIVE",
-                                    availableBalance: {
-                                        $gte: walletAmount,
-                                    },
-                                },
-                                {
-                                    $inc: {
-                                        availableBalance: -walletAmount,
-                                        heldBalance: walletAmount,
-                                    },
-                                },
-                                {
-                                    returnDocument: "after",
-                                    session,
-                                }
-                            );
-                        if (!wallet) {
-                            throw new Error(
-                                "Insufficient wallet balance or wallet is not active."
-                            );
-                        }
+      if (walletAmount > 0) {
+        /*
+         * Atomic balance check + update.
+         *
+         * This prevents two simultaneous procurement
+         * requests from spending the same wallet balance.
+         */
+        const wallet = await Wallet.findOneAndUpdate(
+          {
+            buyerId,
+            status: "ACTIVE",
+            availableBalance: {
+              $gte: walletAmount,
+            },
+          },
+          {
+            $inc: {
+              availableBalance: -walletAmount,
+              heldBalance: walletAmount,
+            },
+          },
+          {
+            returnDocument: "after",
+            session,
+          }
+        )
+        if (!wallet) {
+          throw new Error(
+            "Insufficient wallet balance or wallet is not active."
+          )
+        }
 
-                        const balanceBefore =
-                            wallet.availableBalance +
-                            walletAmount;
+        const balanceBefore = wallet.availableBalance + walletAmount
 
-                        await WalletTransaction.create(
-                            [
-                                {
-                                    walletId:
-                                        wallet._id,
+        await WalletTransaction.create(
+          [
+            {
+              walletId: wallet._id,
 
-                                    buyerId,
+              buyerId,
 
-                                    type: "HOLD",
+              type: "HOLD",
 
-                                    amount:
-                                        walletAmount,
+              amount: walletAmount,
 
-                                    direction:
-                                        "DEBIT",
+              direction: "DEBIT",
 
-                                    balanceBefore,
+              balanceBefore,
 
-                                    balanceAfter:
-                                        wallet.availableBalance,
+              balanceAfter: wallet.availableBalance,
 
-                                    reference:
-                                        generateReference(
-                                            "WALLET-HOLD"
-                                        ),
+              reference: generateReference("WALLET-HOLD"),
 
-                                    description:
-                                        `Wallet funds reserved for procurement ${procurementNumber}`,
+              description: `Wallet funds reserved for procurement ${procurementNumber}`,
 
-                                    status:
-                                        "SUCCESS",
+              status: "SUCCESS",
 
-                                    source:
-                                        "ORDER",
+              source: "ORDER",
 
-                                    procurementId,
+              procurementId,
 
-                                    metadata: {
-                                        procurementNumber,
+              metadata: {
+                procurementNumber,
 
-                                        productId:
-                                            productId.toString(),
+                productId: productId.toString(),
 
-                                        supplierProductId:
-                                            supplierProductId.toString(),
+                supplierProductId: supplierProductId.toString(),
 
-                                        heldBalance:
-                                            wallet.heldBalance,
-                                    },
-                                },
-                            ],
-                            {
-                                session,
-                            }
-                        );
-                    }
+                heldBalance: wallet.heldBalance,
+              },
+            },
+          ],
+          {
+            session,
+          }
+        )
+      }
 
-                    /* ==============================================
+      /* ==============================================
                        Credit Commitment
                        ============================================== */
 
-                    if (
-                        creditAmount > 0
-                    ) {
-                        /*
-                         * Atomic credit availability check + update.
-                         */
-                        const creditAccount =
-                            await CreditAccount.findOneAndUpdate(
-                                {
-                                    buyerId,
+      if (creditAmount > 0) {
+        /*
+         * Atomic credit availability check + update.
+         */
+        const creditAccount = await CreditAccount.findOneAndUpdate(
+          {
+            buyerId,
 
-                                    status:
-                                        "ACTIVE",
+            status: "ACTIVE",
 
-                                    availableCredit:
-                                    {
-                                        $gte:
-                                            creditAmount,
-                                    },
-                                },
-                                {
-                                    $inc: {
-                                        availableCredit:
-                                            -creditAmount,
+            availableCredit: {
+              $gte: creditAmount,
+            },
+          },
+          {
+            $inc: {
+              availableCredit: -creditAmount,
 
-                                        creditUsed:
-                                            creditAmount,
+              creditUsed: creditAmount,
 
-                                        outstandingBalance:
-                                            creditAmount,
-                                    },
-                                },
-                                {
-                                    new: true,
-                                    session,
-                                }
-                            );
+              outstandingBalance: creditAmount,
+            },
+          },
+          {
+            new: true,
+            session,
+          }
+        )
 
-                        if (
-                            !creditAccount
-                        ) {
-                            throw new Error(
-                                "Insufficient available credit or credit facility is not active."
-                            );
-                        }
+        if (!creditAccount) {
+          throw new Error(
+            "Insufficient available credit or credit facility is not active."
+          )
+        }
 
-                        const balanceBefore =
-                            creditAccount.availableCredit +
-                            creditAmount;
+        const balanceBefore = creditAccount.availableCredit + creditAmount
 
-                        await CreditTransaction.create(
-                            [
-                                {
-                                    creditAccountId:
-                                        creditAccount._id,
+        await CreditTransaction.create(
+          [
+            {
+              creditAccountId: creditAccount._id,
 
-                                    buyerId,
+              buyerId,
 
-                                    type:
-                                        "CREDIT_PURCHASE",
+              type: "CREDIT_PURCHASE",
 
-                                    amount:
-                                        creditAmount,
+              amount: creditAmount,
 
-                                    direction:
-                                        "CHARGE",
+              direction: "CHARGE",
 
-                                    balanceBefore,
+              balanceBefore,
 
-                                    balanceAfter:
-                                        creditAccount.availableCredit,
+              balanceAfter: creditAccount.availableCredit,
 
-                                    reference:
-                                        generateReference(
-                                            "CREDIT-CHARGE"
-                                        ),
+              reference: generateReference("CREDIT-CHARGE"),
 
-                                    procurementId,
+              procurementId,
 
-                                    description:
-                                        `Credit facility committed for procurement ${procurementNumber}`,
+              description: `Credit facility committed for procurement ${procurementNumber}`,
 
-                                    metadata: {
-                                        procurementNumber,
+              metadata: {
+                procurementNumber,
 
-                                        productId:
-                                            productId.toString(),
+                productId: productId.toString(),
 
-                                        supplierProductId:
-                                            supplierProductId.toString(),
-                                    },
-                                },
-                            ],
-                            {
-                                session,
-                            }
-                        );
-                    }
+                supplierProductId: supplierProductId.toString(),
+              },
+            },
+          ],
+          {
+            session,
+          }
+        )
+      }
 
-                    /* ==============================================
+      /* ==============================================
                      Buyer Notification
                      ============================================== */
 
-
-
-                    /* ==============================================
+      /* ==============================================
                        Supplier Notification
                        ============================================== */
 
-                    /* ==============================================
+      /* ==============================================
                        Audit Log — Procurement Created
                        ============================================== */
 
-                    await AuditLog.create(
-                        [
-                            {
-                                actorId:
-                                    buyerId,
+      await AuditLog.create(
+        [
+          {
+            actorId: buyerId,
 
-                                actorType:
-                                    "BUYER",
+            actorType: "BUYER",
 
-                                action:
-                                    "PROCUREMENT_CREATED",
+            action: "PROCUREMENT_CREATED",
 
-                                entityType:
-                                    "Procurement",
+            entityType: "Procurement",
 
-                                entityId:
-                                    procurementId,
+            entityId: procurementId,
 
-                                description:
-                                    `Buyer created procurement ${procurementNumber}.`,
+            description: `Buyer created procurement ${procurementNumber}.`,
 
-                                metadata: {
-                                    procurementNumber,
+            metadata: {
+              procurementNumber,
 
-                                    productId:
-                                        productId.toString(),
+              productId: productId.toString(),
 
-                                    productName:
-                                        product.name,
+              productName: product.name,
 
-                                    supplierId:
-                                        supplierId.toString(),
+              supplierId: supplierId.toString(),
 
-                                    supplierProductId:
-                                        supplierProductId.toString(),
+              supplierProductId: supplierProductId.toString(),
 
-                                    supplierName:
-                                        selectedSupplier.supplierName,
+              supplierName: selectedSupplier.supplierName,
 
-                                    supplierType:
-                                        selectedSupplier.supplierType,
+              supplierType: selectedSupplier.supplierType,
 
-                                    quantity,
+              quantity,
 
-                                    unit:
-                                        supplierProduct.unit ??
-                                        product.unit,
+              unit: supplierProduct.unit ?? product.unit,
 
-                                    unitPrice,
+              unitPrice,
 
-                                    totalAmount,
+              totalAmount,
 
-                                    paymentMethod:
-                                        input.paymentMethod,
+              paymentMethod: input.paymentMethod,
 
-                                    walletAmount,
+              walletAmount,
 
-                                    creditAmount,
-                                },
-                            },
-                        ],
-                        {
-                            session,
-                        }
-                    );
+              creditAmount,
+            },
+          },
+        ],
+        {
+          session,
+        }
+      )
 
-                    /* ==============================================
+      /* ==============================================
                        Audit Log — Wallet Reservation
                        ============================================== */
 
-                    if (
-                        walletAmount > 0
-                    ) {
-                        await AuditLog.create(
-                            [
-                                {
-                                    actorId:
-                                        buyerId,
+      if (walletAmount > 0) {
+        await AuditLog.create(
+          [
+            {
+              actorId: buyerId,
 
-                                    actorType:
-                                        "BUYER",
+              actorType: "BUYER",
 
-                                    action:
-                                        "PAYMENT_RESERVED",
+              action: "PAYMENT_RESERVED",
 
-                                    entityType:
-                                        "Procurement",
+              entityType: "Procurement",
 
-                                    entityId:
-                                        procurementId,
+              entityId: procurementId,
 
-                                    description:
-                                        `₦${walletAmount.toLocaleString()} wallet funds reserved for procurement ${procurementNumber}.`,
+              description: `₦${walletAmount.toLocaleString()} wallet funds reserved for procurement ${procurementNumber}.`,
 
-                                    metadata: {
-                                        procurementNumber,
+              metadata: {
+                procurementNumber,
 
-                                        paymentMethod:
-                                            input.paymentMethod,
-
-                                        walletAmount,
-
-                                        creditAmount,
-                                    },
-                                },
-                            ],
-                            {
-                                session,
-                            }
-                        );
-                    }
-
-                    /* ==============================================
-                       Audit Log — Credit Commitment
-                       ============================================== */
-
-                    if (
-                        creditAmount > 0
-                    ) {
-                        await AuditLog.create(
-                            [
-                                {
-                                    actorId:
-                                        buyerId,
-
-                                    actorType:
-                                        "BUYER",
-
-                                    action:
-                                        "PAYMENT_CHARGED",
-
-                                    entityType:
-                                        "Procurement",
-
-                                    entityId:
-                                        procurementId,
-
-                                    description:
-                                        `₦${creditAmount.toLocaleString()} credit facility committed to procurement ${procurementNumber}.`,
-
-                                    metadata: {
-                                        procurementNumber,
-
-                                        paymentMethod:
-                                            input.paymentMethod,
-
-                                        walletAmount,
-
-                                        creditAmount,
-                                    },
-                                },
-                            ],
-                            {
-                                session,
-                            }
-                        );
-                    }
-
-                    /* ==============================================
-                       Audit Log — Supplier Contact
-                       ============================================== */
-
-                    await AuditLog.create(
-                        [
-                            {
-                                actorId:
-                                    buyerId,
-
-                                actorType:
-                                    "BUYER",
-
-                                action:
-                                    "SUPPLIER_CONTACTED",
-
-                                entityType:
-                                    "Procurement",
-
-                                entityId:
-                                    procurementId,
-
-                                description:
-                                    `Supplier ${selectedSupplier.supplierName} was selected and contacted for procurement ${procurementNumber}.`,
-
-                                metadata: {
-                                    procurementNumber,
-
-                                    supplierId:
-                                        supplierId.toString(),
-
-                                    supplierProductId:
-                                        supplierProductId.toString(),
-
-                                    supplierName:
-                                        selectedSupplier.supplierName,
-
-                                    supplierType:
-                                        selectedSupplier.supplierType,
-
-                                    rank:
-                                        selectedIndex + 1,
-
-                                    score:
-                                        selectedSupplier.totalScore,
-                                },
-                            },
-                        ],
-                        {
-                            session,
-                        }
-                    );
-
-                    return createdProcurement;
-                }
-            );
-
-        /* =====================================================
-           Transaction Completed
-           ===================================================== */
-
-        /* =====================================================
-           Safe Client Response
-           ===================================================== */
-
-        return {
-            success: true,
-
-            procurement: {
-                id: createdProcurement._id.toString(),
-
-                procurementNumber:
-                    createdProcurement.procurementNumber,
-
-                status:
-                    createdProcurement.status,
-
-                totalAmount,
+                paymentMethod: input.paymentMethod,
 
                 walletAmount,
 
                 creditAmount,
-
-                supplierName:
-                    selectedSupplier.supplierName,
-
-                supplierType:
-                    selectedSupplier.supplierType,
-
-                quantity,
-
-                unitPrice,
+              },
             },
-        };
-    } finally {
-        await session.endSession();
+          ],
+          {
+            session,
+          }
+        )
+      }
+
+      /* ==============================================
+                       Audit Log — Credit Commitment
+                       ============================================== */
+
+      if (creditAmount > 0) {
+        await AuditLog.create(
+          [
+            {
+              actorId: buyerId,
+
+              actorType: "BUYER",
+
+              action: "PAYMENT_CHARGED",
+
+              entityType: "Procurement",
+
+              entityId: procurementId,
+
+              description: `₦${creditAmount.toLocaleString()} credit facility committed to procurement ${procurementNumber}.`,
+
+              metadata: {
+                procurementNumber,
+
+                paymentMethod: input.paymentMethod,
+
+                walletAmount,
+
+                creditAmount,
+              },
+            },
+          ],
+          {
+            session,
+          }
+        )
+      }
+
+      /* ==============================================
+                       Audit Log — Supplier Contact
+                       ============================================== */
+
+      await AuditLog.create(
+        [
+          {
+            actorId: buyerId,
+
+            actorType: "BUYER",
+
+            action: "SUPPLIER_CONTACTED",
+
+            entityType: "Procurement",
+
+            entityId: procurementId,
+
+            description: `Supplier ${selectedSupplier.supplierName} was selected and contacted for procurement ${procurementNumber}.`,
+
+            metadata: {
+              procurementNumber,
+
+              supplierId: supplierId.toString(),
+
+              supplierProductId: supplierProductId.toString(),
+
+              supplierName: selectedSupplier.supplierName,
+
+              supplierType: selectedSupplier.supplierType,
+
+              rank: selectedIndex + 1,
+
+              score: selectedSupplier.totalScore,
+            },
+          },
+        ],
+        {
+          session,
+        }
+      )
+
+      return createdProcurement
+    })
+
+    /* =====================================================
+           Transaction Completed
+           ===================================================== */
+
+    /* =====================================================
+           Safe Client Response
+           ===================================================== */
+
+    return {
+      success: true,
+
+      procurement: {
+        id: createdProcurement._id.toString(),
+
+        procurementNumber: createdProcurement.procurementNumber,
+
+        status: createdProcurement.status,
+
+        totalAmount,
+
+        walletAmount,
+
+        creditAmount,
+
+        supplierName: selectedSupplier.supplierName,
+
+        supplierType: selectedSupplier.supplierType,
+
+        quantity,
+
+        unitPrice,
+      },
     }
+  } finally {
+    await session.endSession()
+  }
 }

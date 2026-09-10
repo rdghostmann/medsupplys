@@ -1,5 +1,5 @@
-import React from 'react'
-import TermsConditionsPage  from './TermsConditionsPage'
+import React from "react"
+import TermsConditionsPage from "./TermsConditionsPage"
 
 const page = () => {
   return (

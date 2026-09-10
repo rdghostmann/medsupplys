@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,8 +10,8 @@ import {
 import { ChartAreaInteractive } from "@/components/chart-area-interactive"
 
 import data from "../data.json"
-import { AdminStatsCard } from "./components/AdminStatsCard/AdminStatsCard";
-import AdminOverview from "./AdminOverview";
+import { AdminStatsCard } from "./components/AdminStatsCard/AdminStatsCard"
+import AdminOverview from "./AdminOverview"
 export default function Page() {
   return (
     <div className="flex flex-1 flex-col">
@@ -34,10 +34,9 @@ export default function Page() {
             {/* <ChartAreaInteractive /> */}
             <AdminOverview />
           </div>
-            {/* <DataTable data={data} /> */}
+          {/* <DataTable data={data} /> */}
         </div>
       </div>
     </div>
-
   )
 }

@@ -1,44 +1,33 @@
-
 // /models/Wallet.ts
 
-import {
-  Schema,
-  Types,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, Types, model, models, Document, Model } from "mongoose"
 
-export type WalletStatus =
-  | "ACTIVE"
-  | "SUSPENDED"
-  | "LOCKED";
+export type WalletStatus = "ACTIVE" | "SUSPENDED" | "LOCKED"
 
 export interface IWallet extends Document {
-  buyerId: Types.ObjectId;
+  buyerId: Types.ObjectId
 
-  buyerName: string;
+  buyerName: string
 
-  currency: "NGN";
+  currency: "NGN"
 
-  availableBalance: number;
+  availableBalance: number
 
-  heldBalance: number;
+  heldBalance: number
 
-  totalDeposited: number;
+  totalDeposited: number
 
-  totalSpent: number;
+  totalSpent: number
 
-  totalRefunded: number;
+  totalRefunded: number
 
-  totalReversed: number;
+  totalReversed: number
 
-  status: WalletStatus;
+  status: WalletStatus
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 }
 
 const WalletSchema = new Schema<IWallet>(
@@ -101,11 +90,7 @@ const WalletSchema = new Schema<IWallet>(
 
     status: {
       type: String,
-      enum: [
-        "ACTIVE",
-        "SUSPENDED",
-        "LOCKED",
-      ],
+      enum: ["ACTIVE", "SUSPENDED", "LOCKED"],
       default: "ACTIVE",
       index: true,
     },
@@ -114,13 +99,12 @@ const WalletSchema = new Schema<IWallet>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
 WalletSchema.index({
   buyerId: 1,
   status: 1,
-});
+})
 
 export const Wallet: Model<IWallet> =
-  models.Wallet ||
-  model<IWallet>("Wallet", WalletSchema);
+  models.Wallet || model<IWallet>("Wallet", WalletSchema)

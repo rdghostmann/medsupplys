@@ -8,44 +8,40 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import OrderRequestTable, {
-  type OrderRequest,
-} from "./OrderRequestTable"
-
+import OrderRequestTable, { type OrderRequest } from "./OrderRequestTable"
 
 export default function OrderRequestsPage() {
-  
-const orders: OrderRequest[] = [
-  {
-    id: "1",
-    orderId: "MSORD-19001",
-    productName: "Paracetamol 500mg",
-    buyerName: "St. Mary's Pharmacy",
-    quantity: 120,
-    value: 85000,
-    status: "PENDING",
-  },
+  const orders: OrderRequest[] = [
+    {
+      id: "1",
+      orderId: "MSORD-19001",
+      productName: "Paracetamol 500mg",
+      buyerName: "St. Mary's Pharmacy",
+      quantity: 120,
+      value: 85000,
+      status: "PENDING",
+    },
 
-  {
-    id: "2",
-    orderId: "MSORD-19002",
-    productName: "Amoxicillin Capsules",
-    buyerName: "LifeCare Hospital",
-    quantity: 60,
-    value: 120000,
-    status: "APPROVED",
-  },
+    {
+      id: "2",
+      orderId: "MSORD-19002",
+      productName: "Amoxicillin Capsules",
+      buyerName: "LifeCare Hospital",
+      quantity: 60,
+      value: 120000,
+      status: "APPROVED",
+    },
 
-  {
-    id: "3",
-    orderId: "MSORD-19003",
-    productName: "Vitamin C Tablets",
-    buyerName: "MediPlus Store",
-    quantity: 200,
-    value: 45000,
-    status: "REJECTED",
-  },
-]
+    {
+      id: "3",
+      orderId: "MSORD-19003",
+      productName: "Vitamin C Tablets",
+      buyerName: "MediPlus Store",
+      quantity: 200,
+      value: 45000,
+      status: "REJECTED",
+    },
+  ]
   return (
     <div className="flex flex-1 flex-col">
       <Breadcrumb className="p-4 lg:px-6">
@@ -67,7 +63,6 @@ const orders: OrderRequest[] = [
               {/* Inventory management UI goes here */}
               <div className="@container/main flex flex-1 flex-col gap-2">
                 <div className="flex flex-col gap-4 pb-4 md:gap-6 md:py-6">
-
                   <OrderRequestTable
                     orders={orders}
                     onView={(order) => {
@@ -80,7 +75,6 @@ const orders: OrderRequest[] = [
                       console.log("REJECT:", order)
                     }}
                   />
-
                 </div>
               </div>
             </div>

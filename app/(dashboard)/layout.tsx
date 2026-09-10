@@ -3,10 +3,7 @@ import type React from "react"
 import { AppSidebar } from "@/components/dashboard/app-sidebar"
 import { SiteHeader } from "@/components/dashboard/site-header"
 
-import {
-  SidebarInset,
-  SidebarProvider,
-} from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 
 import ReactQueryProvider from "@/provider/ReactQueryProvider"
 
@@ -30,9 +27,7 @@ export default function DashboardLayout({
         <SidebarInset>
           <SiteHeader />
 
-          <main className="flex flex-1 flex-col">
-            {children}
-          </main>
+          <main className="flex flex-1 flex-col">{children}</main>
         </SidebarInset>
       </SidebarProvider>
     </ReactQueryProvider>

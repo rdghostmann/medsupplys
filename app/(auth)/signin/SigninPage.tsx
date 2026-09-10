@@ -7,7 +7,16 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { ArrowRight, Eye, EyeOff, Lock, Mail, ShieldCheck, PackageCheck, Truck } from "lucide-react"
+import {
+  ArrowRight,
+  Eye,
+  EyeOff,
+  Lock,
+  Mail,
+  ShieldCheck,
+  PackageCheck,
+  Truck,
+} from "lucide-react"
 import { useForm, UseFormRegisterReturn } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -42,22 +51,26 @@ type FormData = z.infer<typeof signinSchema>
 const CAROUSEL_ITEMS = [
   {
     title: "Verified Global Network",
-    description: "Connect with licensed pharmaceutical partners across Africa and beyond.",
-    image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200",
-    icon: <ShieldCheck className="w-8 h-8" />,
+    description:
+      "Connect with licensed pharmaceutical partners across Africa and beyond.",
+    image:
+      "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=1200",
+    icon: <ShieldCheck className="h-8 w-8" />,
   },
   {
     title: "Seamless Procurement",
-    description: "Post requirements and receive competitive bids from qualified suppliers instantly.",
+    description:
+      "Post requirements and receive competitive bids from qualified suppliers instantly.",
     image: "/cold_chain_logistics_1788851150748.png",
-    icon: <PackageCheck className="w-8 h-8" />,
+    icon: <PackageCheck className="h-8 w-8" />,
   },
   {
     title: "Cold-Chain Logistics",
-    description: "Real-time tracking of medications from the manufacturer directly to the ward.",
+    description:
+      "Real-time tracking of medications from the manufacturer directly to the ward.",
     image: "/cold_chain_logistics_1788851150748.png",
-    icon: <Truck className="w-8 h-8" />,
-  }
+    icon: <Truck className="h-8 w-8" />,
+  },
 ]
 
 export default function SigninPage() {
@@ -66,14 +79,20 @@ export default function SigninPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [carouselIndex, setCarouselIndex] = useState(0)
 
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormData>({
     resolver: zodResolver(signinSchema),
     defaultValues: { email: "", password: "" },
   })
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCarouselIndex((prev) => (prev === CAROUSEL_ITEMS.length - 1 ? 0 : prev + 1))
+      setCarouselIndex((prev) =>
+        prev === CAROUSEL_ITEMS.length - 1 ? 0 : prev + 1
+      )
     }, 5000)
     return () => clearInterval(interval)
   }, [])
@@ -113,53 +132,95 @@ export default function SigninPage() {
   }
 
   return (
-    <section className="min-h-screen flex bg-white font-sora overflow-hidden">
-      <div className="w-full lg:w-[48%] bg-white flex flex-col min-h-screen overflow-y-auto px-6 py-8 lg:px-16 lg:py-10">
-        <div className="max-w-md w-full mx-auto my-auto">
+    <section className="font-sora flex min-h-screen overflow-hidden bg-white">
+      <div className="flex min-h-screen w-full flex-col overflow-y-auto bg-white px-6 py-8 lg:w-[48%] lg:px-16 lg:py-10">
+        <div className="mx-auto my-auto w-full max-w-md">
           {/* Mobile Logo */}
-          <Link href="/" className="lg:hidden mb-10 w-fit flex items-center gap-3 select-none">
-            <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
-              <Image src="/logo.png" width={36} height={36} alt="Logo" className="object-cover" unoptimized priority />
+          <Link
+            href="/"
+            className="mb-10 flex w-fit items-center gap-3 select-none lg:hidden"
+          >
+            <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
+              <Image
+                src="/logo.png"
+                width={36}
+                height={36}
+                alt="Logo"
+                className="object-cover"
+                unoptimized
+                priority
+              />
             </div>
             <div className="flex flex-col leading-none">
-              <h3 className="text-2xl bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent font-black tracking-tight">
+              <h3 className="bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-2xl font-black tracking-tight text-transparent">
                 MedSupply
               </h3>
-              <span className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-semibold">
+              <span className="text-[10px] font-semibold tracking-[0.2em] text-slate-400 uppercase">
                 Procurement Platform
               </span>
             </div>
           </Link>
 
           {/* Header */}
-          <div className="space-y-3 mb-10">
-            <h1 className="text-4xl font-black text-slate-900 tracking-tight">Welcome back</h1>
-            <p className="text-slate-500 leading-relaxed text-base">
-              Secure B2B authentication for healthcare buyers and verified suppliers
+          <div className="mb-10 space-y-3">
+            <h1 className="text-4xl font-black tracking-tight text-slate-900">
+              Welcome back
+            </h1>
+            <p className="text-base leading-relaxed text-slate-500">
+              Secure B2B authentication for healthcare buyers and verified
+              suppliers
             </p>
-            <p className="hidden text-slate-500 leading-relaxed text-base">
+            <p className="hidden text-base leading-relaxed text-slate-500">
               Sign in to continue managing procurement workflows, suppliers,
               inventory, and pharmaceutical orders.
             </p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <InputField label="Email Address" placeholder="john@example.com" icon={<Mail className="w-4 h-4" />} error={errors.email?.message} registration={register("email")} />
-            <InputField label="Password" placeholder="••••••••" type={showPassword ? "text" : "password"} icon={<Lock className="w-4 h-4" />} error={errors.password?.message} registration={register("password")} isPassword showPassword={showPassword} togglePassword={() => setShowPassword(!showPassword)} />
+            <InputField
+              label="Email Address"
+              placeholder="john@example.com"
+              icon={<Mail className="h-4 w-4" />}
+              error={errors.email?.message}
+              registration={register("email")}
+            />
+            <InputField
+              label="Password"
+              placeholder="••••••••"
+              type={showPassword ? "text" : "password"}
+              icon={<Lock className="h-4 w-4" />}
+              error={errors.password?.message}
+              registration={register("password")}
+              isPassword
+              showPassword={showPassword}
+              togglePassword={() => setShowPassword(!showPassword)}
+            />
 
             <div className="flex items-center justify-between gap-4">
-              <label className="flex items-center gap-2 cursor-pointer select-none">
-                <input type="checkbox" className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                <span className="text-sm text-slate-600 font-medium">Remember me</span>
+              <label className="flex cursor-pointer items-center gap-2 select-none">
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm font-medium text-slate-600">
+                  Remember me
+                </span>
               </label>
 
-              <Link href="/forgot-password" className="text-sm font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link
+                href="/forgot-password"
+                className="text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
                 Forgot password?
               </Link>
             </div>
-            <Button type="submit" disabled={isPending} className="w-full h-14 rounded-xl bg-blue-700 hover:bg-blue-800 text-white text-base font-semibold">
+            <Button
+              type="submit"
+              disabled={isPending}
+              className="h-14 w-full rounded-xl bg-blue-700 text-base font-semibold text-white hover:bg-blue-800"
+            >
               {isPending ? "Signing in..." : "Sign In"}
-              {!isPending && <ArrowRight className="w-4 h-4 ml-2" />}
+              {!isPending && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
           </form>
 
@@ -167,7 +228,10 @@ export default function SigninPage() {
           <div className="mt-8 text-center">
             <p className="text-sm text-slate-500">
               Don&apos;t have an account?{" "}
-              <Link href="/signup" className="font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+              <Link
+                href="/signup"
+                className="font-semibold text-blue-600 transition-colors hover:text-blue-700"
+              >
                 Create account
               </Link>
             </p>
@@ -178,7 +242,7 @@ export default function SigninPage() {
       {/* =========================================================
           RIGHT SIDE — IMAGE CAROUSEL
       ========================================================= */}
-      <div className="hidden lg:block lg:w-[52%] relative overflow-hidden bg-slate-950">
+      <div className="relative hidden overflow-hidden bg-slate-950 lg:block lg:w-[52%]">
         <AnimatePresence mode="wait">
           <motion.div
             key={carouselIndex}
@@ -194,7 +258,9 @@ export default function SigninPage() {
               animate={{ scale: 1 }}
               transition={{ duration: 6, ease: "easeOut" }}
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${CAROUSEL_ITEMS[carouselIndex].image})` }}
+              style={{
+                backgroundImage: `url(${CAROUSEL_ITEMS[carouselIndex].image})`,
+              }}
             />
 
             {/* Overlay */}
@@ -203,29 +269,49 @@ export default function SigninPage() {
 
             {/* Content */}
             <div className="absolute inset-0 flex flex-col justify-between p-14">
-              <div className="flex items-center gap-3 select-none" onContextMenu={(e) => e.preventDefault()}>
+              <div
+                className="flex items-center gap-3 select-none"
+                onContextMenu={(e) => e.preventDefault()}
+              >
                 <Link href="/" className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-xl overflow-hidden flex items-center justify-center bg-white/10 backdrop-blur-md border border-white/10">
-                    <Image src="/logo.png" width={36} height={36} alt="Logo" className="object-cover" unoptimized priority />
+                  <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/10 backdrop-blur-md">
+                    <Image
+                      src="/logo.png"
+                      width={36}
+                      height={36}
+                      alt="Logo"
+                      className="object-cover"
+                      unoptimized
+                      priority
+                    />
                   </div>
                   <div className="flex flex-col leading-none">
-                    <h1 className="text-2xl font-black tracking-tight text-white">MedSupply</h1>
-                    <span className="text-[10px] uppercase tracking-[0.2em] text-slate-300 font-semibold">Procurement Platform</span>
+                    <h1 className="text-2xl font-black tracking-tight text-white">
+                      MedSupply
+                    </h1>
+                    <span className="text-[10px] font-semibold tracking-[0.2em] text-slate-300 uppercase">
+                      Procurement Platform
+                    </span>
                   </div>
                 </Link>
               </div>
 
               {/* Carousel Content */}
               <div className="relative z-10 max-w-xl">
-                <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, duration: 0.6 }} className="space-y-8">
-                  <div className="w-20 h-20 rounded-3xl bg-white/10 backdrop-blur-xl border border-white/15 flex items-center justify-center text-white shadow-2xl">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2, duration: 0.6 }}
+                  className="space-y-8"
+                >
+                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/15 bg-white/10 text-white shadow-2xl backdrop-blur-xl">
                     {CAROUSEL_ITEMS[carouselIndex].icon}
                   </div>
                   <div className="space-y-5">
-                    <h2 className="text-5xl font-black tracking-tight leading-tight text-white">
+                    <h2 className="text-5xl leading-tight font-black tracking-tight text-white">
                       {CAROUSEL_ITEMS[carouselIndex].title}
                     </h2>
-                    <p className="text-xl leading-relaxed text-blue-50/90 font-medium max-w-lg">
+                    <p className="max-w-lg text-xl leading-relaxed font-medium text-blue-50/90">
                       {CAROUSEL_ITEMS[carouselIndex].description}
                     </p>
                   </div>
@@ -235,7 +321,12 @@ export default function SigninPage() {
                         key={i}
                         type="button"
                         onClick={() => setCarouselIndex(i)}
-                        className={cn("h-1.5 rounded-full transition-all duration-500", i === carouselIndex ? "w-10 bg-cyan-400" : "w-2 bg-white/30 hover:bg-white/50")}
+                        className={cn(
+                          "h-1.5 rounded-full transition-all duration-500",
+                          i === carouselIndex
+                            ? "w-10 bg-cyan-400"
+                            : "w-2 bg-white/30 hover:bg-white/50"
+                        )}
                       />
                     ))}
                   </div>
@@ -249,24 +340,64 @@ export default function SigninPage() {
   )
 }
 
-function InputField({ label, placeholder, icon, error, type = "text", registration, isPassword, showPassword, togglePassword }: InputFieldProps) {
+function InputField({
+  label,
+  placeholder,
+  icon,
+  error,
+  type = "text",
+  registration,
+  isPassword,
+  showPassword,
+  togglePassword,
+}: InputFieldProps) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-sm font-semibold text-slate-700 ml-1">{label}</Label>
+      <Label className="ml-1 text-sm font-semibold text-slate-700">
+        {label}
+      </Label>
       <div className="relative">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">{icon}</div>
-        <Input {...registration} type={type} placeholder={placeholder} className={cn("h-12 pl-12 pr-12 rounded-xl bg-slate-50 border-slate-200 focus:bg-white focus:ring-2 focus:ring-blue-600/20 transition-all", error && "border-red-500 focus:ring-red-500/20")} />
+        <div className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-500">
+          {icon}
+        </div>
+        <Input
+          {...registration}
+          type={type}
+          placeholder={placeholder}
+          className={cn(
+            "h-12 rounded-xl border-slate-200 bg-slate-50 pr-12 pl-12 transition-all focus:bg-white focus:ring-2 focus:ring-blue-600/20",
+            error && "border-red-500 focus:ring-red-500/20"
+          )}
+        />
         {isPassword && (
-          <button type="button" onClick={togglePassword} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700">
-            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+          <button
+            type="button"
+            onClick={togglePassword}
+            className="absolute top-1/2 right-4 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+          >
+            {showPassword ? (
+              <EyeOff className="h-4 w-4" />
+            ) : (
+              <Eye className="h-4 w-4" />
+            )}
           </button>
         )}
       </div>
-      {error && <p className="text-xs font-medium text-red-500 ml-1">{error}</p>}
+      {error && (
+        <p className="ml-1 text-xs font-medium text-red-500">{error}</p>
+      )}
     </div>
   )
 }
 
 interface InputFieldProps {
-  label: string; placeholder: string; icon: React.ReactNode; error?: string; type?: string; registration: UseFormRegisterReturn; isPassword?: boolean; showPassword?: boolean; togglePassword?: () => void;
+  label: string
+  placeholder: string
+  icon: React.ReactNode
+  error?: string
+  type?: string
+  registration: UseFormRegisterReturn
+  isPassword?: boolean
+  showPassword?: boolean
+  togglePassword?: () => void
 }

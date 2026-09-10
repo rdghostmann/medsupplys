@@ -109,8 +109,9 @@ export default function OrderRequestTable({
   onReject,
 }: Props) {
   const [sorting, setSorting] = React.useState<SortingState>([])
-  const [columnFilters, setColumnFilters] =
-    React.useState<ColumnFiltersState>([])
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  )
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = React.useState("")
@@ -176,16 +177,12 @@ export default function OrderRequestTable({
       {
         id: "status",
         header: "Status",
-        cell: ({ row }) => (
-          <StatusBadge status={row.original.status} />
-        ),
+        cell: ({ row }) => <StatusBadge status={row.original.status} />,
       },
 
       {
         id: "actions",
-        header: () => (
-          <div className="text-right">Actions</div>
-        ),
+        header: () => <div className="text-right">Actions</div>,
         cell: ({ row, table }) => {
           const meta = table.options.meta as {
             onView?: (o: OrderRequest) => void
@@ -273,11 +270,10 @@ export default function OrderRequestTable({
 
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-
       {/* SEARCH */}
       <div className="flex items-center gap-3 border-b bg-slate-50 p-4">
         <div className="relative w-full max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
           <Input
             placeholder="Search orders..."
@@ -297,7 +293,7 @@ export default function OrderRequestTable({
                 {group.headers.map((header) => (
                   <TableHead
                     key={header.id}
-                    className="text-[11px] font-bold uppercase tracking-wider text-slate-500"
+                    className="text-[11px] font-bold tracking-wider text-slate-500 uppercase"
                   >
                     {flexRender(
                       header.column.columnDef.header,
@@ -344,10 +340,8 @@ export default function OrderRequestTable({
               <TableRow>
                 <TableCell colSpan={columns.length}>
                   <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                    <p className="text-sm font-semibold">
-                      No orders found
-                    </p>
-                    <p className="text-xs mt-1">
+                    <p className="text-sm font-semibold">No orders found</p>
+                    <p className="mt-1 text-xs">
                       Incoming purchase requests will appear here.
                     </p>
                   </div>

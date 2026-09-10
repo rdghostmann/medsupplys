@@ -13,70 +13,35 @@ import { toast } from "sonner"
 export default function VerifyPaymentPage() {
   const router = useRouter()
 
-  const searchParams =
-    useSearchParams()
+  const searchParams = useSearchParams()
 
   useEffect(() => {
-    const verify =
-      async () => {
-        try {
-          const reference =
-            searchParams.get(
-              "reference"
-            )
+    const verify = async () => {
+      try {
+        const reference = searchParams.get("reference")
 
-          if (!reference) return
+        if (!reference) return
 
-          await axios.get(
-            `/api/payments/verify?reference=${reference}`
-          )
+        await axios.get(`/api/payments/verify?reference=${reference}`)
 
-          toast.success(
-            "Payment successful"
-          )
+        toast.success("Payment successful")
 
-          router.push(
-            "/buyer/orders"
-          )
-        } catch (error) {
-          console.log(error)
+        router.push("/buyer/orders")
+      } catch (error) {
+        console.log(error)
 
-          toast.error(
-            "Payment verification failed"
-          )
-        }
+        toast.error("Payment verification failed")
       }
+    }
 
     verify()
   }, [router, searchParams])
 
   return (
-    <div
-      className="
-        flex
-        min-h-screen
-        flex-col
-        items-center
-        justify-center
-        gap-4
-      "
-    >
-      <Loader2
-        className="
-          h-10
-          w-10
-          animate-spin
-        "
-      />
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+      <Loader2 className="h-10 w-10 animate-spin" />
 
-      <p
-        className="
-          text-sm
-          text-slate-500
-        "
-      >
-        Verifying payment...
-      </p>
+      <p className="text-sm text-slate-500">Verifying payment...</p>
     </div>
   )
 }

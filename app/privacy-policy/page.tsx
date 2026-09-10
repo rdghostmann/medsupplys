@@ -1,5 +1,5 @@
-import React from 'react'
-import PrivacyPolicyPage from './PrivacyPolicyPage'
+import React from "react"
+import PrivacyPolicyPage from "./PrivacyPolicyPage"
 
 const page = () => {
   return (

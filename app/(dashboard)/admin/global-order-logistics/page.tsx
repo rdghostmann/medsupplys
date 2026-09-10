@@ -1,12 +1,10 @@
 // app/(dashboard)/admin/global-order-logistics/page.tsx
 
-import GlobalLogisticsOrderPage from "./GlobalLogisticsOrderPage";
-import { getAdminOrders } from "@/controllers/admin.actions";
+import GlobalLogisticsOrderPage from "./GlobalLogisticsOrderPage"
+import { getAdminOrders } from "@/controllers/admin.actions"
 
 export default async function Page() {
-  const orders = await getAdminOrders();
+  const orders = await getAdminOrders()
 
-  return <GlobalLogisticsOrderPage orders={orders} />;
+  return <GlobalLogisticsOrderPage orders={orders} />
 }
-
-

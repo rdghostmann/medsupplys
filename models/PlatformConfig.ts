@@ -1,11 +1,4 @@
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-  Types,
-} from "mongoose";
+import { Schema, model, models, Document, Model, Types } from "mongoose"
 
 /**
  * Platform-level supplier matching configuration.
@@ -13,145 +6,143 @@ import {
  * All values are percentages and must total exactly 100.
  */
 export interface IMatchingWeights {
-  availabilityWeight: number;
-  priceWeight: number;
-  supplierTypeWeight: number;
-  fulfillmentWeight: number;
-  reliabilityWeight: number;
+  availabilityWeight: number
+  priceWeight: number
+  supplierTypeWeight: number
+  fulfillmentWeight: number
+  reliabilityWeight: number
 }
 
 export interface IPlatformConfig extends Document {
-  key: string;
+  key: string
 
-  defaultCommissionPercent: number;
+  defaultCommissionPercent: number
 
-  matchingWeights: IMatchingWeights;
+  matchingWeights: IMatchingWeights
 
-  minCreditApprovalLimit: number;
+  minCreditApprovalLimit: number
 
-  maxCreditApprovalLimit: number;
+  maxCreditApprovalLimit: number
 
-  autoAdvanceSupplierTimeoutSeconds: number;
+  autoAdvanceSupplierTimeoutSeconds: number
 
-  currency: "NGN";
+  currency: "NGN"
 
-  updatedBy?: Types.ObjectId;
+  updatedBy?: Types.ObjectId
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 }
 
-const MatchingWeightsSchema =
-  new Schema<IMatchingWeights>(
-    {
-      availabilityWeight: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
+const MatchingWeightsSchema = new Schema<IMatchingWeights>(
+  {
+    availabilityWeight: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
 
-      priceWeight: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
+    priceWeight: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
 
-      supplierTypeWeight: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
+    supplierTypeWeight: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
 
-      fulfillmentWeight: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
+    fulfillmentWeight: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
 
-      reliabilityWeight: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
+    reliabilityWeight: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+  },
+  {
+    _id: false,
+  }
+)
+
+const PlatformConfigSchema = new Schema<IPlatformConfig>(
+  {
+    key: {
+      type: String,
+      required: true,
+      unique: true,
+      default: "default",
+    },
+
+    defaultCommissionPercent: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+      default: 10,
+    },
+
+    matchingWeights: {
+      type: MatchingWeightsSchema,
+      required: true,
+      default: {
+        availabilityWeight: 20,
+        priceWeight: 35,
+        supplierTypeWeight: 5,
+        fulfillmentWeight: 15,
+        reliabilityWeight: 25,
       },
     },
-    {
-      _id: false,
-    }
-  );
 
-const PlatformConfigSchema =
-  new Schema<IPlatformConfig>(
-    {
-      key: {
-        type: String,
-        required: true,
-        unique: true,
-        default: "default",
-      },
-
-      defaultCommissionPercent: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-        default: 10,
-      },
-
-      matchingWeights: {
-        type: MatchingWeightsSchema,
-        required: true,
-        default: {
-          availabilityWeight: 20,
-          priceWeight: 35,
-          supplierTypeWeight: 5,
-          fulfillmentWeight: 15,
-          reliabilityWeight: 25,
-        },
-      },
-
-      minCreditApprovalLimit: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 500000,
-      },
-
-      maxCreditApprovalLimit: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 20000000,
-      },
-
-      autoAdvanceSupplierTimeoutSeconds: {
-        type: Number,
-        required: true,
-        min: 1,
-        default: 300,
-      },
-
-      currency: {
-        type: String,
-        enum: ["NGN"],
-        default: "NGN",
-      },
-
-      updatedBy: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
+    minCreditApprovalLimit: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 500000,
     },
-    {
-      timestamps: true,
-      versionKey: false,
-    }
-  );
+
+    maxCreditApprovalLimit: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 20000000,
+    },
+
+    autoAdvanceSupplierTimeoutSeconds: {
+      type: Number,
+      required: true,
+      min: 1,
+      default: 300,
+    },
+
+    currency: {
+      type: String,
+      enum: ["NGN"],
+      default: "NGN",
+    },
+
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+)
 
 /**
  * Protect platform configuration integrity.
@@ -159,10 +150,10 @@ const PlatformConfigSchema =
  * Matching weights must always total 100%.
  */
 PlatformConfigSchema.pre("validate", async function () {
-  const weights = this.matchingWeights;
+  const weights = this.matchingWeights
 
   if (!weights) {
-    throw new Error("Matching weights are required");
+    throw new Error("Matching weights are required")
   }
 
   const total =
@@ -170,31 +161,25 @@ PlatformConfigSchema.pre("validate", async function () {
     weights.priceWeight +
     weights.supplierTypeWeight +
     weights.fulfillmentWeight +
-    weights.reliabilityWeight;
+    weights.reliabilityWeight
 
   if (total !== 100) {
     throw new Error(
       `Matching weights must total 100%. Current total: ${total}%`
-    );
+    )
   }
 
-  if (
-    this.minCreditApprovalLimit >
-    this.maxCreditApprovalLimit
-  ) {
+  if (this.minCreditApprovalLimit > this.maxCreditApprovalLimit) {
     throw new Error(
       "Minimum credit approval limit cannot exceed maximum credit approval limit"
-    );
+    )
   }
-});
+})
 
 PlatformConfigSchema.index({
   key: 1,
-});
+})
 
 export const PlatformConfig: Model<IPlatformConfig> =
   models.PlatformConfig ||
-  model<IPlatformConfig>(
-    "PlatformConfig",
-    PlatformConfigSchema
-  );
+  model<IPlatformConfig>("PlatformConfig", PlatformConfigSchema)

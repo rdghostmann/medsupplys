@@ -1,5 +1,5 @@
 // app/(dashboard)/buyer/page.tsx
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -8,18 +8,18 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import BuyerCredit from "./BuyerCredit";
+import BuyerCredit from "./BuyerCredit"
 
 import type {
   CurrentBuyerCreditAccount,
   CurrentBuyerCreditTransaction,
-} from "@/controllers/buyer.actions";
+} from "@/controllers/buyer.actions"
 
 interface RevolvingCreditPageProps {
-  creditAccount: CurrentBuyerCreditAccount | null;
-  creditTransactions: CurrentBuyerCreditTransaction[];
+  creditAccount: CurrentBuyerCreditAccount | null
+  creditTransactions: CurrentBuyerCreditTransaction[]
 }
 
 export default function RevolvingCreditPage({
@@ -31,17 +31,13 @@ export default function RevolvingCreditPage({
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/buyer">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/buyer">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Credit Facility Repayment
-            </BreadcrumbPage>
+            <BreadcrumbPage>Credit Facility Repayment</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -57,6 +53,5 @@ export default function RevolvingCreditPage({
         </div>
       </div>
     </div>
-  );
+  )
 }
-

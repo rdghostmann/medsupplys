@@ -1,9 +1,9 @@
 // app/auth.ts
-import bcrypt from "bcryptjs";
-import type { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import { connectToDB } from "@/lib/connectToDB";
-import { User } from "@/models/User";
+import bcrypt from "bcryptjs"
+import type { NextAuthOptions } from "next-auth"
+import CredentialsProvider from "next-auth/providers/credentials"
+import { connectToDB } from "@/lib/connectToDB"
+import { User } from "@/models/User"
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -14,18 +14,23 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
+        if (!credentials?.email || !credentials?.password) return null
 
-        await connectToDB();
+        await connectToDB()
 
         // 1. MUST select password because of select: false in your model
-        const user = await User.findOne({ email: credentials.email.toLowerCase().trim() }).select("+password");
+        const user = await User.findOne({
+          email: credentials.email.toLowerCase().trim(),
+        }).select("+password")
 
-        if (!user) return null;
+        if (!user) return null
 
         // 2. Validate password
-        const passwordMatch = await bcrypt.compare(credentials.password, user.password);
-        if (!passwordMatch) return null;
+        const passwordMatch = await bcrypt.compare(
+          credentials.password,
+          user.password
+        )
+        if (!passwordMatch) return null
 
         // 3. Return user object that matches your next-auth.d.ts definitions
         return {
@@ -38,7 +43,7 @@ export const authOptions: NextAuthOptions = {
           organization: user.organizationName,
           supplierType: user.supplierProfile?.supplierType,
           createdAt: user.createdAt?.toISOString(),
-        };
+        }
       },
     }),
   ],
@@ -48,34 +53,37 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
-        token.verified = user.verified;
-        token.organization = user.organization;
-        token.supplierType = user.supplierType;
-        token.createdAt = user.createdAt;
+        token.id = user.id
+        token.role = user.role
+        token.firstName = user.firstName
+        token.lastName = user.lastName
+        token.verified = user.verified
+        token.organization = user.organization
+        token.supplierType = user.supplierType
+        token.createdAt = user.createdAt
       }
-      return token;
+      return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string;
-        session.user.role = token.role as "buyer" | "supplier" | "admin" | "pharmacist";
-        session.user.firstName = token.firstName as string;
-        session.user.lastName = token.lastName as string;
-        session.user.verified = token.verified as boolean;
-        session.user.organization = token.organization as string | undefined;
-        session.user.supplierType = token.supplierType as string | undefined;
-        session.user.createdAt = token.createdAt as string | undefined;
+        session.user.id = token.id as string
+        session.user.role = token.role as
+          | "buyer"
+          | "supplier"
+          | "admin"
+          | "pharmacist"
+        session.user.firstName = token.firstName as string
+        session.user.lastName = token.lastName as string
+        session.user.verified = token.verified as boolean
+        session.user.organization = token.organization as string | undefined
+        session.user.supplierType = token.supplierType as string | undefined
+        session.user.createdAt = token.createdAt as string | undefined
       }
-      return session;
+      return session
     },
   },
   pages: {
     signIn: "/signin", // Ensure this matches your login page path
   },
   secret: process.env.NEXTAUTH_SECRET,
-};
-
+}

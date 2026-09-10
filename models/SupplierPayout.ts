@@ -1,146 +1,129 @@
 // models/SupplierPayout.ts
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-  Types,
-} from "mongoose";
+import { Schema, model, models, Document, Model, Types } from "mongoose"
 
 export type SupplierPayoutStatus =
   | "PENDING"
   | "PROCESSING"
   | "SETTLED"
   | "FAILED"
-  | "REVERSED";
+  | "REVERSED"
 
 export interface ISupplierPayout extends Document {
-  supplierId: Types.ObjectId;
+  supplierId: Types.ObjectId
 
-  supplierName: string;
+  supplierName: string
 
-  amount: number;
+  amount: number
 
-  transferFee: number;
+  transferFee: number
 
-  netAmount: number;
+  netAmount: number
 
-  status: SupplierPayoutStatus;
+  status: SupplierPayoutStatus
 
-  reference: string;
+  reference: string
 
-  bankName: string;
+  bankName: string
 
-  accountNumber: string;
+  accountNumber: string
 
-  accountName: string;
+  accountName: string
 
-  orderIds: Types.ObjectId[];
+  orderIds: Types.ObjectId[]
 
-  failureReason?: string;
+  failureReason?: string
 
-  processedAt?: Date;
+  processedAt?: Date
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 }
 
-const SupplierPayoutSchema =
-  new Schema<ISupplierPayout>(
-    {
-      supplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
-
-      supplierName: {
-        type: String,
-        required: true,
-      },
-
-      amount: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      transferFee: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
-
-      netAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      status: {
-        type: String,
-        enum: [
-          "PENDING",
-          "PROCESSING",
-          "SETTLED",
-          "FAILED",
-          "REVERSED",
-        ],
-        default: "PENDING",
-        index: true,
-      },
-
-      reference: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-      },
-
-      bankName: {
-        type: String,
-        required: true,
-      },
-
-      accountNumber: {
-        type: String,
-        required: true,
-      },
-
-      accountName: {
-        type: String,
-        required: true,
-      },
-
-      orderIds: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: "Order",
-        },
-      ],
-
-      failureReason: String,
-
-      processedAt: Date,
+const SupplierPayoutSchema = new Schema<ISupplierPayout>(
+  {
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
-    {
-      timestamps: true,
-      versionKey: false,
-    }
-  );
+
+    supplierName: {
+      type: String,
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    transferFee: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    netAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    status: {
+      type: String,
+      enum: ["PENDING", "PROCESSING", "SETTLED", "FAILED", "REVERSED"],
+      default: "PENDING",
+      index: true,
+    },
+
+    reference: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+
+    bankName: {
+      type: String,
+      required: true,
+    },
+
+    accountNumber: {
+      type: String,
+      required: true,
+    },
+
+    accountName: {
+      type: String,
+      required: true,
+    },
+
+    orderIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Order",
+      },
+    ],
+
+    failureReason: String,
+
+    processedAt: Date,
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+)
 
 SupplierPayoutSchema.index({
   supplierId: 1,
   status: 1,
   createdAt: -1,
-});
+})
 
 export const SupplierPayout: Model<ISupplierPayout> =
   models.SupplierPayout ||
-  model<ISupplierPayout>(
-    "SupplierPayout",
-    SupplierPayoutSchema
-  );
+  model<ISupplierPayout>("SupplierPayout", SupplierPayoutSchema)

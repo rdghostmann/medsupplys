@@ -1,166 +1,157 @@
 // /services/supplier-matching.service.ts
 
-"use server";
+"use server"
 
-import { Types } from "mongoose";
+import { Types } from "mongoose"
 
-import { connectToDB } from "@/lib/connectToDB";
+import { connectToDB } from "@/lib/connectToDB"
 
-import { Product } from "@/models/Product";
-import { SupplierProduct } from "@/models/SupplierProduct";
-import { User } from "@/models/User";
+import { Product } from "@/models/Product"
+import { SupplierProduct } from "@/models/SupplierProduct"
+import { User } from "@/models/User"
 
 /* =========================================================
    TYPES
    ========================================================= */
 
 export type SupplierScoreBreakdown = {
-  supplierId: string;
-  supplierProductId: string;
+  supplierId: string
+  supplierProductId: string
 
-  supplierName: string;
-  username?: string;
+  supplierName: string
+  username?: string
 
-  supplierType:
-  | "IMPORTER"
-  | "DISTRIBUTOR"
-  | "RETAILER";
+  supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-  stock: number;
+  stock: number
 
-  moq: number;
-  maxOrderQuantity: number;
+  moq: number
+  maxOrderQuantity: number
 
-  rating: number;
-  fulfillmentRate: number;
-  deliveryDays: number;
+  rating: number
+  fulfillmentRate: number
+  deliveryDays: number
 
-  basePrice: number;
-  commission: number;
-  commissionPercent: number;
-  finalPrice: number;
+  basePrice: number
+  commission: number
+  commissionPercent: number
+  finalPrice: number
 
-  totalScore: number;
+  totalScore: number
 
   scoreBreakdown: {
-    price: number;
-    stock: number;
-    rating: number;
-    fulfillment: number;
-    delivery: number;
-    supplierType: number;
-  };
+    price: number
+    stock: number
+    rating: number
+    fulfillment: number
+    delivery: number
+    supplierType: number
+  }
 
-  isEligible: boolean;
+  isEligible: boolean
 
-  ineligibilityReason?: string;
+  ineligibilityReason?: string
 
-  nafdacRegNumber: string;
+  nafdacRegNumber: string
 
-  batchNumber: string;
-  expiryDate: string;
+  batchNumber: string
+  expiryDate: string
 
-  manufacturingDate?: string;
+  manufacturingDate?: string
 
-  verified: boolean;
+  verified: boolean
 
-  supplierApprovalStatus?: string;
+  supplierApprovalStatus?: string
 
-  creditRatingTier?: string;
+  creditRatingTier?: string
 
-  isColdChainCertified: boolean;
+  isColdChainCertified: boolean
 
-  state?: string;
-  lga?: string;
+  state?: string
+  lga?: string
 
-  unit: string;
+  unit: string
 
-  isFlagged: boolean;
+  isFlagged: boolean
 
   status:
-  | "AVAILABLE"
-  | "LOW_STOCK"
-  | "OUT_OF_STOCK"
-  | "ON_REQUEST"
-  | "SUSPENDED";
-};
+    | "AVAILABLE"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | "ON_REQUEST"
+    | "SUSPENDED"
+}
 
 /* =========================================================
    INTERNAL TYPES
    ========================================================= */
 
 type SupplierMatchingDocument = {
-  _id: Types.ObjectId;
+  _id: Types.ObjectId
 
-  productId: Types.ObjectId;
-  supplierId: Types.ObjectId;
+  productId: Types.ObjectId
+  supplierId: Types.ObjectId
 
-  supplierType:
-  | "importer"
-  | "distributor"
-  | "retailer";
+  supplierType: "importer" | "distributor" | "retailer"
 
-  nafdacRegNumber: string;
+  nafdacRegNumber: string
 
-  basePrice: number;
-  commission: number;
-  commissionPercent: number;
-  finalPrice: number;
+  basePrice: number
+  commission: number
+  commissionPercent: number
+  finalPrice: number
 
-  stock: number;
+  stock: number
 
-  minOrderQuantity: number;
-  maxOrderQuantity: number;
+  minOrderQuantity: number
+  maxOrderQuantity: number
 
-  unit: string;
+  unit: string
 
-  batchNumber: string;
+  batchNumber: string
 
-  expiryDate: Date;
-  manufacturingDate?: Date;
+  expiryDate: Date
+  manufacturingDate?: Date
 
   status:
-  | "AVAILABLE"
-  | "LOW_STOCK"
-  | "OUT_OF_STOCK"
-  | "ON_REQUEST"
-  | "SUSPENDED";
+    | "AVAILABLE"
+    | "LOW_STOCK"
+    | "OUT_OF_STOCK"
+    | "ON_REQUEST"
+    | "SUSPENDED"
 
-  isFlagged: boolean;
+  isFlagged: boolean
 
-  rating: number;
-  fulfillmentRate: number;
-  estimatedDeliveryDays: number;
+  rating: number
+  fulfillmentRate: number
+  estimatedDeliveryDays: number
 
   supplier?: {
-    _id: Types.ObjectId;
+    _id: Types.ObjectId
 
-    firstName?: string;
-    lastName?: string;
-    username?: string;
+    firstName?: string
+    lastName?: string
+    username?: string
 
-    organizationName?: string;
+    organizationName?: string
 
-    role?: string;
-    status?: string;
+    role?: string
+    status?: string
 
-    state?: string;
-    lga?: string;
+    state?: string
+    lga?: string
 
-    supplierType?:
-    | "importer"
-    | "distributor"
-    | "retailer";
+    supplierType?: "importer" | "distributor" | "retailer"
 
-    supplierApprovalStatus?: string;
+    supplierApprovalStatus?: string
 
-    verified?: boolean;
+    verified?: boolean
 
-    creditRatingTier?: string;
+    creditRatingTier?: string
 
-    isColdChainCertified?: boolean;
-  };
-};
+    isColdChainCertified?: boolean
+  }
+}
 
 /* =========================================================
    RANKING WEIGHTS
@@ -173,7 +164,7 @@ const RANKING_WEIGHTS = {
   fulfillment: 15,
   delivery: 10,
   supplierType: 5,
-} as const;
+} as const
 
 /* =========================================================
    SUPPLIER TYPE SCORES
@@ -183,7 +174,7 @@ const SUPPLIER_TYPE_SCORE = {
   importer: 5,
   distributor: 3,
   retailer: 1,
-} as const;
+} as const
 
 /* =========================================================
    SUPPLIER NAME
@@ -193,26 +184,19 @@ function getSupplierDisplayName(
   supplier?: SupplierMatchingDocument["supplier"]
 ) {
   if (!supplier) {
-    return "Unknown Supplier";
+    return "Unknown Supplier"
   }
 
   if (supplier.organizationName?.trim()) {
-    return supplier.organizationName.trim();
+    return supplier.organizationName.trim()
   }
 
-  const fullName = [
-    supplier.firstName,
-    supplier.lastName,
-  ]
+  const fullName = [supplier.firstName, supplier.lastName]
     .filter(Boolean)
     .join(" ")
-    .trim();
+    .trim()
 
-  return (
-    fullName ||
-    supplier.username ||
-    "Unknown Supplier"
-  );
+  return fullName || supplier.username || "Unknown Supplier"
 }
 
 /* =========================================================
@@ -220,15 +204,9 @@ function getSupplierDisplayName(
    ========================================================= */
 
 function normalizeSupplierType(
-  type:
-    | "importer"
-    | "distributor"
-    | "retailer"
+  type: "importer" | "distributor" | "retailer"
 ): "IMPORTER" | "DISTRIBUTOR" | "RETAILER" {
-  return type.toUpperCase() as
-    | "IMPORTER"
-    | "DISTRIBUTOR"
-    | "RETAILER";
+  return type.toUpperCase() as "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 }
 
 /* =========================================================
@@ -239,203 +217,129 @@ function getEligibility(
   supplierProduct: SupplierMatchingDocument,
   quantity: number
 ) {
-  const now = new Date();
+  const now = new Date()
 
-  const reasons: string[] = [];
+  const reasons: string[] = []
 
   /* -------------------------------------------------------
      Supplier account
   ------------------------------------------------------- */
 
-  if (
-    !supplierProduct.supplier
-  ) {
-    reasons.push(
-      "Supplier account could not be verified."
-    );
+  if (!supplierProduct.supplier) {
+    reasons.push("Supplier account could not be verified.")
   }
 
-  if (
-    supplierProduct.supplier?.role !==
-    "supplier"
-  ) {
-    reasons.push(
-      "Supplier account is invalid."
-    );
+  if (supplierProduct.supplier?.role !== "supplier") {
+    reasons.push("Supplier account is invalid.")
   }
 
-  if (
-    supplierProduct.supplier?.status !==
-    "active"
-  ) {
-    reasons.push(
-      "Supplier account is not active."
-    );
+  if (supplierProduct.supplier?.status !== "active") {
+    reasons.push("Supplier account is not active.")
   }
 
   /* -------------------------------------------------------
      Supplier approval
   ------------------------------------------------------- */
 
-  if (
-    supplierProduct.supplier
-      ?.supplierApprovalStatus !==
-    "approved"
-  ) {
-    reasons.push(
-      "Supplier approval is not complete."
-    );
+  if (supplierProduct.supplier?.supplierApprovalStatus !== "approved") {
+    reasons.push("Supplier approval is not complete.")
   }
 
   /* -------------------------------------------------------
      Marketplace listing
   ------------------------------------------------------- */
 
-  if (
-    supplierProduct.status !==
-    "AVAILABLE"
-  ) {
+  if (supplierProduct.status !== "AVAILABLE") {
     reasons.push(
-      `Product listing is ${supplierProduct.status.replaceAll(
-        "_",
-        " "
-      ).toLowerCase()}.`
-    );
+      `Product listing is ${supplierProduct.status
+        .replaceAll("_", " ")
+        .toLowerCase()}.`
+    )
   }
 
-  if (
-    supplierProduct.isFlagged
-  ) {
-    reasons.push(
-      "Supplier listing is currently flagged."
-    );
+  if (supplierProduct.isFlagged) {
+    reasons.push("Supplier listing is currently flagged.")
   }
 
   /* -------------------------------------------------------
      Quantity
   ------------------------------------------------------- */
 
-  if (
-    quantity <
-    supplierProduct.minOrderQuantity
-  ) {
+  if (quantity < supplierProduct.minOrderQuantity) {
     reasons.push(
       `Minimum order quantity is ${supplierProduct.minOrderQuantity.toLocaleString()}.`
-    );
+    )
   }
 
-  if (
-    quantity >
-    supplierProduct.maxOrderQuantity
-  ) {
+  if (quantity > supplierProduct.maxOrderQuantity) {
     reasons.push(
       `Maximum order quantity is ${supplierProduct.maxOrderQuantity.toLocaleString()}.`
-    );
+    )
   }
 
   /* -------------------------------------------------------
      Stock
   ------------------------------------------------------- */
 
-  if (
-    supplierProduct.stock <
-    quantity
-  ) {
+  if (supplierProduct.stock < quantity) {
     reasons.push(
       `Insufficient stock. Available: ${supplierProduct.stock.toLocaleString()}.`
-    );
+    )
   }
 
   /* -------------------------------------------------------
      Expiry
   ------------------------------------------------------- */
 
-  if (
-    supplierProduct.expiryDate <=
-    now
-  ) {
-    reasons.push(
-      "Supplier batch has expired."
-    );
+  if (supplierProduct.expiryDate <= now) {
+    reasons.push("Supplier batch has expired.")
   }
 
   /* -------------------------------------------------------
      Regulatory data
   ------------------------------------------------------- */
 
-  if (
-    !supplierProduct.nafdacRegNumber?.trim()
-  ) {
-    reasons.push(
-      "NAFDAC registration information is missing."
-    );
+  if (!supplierProduct.nafdacRegNumber?.trim()) {
+    reasons.push("NAFDAC registration information is missing.")
   }
 
-  if (
-    !supplierProduct.batchNumber?.trim()
-  ) {
-    reasons.push(
-      "Batch information is missing."
-    );
+  if (!supplierProduct.batchNumber?.trim()) {
+    reasons.push("Batch information is missing.")
   }
 
   return {
-    isEligible:
-      reasons.length === 0,
+    isEligible: reasons.length === 0,
 
     reasons,
-  };
+  }
 }
 
 /* =========================================================
    PRICE SCORE
    ========================================================= */
 
-function calculatePriceScores(
-  suppliers: SupplierMatchingDocument[]
-) {
+function calculatePriceScores(suppliers: SupplierMatchingDocument[]) {
   const eligiblePrices = suppliers
-    .map(
-      (supplier) =>
-        supplier.finalPrice
-    )
-    .filter(
-      (price) =>
-        Number.isFinite(price) &&
-        price > 0
-    );
+    .map((supplier) => supplier.finalPrice)
+    .filter((price) => Number.isFinite(price) && price > 0)
 
-  if (
-    eligiblePrices.length === 0
-  ) {
-    return new Map<string, number>();
+  if (eligiblePrices.length === 0) {
+    return new Map<string, number>()
   }
 
-  const minPrice =
-    Math.min(...eligiblePrices);
+  const minPrice = Math.min(...eligiblePrices)
 
-  const maxPrice =
-    Math.max(...eligiblePrices);
+  const maxPrice = Math.max(...eligiblePrices)
 
-  const range =
-    maxPrice - minPrice;
+  const range = maxPrice - minPrice
 
-  const scores =
-    new Map<string, number>();
+  const scores = new Map<string, number>()
 
   for (const supplier of suppliers) {
-    if (
-      !Number.isFinite(
-        supplier.finalPrice
-      ) ||
-      supplier.finalPrice <= 0
-    ) {
-      scores.set(
-        supplier._id.toString(),
-        0
-      );
+    if (!Number.isFinite(supplier.finalPrice) || supplier.finalPrice <= 0) {
+      scores.set(supplier._id.toString(), 0)
 
-      continue;
+      continue
     }
 
     /* -----------------------------------------------------
@@ -444,31 +348,20 @@ function calculatePriceScores(
     ----------------------------------------------------- */
 
     if (range === 0) {
-      scores.set(
-        supplier._id.toString(),
-        RANKING_WEIGHTS.price
-      );
+      scores.set(supplier._id.toString(), RANKING_WEIGHTS.price)
 
-      continue;
+      continue
     }
 
-    const competitiveness =
-      (maxPrice -
-        supplier.finalPrice) /
-      range;
+    const competitiveness = (maxPrice - supplier.finalPrice) / range
 
     scores.set(
       supplier._id.toString(),
-      Number(
-        (
-          competitiveness *
-          RANKING_WEIGHTS.price
-        ).toFixed(2)
-      )
-    );
+      Number((competitiveness * RANKING_WEIGHTS.price).toFixed(2))
+    )
   }
 
-  return scores;
+  return scores
 }
 
 /* =========================================================
@@ -479,10 +372,8 @@ function calculateStockScore(
   supplierProduct: SupplierMatchingDocument,
   quantity: number
 ) {
-  if (
-    supplierProduct.stock <= 0
-  ) {
-    return 0;
+  if (supplierProduct.stock <= 0) {
+    return 0
   }
 
   /*
@@ -493,100 +384,46 @@ function calculateStockScore(
    * Higher coverage approaches maximum score.
    */
 
-  const coverage =
-    supplierProduct.stock /
-    Math.max(quantity, 1);
+  const coverage = supplierProduct.stock / Math.max(quantity, 1)
 
-  const normalizedCoverage =
-    Math.min(
-      coverage / 10,
-      1
-    );
+  const normalizedCoverage = Math.min(coverage / 10, 1)
 
-  return Number(
-    (
-      normalizedCoverage *
-      RANKING_WEIGHTS.stock
-    ).toFixed(2)
-  );
+  return Number((normalizedCoverage * RANKING_WEIGHTS.stock).toFixed(2))
 }
 
 /* =========================================================
    RATING SCORE
    ========================================================= */
 
-function calculateRatingScore(
-  rating: number
-) {
-  const normalized =
-    Math.min(
-      Math.max(rating, 0),
-      5
-    ) / 5;
+function calculateRatingScore(rating: number) {
+  const normalized = Math.min(Math.max(rating, 0), 5) / 5
 
-  return Number(
-    (
-      normalized *
-      RANKING_WEIGHTS.rating
-    ).toFixed(2)
-  );
+  return Number((normalized * RANKING_WEIGHTS.rating).toFixed(2))
 }
 
 /* =========================================================
    FULFILLMENT SCORE
    ========================================================= */
 
-function calculateFulfillmentScore(
-  fulfillmentRate: number
-) {
-  const normalized =
-    Math.min(
-      Math.max(
-        fulfillmentRate,
-        0
-      ),
-      100
-    ) / 100;
+function calculateFulfillmentScore(fulfillmentRate: number) {
+  const normalized = Math.min(Math.max(fulfillmentRate, 0), 100) / 100
 
-  return Number(
-    (
-      normalized *
-      RANKING_WEIGHTS.fulfillment
-    ).toFixed(2)
-  );
+  return Number((normalized * RANKING_WEIGHTS.fulfillment).toFixed(2))
 }
 
 /* =========================================================
    DELIVERY SCORE
    ========================================================= */
 
-function calculateDeliveryScore(
-  deliveryDays: number
-) {
+function calculateDeliveryScore(deliveryDays: number) {
   /*
    * 0 days = full score
    * 7+ days = 0
    */
 
-  const normalized =
-    Math.max(
-      0,
-      1 -
-      Math.min(
-        Math.max(
-          deliveryDays,
-          0
-        ),
-        7
-      ) / 7
-    );
+  const normalized = Math.max(0, 1 - Math.min(Math.max(deliveryDays, 0), 7) / 7)
 
-  return Number(
-    (
-      normalized *
-      RANKING_WEIGHTS.delivery
-    ).toFixed(2)
-  );
+  return Number((normalized * RANKING_WEIGHTS.delivery).toFixed(2))
 }
 
 /* =========================================================
@@ -594,16 +431,9 @@ function calculateDeliveryScore(
    ========================================================= */
 
 function calculateSupplierTypeScore(
-  supplierType:
-    | "importer"
-    | "distributor"
-    | "retailer"
+  supplierType: "importer" | "distributor" | "retailer"
 ) {
-  return (
-    SUPPLIER_TYPE_SCORE[
-    supplierType
-    ] ?? 0
-  );
+  return SUPPLIER_TYPE_SCORE[supplierType] ?? 0
 }
 
 /* =========================================================
@@ -623,499 +453,352 @@ export async function evaluateSupplierMatches(
   productId: string,
   quantity: number
 ): Promise<SupplierScoreBreakdown[]> {
-  await connectToDB();
+  await connectToDB()
 
   /* -------------------------------------------------------
      VALIDATE INPUT
   ------------------------------------------------------- */
 
-  if (
-    !Types.ObjectId.isValid(
-      productId
-    )
-  ) {
-    throw new Error(
-      "Invalid product ID."
-    );
+  if (!Types.ObjectId.isValid(productId)) {
+    throw new Error("Invalid product ID.")
   }
 
-  if (
-    !Number.isFinite(quantity) ||
-    quantity <= 0
-  ) {
-    throw new Error(
-      "Order quantity must be greater than zero."
-    );
+  if (!Number.isFinite(quantity) || quantity <= 0) {
+    throw new Error("Order quantity must be greater than zero.")
   }
 
-  const product =
-    await Product.findOne({
-      _id: productId,
-      status: "ACTIVE",
+  const product = await Product.findOne({
+    _id: productId,
+    status: "ACTIVE",
+  })
+    .select({
+      _id: 1,
+      name: 1,
+      requiresColdChain: 1,
     })
-      .select({
-        _id: 1,
-        name: 1,
-        requiresColdChain: 1,
-      })
-      .lean();
+    .lean()
 
   if (!product) {
-    throw new Error(
-      "Active marketplace product not found."
-    );
+    throw new Error("Active marketplace product not found.")
   }
 
   /* -------------------------------------------------------
      FETCH SUPPLIER PRODUCTS + SUPPLIER
   ------------------------------------------------------- */
 
-  const supplierProducts =
-    (await SupplierProduct.aggregate([
-      {
-        $match: {
-          productId:
-            new Types.ObjectId(
-              productId
-            ),
-        },
+  const supplierProducts = (await SupplierProduct.aggregate([
+    {
+      $match: {
+        productId: new Types.ObjectId(productId),
       },
+    },
 
-      /* ---------------------------------------------------
+    /* ---------------------------------------------------
          RESOLVE SUPPLIER
       --------------------------------------------------- */
 
-      {
-        $lookup: {
-          from: User.collection.name,
+    {
+      $lookup: {
+        from: User.collection.name,
 
-          let: {
-            supplierId:
-              "$supplierId",
+        let: {
+          supplierId: "$supplierId",
+        },
+
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $eq: ["$_id", "$$supplierId"],
+                  },
+                  {
+                    $eq: ["$role", "supplier"],
+                  },
+                ],
+              },
+            },
           },
 
-          pipeline: [
-            {
-              $match: {
-                $expr: {
-                  $and: [
-                    {
-                      $eq: [
-                        "$_id",
-                        "$$supplierId",
-                      ],
-                    },
-                    {
-                      $eq: [
-                        "$role",
-                        "supplier",
-                      ],
-                    },
-                  ],
-                },
-              },
+          {
+            $project: {
+              _id: 1,
+
+              firstName: 1,
+              lastName: 1,
+              username: 1,
+
+              organizationName: 1,
+
+              role: 1,
+              status: 1,
+
+              state: 1,
+              lga: 1,
+
+              supplierType: 1,
+
+              supplierApprovalStatus: 1,
+
+              verified: 1,
+
+              creditRatingTier: 1,
+
+              isColdChainCertified: 1,
             },
+          },
+        ],
 
-            {
-              $project: {
-                _id: 1,
-
-                firstName: 1,
-                lastName: 1,
-                username: 1,
-
-                organizationName: 1,
-
-                role: 1,
-                status: 1,
-
-                state: 1,
-                lga: 1,
-
-                supplierType: 1,
-
-                supplierApprovalStatus: 1,
-
-                verified: 1,
-
-                creditRatingTier: 1,
-
-                isColdChainCertified: 1,
-              },
-            },
-          ],
-
-          as: "supplier",
-        },
+        as: "supplier",
       },
+    },
 
-      {
-        $unwind: {
-          path: "$supplier",
-          preserveNullAndEmptyArrays: true,
-        },
+    {
+      $unwind: {
+        path: "$supplier",
+        preserveNullAndEmptyArrays: true,
       },
+    },
 
-      /* ---------------------------------------------------
+    /* ---------------------------------------------------
          PROJECT MATCHING FIELDS
       --------------------------------------------------- */
 
-      {
-        $project: {
-          _id: 1,
+    {
+      $project: {
+        _id: 1,
 
-          productId: 1,
-          supplierId: 1,
+        productId: 1,
+        supplierId: 1,
 
-          supplierType: 1,
+        supplierType: 1,
 
-          nafdacRegNumber: 1,
+        nafdacRegNumber: 1,
 
-          basePrice: 1,
-          commission: 1,
-          commissionPercent: 1,
-          finalPrice: 1,
+        basePrice: 1,
+        commission: 1,
+        commissionPercent: 1,
+        finalPrice: 1,
 
-          stock: 1,
+        stock: 1,
 
-          minOrderQuantity: 1,
-          maxOrderQuantity: 1,
+        minOrderQuantity: 1,
+        maxOrderQuantity: 1,
 
-          unit: 1,
+        unit: 1,
 
-          batchNumber: 1,
+        batchNumber: 1,
 
-          expiryDate: 1,
-          manufacturingDate: 1,
+        expiryDate: 1,
+        manufacturingDate: 1,
 
-          status: 1,
-          isFlagged: 1,
+        status: 1,
+        isFlagged: 1,
 
-          rating: 1,
-          fulfillmentRate: 1,
-          estimatedDeliveryDays: 1,
+        rating: 1,
+        fulfillmentRate: 1,
+        estimatedDeliveryDays: 1,
 
-          supplier: 1,
-        },
+        supplier: 1,
       },
-    ])) as SupplierMatchingDocument[];
+    },
+  ])) as SupplierMatchingDocument[]
 
-  if (
-    supplierProducts.length === 0
-  ) {
-    return [];
+  if (supplierProducts.length === 0) {
+    return []
   }
 
   /* -------------------------------------------------------
      PRICE SCORES
   ------------------------------------------------------- */
 
-  const eligibleForPrice =
-    supplierProducts.filter(
-      (supplier) =>
-        supplier.status !==
-        "SUSPENDED" &&
-        !supplier.isFlagged &&
-        supplier.finalPrice > 0
-    );
+  const eligibleForPrice = supplierProducts.filter(
+    (supplier) =>
+      supplier.status !== "SUSPENDED" &&
+      !supplier.isFlagged &&
+      supplier.finalPrice > 0
+  )
 
-  const priceScores =
-    calculatePriceScores(
-      eligibleForPrice
-    );
+  const priceScores = calculatePriceScores(eligibleForPrice)
 
   /* -------------------------------------------------------
      BUILD RANKED POOL
   ------------------------------------------------------- */
 
-  const matches =
-    supplierProducts.map(
-      (supplierProduct) => {
-        const eligibility =
-          getEligibility(
-            supplierProduct,
-            quantity
-          );
+  const matches = supplierProducts.map((supplierProduct) => {
+    const eligibility = getEligibility(supplierProduct, quantity)
 
-        const supplier =
-          supplierProduct.supplier;
+    const supplier = supplierProduct.supplier
 
-        const priceScore =
-          eligibility.isEligible
-            ? priceScores.get(
-              supplierProduct._id.toString()
-            ) ?? 0
-            : 0;
+    const priceScore = eligibility.isEligible
+      ? (priceScores.get(supplierProduct._id.toString()) ?? 0)
+      : 0
 
-        const stockScore =
-          eligibility.isEligible
-            ? calculateStockScore(
-              supplierProduct,
-              quantity
-            )
-            : 0;
+    const stockScore = eligibility.isEligible
+      ? calculateStockScore(supplierProduct, quantity)
+      : 0
 
-        const ratingScore =
-          eligibility.isEligible
-            ? calculateRatingScore(
-              supplierProduct.rating
-            )
-            : 0;
+    const ratingScore = eligibility.isEligible
+      ? calculateRatingScore(supplierProduct.rating)
+      : 0
 
-        const fulfillmentScore =
-          eligibility.isEligible
-            ? calculateFulfillmentScore(
-              supplierProduct.fulfillmentRate
-            )
-            : 0;
+    const fulfillmentScore = eligibility.isEligible
+      ? calculateFulfillmentScore(supplierProduct.fulfillmentRate)
+      : 0
 
-        const deliveryScore =
-          eligibility.isEligible
-            ? calculateDeliveryScore(
-              supplierProduct.estimatedDeliveryDays
-            )
-            : 0;
+    const deliveryScore = eligibility.isEligible
+      ? calculateDeliveryScore(supplierProduct.estimatedDeliveryDays)
+      : 0
 
-        const supplierTypeScore =
-          eligibility.isEligible
-            ? calculateSupplierTypeScore(
-              supplierProduct.supplierType
-            )
-            : 0;
+    const supplierTypeScore = eligibility.isEligible
+      ? calculateSupplierTypeScore(supplierProduct.supplierType)
+      : 0
 
-        const totalScore =
-          Number(
-            (
-              priceScore +
-              stockScore +
-              ratingScore +
-              fulfillmentScore +
-              deliveryScore +
-              supplierTypeScore
-            ).toFixed(2)
-          );
+    const totalScore = Number(
+      (
+        priceScore +
+        stockScore +
+        ratingScore +
+        fulfillmentScore +
+        deliveryScore +
+        supplierTypeScore
+      ).toFixed(2)
+    )
 
-        return {
-          supplierId:
-            supplierProduct.supplierId.toString(),
+    return {
+      supplierId: supplierProduct.supplierId.toString(),
 
-          supplierProductId:
-            supplierProduct._id.toString(),
+      supplierProductId: supplierProduct._id.toString(),
 
-          supplierName:
-            getSupplierDisplayName(
-              supplier
-            ),
+      supplierName: getSupplierDisplayName(supplier),
 
-          username:
-            supplier?.username,
+      username: supplier?.username,
 
-          supplierType:
-            normalizeSupplierType(
-              supplierProduct.supplierType
-            ),
+      supplierType: normalizeSupplierType(supplierProduct.supplierType),
 
-          stock:
-            supplierProduct.stock,
+      stock: supplierProduct.stock,
 
-          moq:
-            supplierProduct.minOrderQuantity,
+      moq: supplierProduct.minOrderQuantity,
 
-          maxOrderQuantity:
-            supplierProduct.maxOrderQuantity,
+      maxOrderQuantity: supplierProduct.maxOrderQuantity,
 
-          rating:
-            supplierProduct.rating,
+      rating: supplierProduct.rating,
 
-          fulfillmentRate:
-            supplierProduct.fulfillmentRate,
+      fulfillmentRate: supplierProduct.fulfillmentRate,
 
-          deliveryDays:
-            supplierProduct.estimatedDeliveryDays,
+      deliveryDays: supplierProduct.estimatedDeliveryDays,
 
-          basePrice:
-            supplierProduct.basePrice,
+      basePrice: supplierProduct.basePrice,
 
-          commission:
-            supplierProduct.commission,
+      commission: supplierProduct.commission,
 
-          commissionPercent:
-            supplierProduct.commissionPercent,
+      commissionPercent: supplierProduct.commissionPercent,
 
-          finalPrice:
-            supplierProduct.finalPrice,
+      finalPrice: supplierProduct.finalPrice,
 
-          totalScore,
+      totalScore,
 
-          scoreBreakdown: {
-            price: priceScore,
-            stock: stockScore,
-            rating: ratingScore,
-            fulfillment:
-              fulfillmentScore,
-            delivery:
-              deliveryScore,
-            supplierType:
-              supplierTypeScore,
-          },
+      scoreBreakdown: {
+        price: priceScore,
+        stock: stockScore,
+        rating: ratingScore,
+        fulfillment: fulfillmentScore,
+        delivery: deliveryScore,
+        supplierType: supplierTypeScore,
+      },
 
-          isEligible:
-            eligibility.isEligible,
+      isEligible: eligibility.isEligible,
 
-          ineligibilityReason:
-            eligibility.isEligible
-              ? undefined
-              : eligibility.reasons.join(
-                " "
-              ),
+      ineligibilityReason: eligibility.isEligible
+        ? undefined
+        : eligibility.reasons.join(" "),
 
-          nafdacRegNumber:
-            supplierProduct.nafdacRegNumber,
+      nafdacRegNumber: supplierProduct.nafdacRegNumber,
 
-          batchNumber:
-            supplierProduct.batchNumber,
+      batchNumber: supplierProduct.batchNumber,
 
-          expiryDate:
-            supplierProduct.expiryDate.toISOString(),
+      expiryDate: supplierProduct.expiryDate.toISOString(),
 
-          manufacturingDate:
-            supplierProduct.manufacturingDate?.toISOString(),
+      manufacturingDate: supplierProduct.manufacturingDate?.toISOString(),
 
-          verified:
-            supplier?.verified === true,
+      verified: supplier?.verified === true,
 
-          supplierApprovalStatus:
-            supplier?.supplierApprovalStatus,
+      supplierApprovalStatus: supplier?.supplierApprovalStatus,
 
-          creditRatingTier:
-            supplier?.creditRatingTier,
+      creditRatingTier: supplier?.creditRatingTier,
 
-          isColdChainCertified:
-            supplier?.isColdChainCertified ===
-            true,
+      isColdChainCertified: supplier?.isColdChainCertified === true,
 
-          state:
-            supplier?.state,
+      state: supplier?.state,
 
-          lga:
-            supplier?.lga,
+      lga: supplier?.lga,
 
-          unit:
-            supplierProduct.unit,
+      unit: supplierProduct.unit,
 
-          isFlagged:
-            supplierProduct.isFlagged,
+      isFlagged: supplierProduct.isFlagged,
 
-          status:
-            supplierProduct.status,
-        };
-      }
-    );
+      status: supplierProduct.status,
+    }
+  })
 
   /* -------------------------------------------------------
      SORT
   ------------------------------------------------------- */
 
-  matches.sort(
-    (a, b) => {
-      /* Eligible suppliers always come first. */
+  matches.sort((a, b) => {
+    /* Eligible suppliers always come first. */
 
-      if (
-        a.isEligible !==
-        b.isEligible
-      ) {
-        return a.isEligible
-          ? -1
-          : 1;
-      }
-
-      /* Higher score wins. */
-
-      if (
-        b.totalScore !==
-        a.totalScore
-      ) {
-        return (
-          b.totalScore -
-          a.totalScore
-        );
-      }
-
-      /* Price tie-breaker. */
-
-      if (
-        a.finalPrice !==
-        b.finalPrice
-      ) {
-        return (
-          a.finalPrice -
-          b.finalPrice
-        );
-      }
-
-      /* Rating tie-breaker. */
-
-      return (
-        b.rating -
-        a.rating
-      );
+    if (a.isEligible !== b.isEligible) {
+      return a.isEligible ? -1 : 1
     }
-  );
+
+    /* Higher score wins. */
+
+    if (b.totalScore !== a.totalScore) {
+      return b.totalScore - a.totalScore
+    }
+
+    /* Price tie-breaker. */
+
+    if (a.finalPrice !== b.finalPrice) {
+      return a.finalPrice - b.finalPrice
+    }
+
+    /* Rating tie-breaker. */
+
+    return b.rating - a.rating
+  })
 
   /* -------------------------------------------------------
      LOGGING
   ------------------------------------------------------- */
 
-  console.log(
-    "=========================================="
-  );
+  console.log("==========================================")
 
-  console.log(
-    "=== MEDSUPPLY SUPPLIER MATCHING ==="
-  );
+  console.log("=== MEDSUPPLY SUPPLIER MATCHING ===")
 
-  console.log(
-    "=========================================="
-  );
+  console.log("==========================================")
 
-  console.log(
-    "Product:",
-    product.name
-  );
+  console.log("Product:", product.name)
 
-  console.log(
-    "Product ID:",
-    productId
-  );
+  console.log("Product ID:", productId)
 
-  console.log(
-    "Requested quantity:",
-    quantity
-  );
+  console.log("Requested quantity:", quantity)
 
-  console.log(
-    "Supplier pool:",
-    matches.length
-  );
+  console.log("Supplier pool:", matches.length)
 
   console.log(
     "Eligible suppliers:",
-    matches.filter(
-      (match) =>
-        match.isEligible
-    ).length
-  );
+    matches.filter((match) => match.isEligible).length
+  )
 
   console.log(
     "Top supplier:",
-    matches.find(
-      (match) =>
-        match.isEligible
-    )?.supplierName ??
-    "None"
-  );
+    matches.find((match) => match.isEligible)?.supplierName ?? "None"
+  )
 
-  return matches;
+  return matches
 }
 
 export async function matchSuppliers(
@@ -1123,31 +806,29 @@ export async function matchSuppliers(
   quantity: number
 ): Promise<SupplierScoreBreakdown[]> {
   if (!productId) {
-    throw new Error("Product ID is required.");
+    throw new Error("Product ID is required.")
   }
 
   if (!Types.ObjectId.isValid(productId)) {
-    throw new Error("Invalid product ID.");
+    throw new Error("Invalid product ID.")
   }
 
-  const requestedQuantity = Math.floor(Number(quantity));
+  const requestedQuantity = Math.floor(Number(quantity))
 
   if (!Number.isFinite(requestedQuantity) || requestedQuantity <= 0) {
-    throw new Error(
-      "Procurement quantity must be greater than zero."
-    );
+    throw new Error("Procurement quantity must be greater than zero.")
   }
 
-  await connectToDB();
+  await connectToDB()
 
   // ---------------------------------------------------------------------------
   // Resolve master product
   // ---------------------------------------------------------------------------
 
-  const product = await Product.findById(productId).lean();
+  const product = await Product.findById(productId).lean()
 
   if (!product) {
-    throw new Error("Product not found.");
+    throw new Error("Product not found.")
   }
 
   // ---------------------------------------------------------------------------
@@ -1156,10 +837,10 @@ export async function matchSuppliers(
 
   const supplierProducts = await SupplierProduct.find({
     productId: new Types.ObjectId(productId),
-  }).lean();
+  }).lean()
 
   if (!supplierProducts.length) {
-    return [];
+    return []
   }
 
   // ---------------------------------------------------------------------------
@@ -1168,287 +849,169 @@ export async function matchSuppliers(
 
   const supplierIds = [
     ...new Set(
-      supplierProducts
-        .map((item) => item.supplierId.toString())
-        .filter(Boolean)
+      supplierProducts.map((item) => item.supplierId.toString()).filter(Boolean)
     ),
-  ];
+  ]
 
   const suppliers = await User.find({
     _id: {
-      $in: supplierIds.map(
-        (id) => new Types.ObjectId(id)
-      ),
+      $in: supplierIds.map((id) => new Types.ObjectId(id)),
     },
-  }).lean();
+  }).lean()
 
   const supplierMap = new Map(
-    suppliers.map((supplier) => [
-      supplier._id.toString(),
-      supplier,
-    ])
-  );
+    suppliers.map((supplier) => [supplier._id.toString(), supplier])
+  )
 
   // ---------------------------------------------------------------------------
   // Build matching records and determine eligibility FIRST
   // ---------------------------------------------------------------------------
 
   const records: Array<{
-    result: SupplierScoreBreakdown;
-  }> = [];
+    result: SupplierScoreBreakdown
+  }> = []
 
   for (const listing of supplierProducts) {
-    const supplierId =
-      listing.supplierId?.toString();
+    const supplierId = listing.supplierId?.toString()
 
-    const supplierProductId =
-      listing._id?.toString();
+    const supplierProductId = listing._id?.toString()
 
     if (!supplierId || !supplierProductId) {
-      continue;
+      continue
     }
 
-    const supplier = supplierMap.get(supplierId);
+    const supplier = supplierMap.get(supplierId)
 
     const supplierName =
       supplier?.organizationName ||
-      [
-        supplier?.firstName,
-        supplier?.lastName,
-      ]
-        .filter(Boolean)
-        .join(" ") ||
+      [supplier?.firstName, supplier?.lastName].filter(Boolean).join(" ") ||
       supplier?.username ||
-      "Unknown Supplier";
+      "Unknown Supplier"
 
-    const supplierType =
-      String(
-        listing.supplierType ??
-        supplier?.supplierType ??
-        "retailer"
-      ).toUpperCase() as
-      | "IMPORTER"
-      | "DISTRIBUTOR"
-      | "RETAILER";
+    const supplierType = String(
+      listing.supplierType ?? supplier?.supplierType ?? "retailer"
+    ).toUpperCase() as "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-    const stock = Math.max(
-      0,
-      Number(listing.stock ?? 0)
-    );
+    const stock = Math.max(0, Number(listing.stock ?? 0))
 
-    const moq = Math.max(
-      1,
-      Number(listing.minOrderQuantity ?? 1)
-    );
+    const moq = Math.max(1, Number(listing.minOrderQuantity ?? 1))
 
     const maxOrderQuantity = Math.max(
       moq,
-      Number(
-        listing.maxOrderQuantity ??
-        Number.MAX_SAFE_INTEGER
-      )
-    );
+      Number(listing.maxOrderQuantity ?? Number.MAX_SAFE_INTEGER)
+    )
 
-    const rating = Math.min(
-      5,
-      Math.max(
-        0,
-        Number(listing.rating ?? 0)
-      )
-    );
+    const rating = Math.min(5, Math.max(0, Number(listing.rating ?? 0)))
 
     const fulfillmentRate = Math.min(
       100,
-      Math.max(
-        0,
-        Number(listing.fulfillmentRate ?? 0)
-      )
-    );
+      Math.max(0, Number(listing.fulfillmentRate ?? 0))
+    )
 
-    const deliveryDays = Math.max(
-      0,
-      Number(
-        listing.estimatedDeliveryDays ??
-        7
-      )
-    );
+    const deliveryDays = Math.max(0, Number(listing.estimatedDeliveryDays ?? 7))
 
     // IMPORTANT:
     // SupplierProduct.finalPrice is the authoritative buyer price.
-    const basePrice = Math.max(
-      0,
-      Number(listing.basePrice ?? 0)
-    );
+    const basePrice = Math.max(0, Number(listing.basePrice ?? 0))
 
-    const finalPrice = Math.max(
-      0,
-      Number(listing.finalPrice ?? 0)
-    );
+    const finalPrice = Math.max(0, Number(listing.finalPrice ?? 0))
 
-    const commission = Math.max(
-      0,
-      Number(listing.commission ?? 0)
-    );
+    const commission = Math.max(0, Number(listing.commission ?? 0))
 
     const commissionPercent = Math.max(
       0,
       Number(listing.commissionPercent ?? 0)
-    );
+    )
 
-    const status = String(
-      listing.status ?? "SUSPENDED"
-    ).toUpperCase() as
+    const status = String(listing.status ?? "SUSPENDED").toUpperCase() as
       | "AVAILABLE"
       | "LOW_STOCK"
       | "OUT_OF_STOCK"
       | "ON_REQUEST"
-      | "SUSPENDED";
+      | "SUSPENDED"
 
-    const isFlagged =
-      Boolean(listing.isFlagged);
+    const isFlagged = Boolean(listing.isFlagged)
 
-    const verified =
-      Boolean(
-        supplier?.verified
-      );
+    const verified = Boolean(supplier?.verified)
 
-    const supplierApprovalStatus =
-      supplier?.supplierApprovalStatus;
+    const supplierApprovalStatus = supplier?.supplierApprovalStatus
 
-    const nafdacRegNumber =
-      String(
-        listing.nafdacRegNumber ?? ""
-      ).trim();
+    const nafdacRegNumber = String(listing.nafdacRegNumber ?? "").trim()
 
-    const batchNumber =
-      String(
-        listing.batchNumber ?? ""
-      ).trim();
+    const batchNumber = String(listing.batchNumber ?? "").trim()
 
-    const expiryDate =
-      listing.expiryDate
-        ? new Date(listing.expiryDate)
-        : null;
+    const expiryDate = listing.expiryDate ? new Date(listing.expiryDate) : null
 
-    const manufacturingDate =
-      listing.manufacturingDate
-        ? new Date(listing.manufacturingDate)
-        : null;
+    const manufacturingDate = listing.manufacturingDate
+      ? new Date(listing.manufacturingDate)
+      : null
 
-    const now = new Date();
+    const now = new Date()
 
-    let isEligible = true;
-    let ineligibilityReason:
-      | string
-      | undefined;
+    let isEligible = true
+    let ineligibilityReason: string | undefined
 
     // -------------------------------------------------------------------------
     // Eligibility validation
     // -------------------------------------------------------------------------
 
     if (!supplier) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier account not found.";
-    } else if (
-      String(supplier.role).toUpperCase() !==
-      "SUPPLIER"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Account is not a supplier.";
-    } else if (
-      String(supplier.status).toUpperCase() !==
-      "ACTIVE"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier account is not active.";
+      isEligible = false
+      ineligibilityReason = "Supplier account not found."
+    } else if (String(supplier.role).toUpperCase() !== "SUPPLIER") {
+      isEligible = false
+      ineligibilityReason = "Account is not a supplier."
+    } else if (String(supplier.status).toUpperCase() !== "ACTIVE") {
+      isEligible = false
+      ineligibilityReason = "Supplier account is not active."
     } else if (
       supplierApprovalStatus &&
-      String(supplierApprovalStatus).toUpperCase() !==
-      "APPROVED"
+      String(supplierApprovalStatus).toUpperCase() !== "APPROVED"
     ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier has not been approved.";
+      isEligible = false
+      ineligibilityReason = "Supplier has not been approved."
     } else if (isFlagged) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier listing has been flagged.";
-    } else if (
-      status === "SUSPENDED"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier listing is suspended.";
-    } else if (
-      status === "OUT_OF_STOCK"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Product is out of stock.";
-    } else if (
-      status === "ON_REQUEST"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Product is available on request only.";
-    } else if (
-      requestedQuantity < moq
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        `Minimum order quantity is ${moq}.`;
-    } else if (
-      requestedQuantity > maxOrderQuantity
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        `Maximum order quantity is ${maxOrderQuantity}.`;
-    } else if (
-      stock < requestedQuantity
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        `Insufficient stock. Available stock: ${stock}.`;
-    } else if (
-      finalPrice <= 0
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier price is unavailable.";
+      isEligible = false
+      ineligibilityReason = "Supplier listing has been flagged."
+    } else if (status === "SUSPENDED") {
+      isEligible = false
+      ineligibilityReason = "Supplier listing is suspended."
+    } else if (status === "OUT_OF_STOCK") {
+      isEligible = false
+      ineligibilityReason = "Product is out of stock."
+    } else if (status === "ON_REQUEST") {
+      isEligible = false
+      ineligibilityReason = "Product is available on request only."
+    } else if (requestedQuantity < moq) {
+      isEligible = false
+      ineligibilityReason = `Minimum order quantity is ${moq}.`
+    } else if (requestedQuantity > maxOrderQuantity) {
+      isEligible = false
+      ineligibilityReason = `Maximum order quantity is ${maxOrderQuantity}.`
+    } else if (stock < requestedQuantity) {
+      isEligible = false
+      ineligibilityReason = `Insufficient stock. Available stock: ${stock}.`
+    } else if (finalPrice <= 0) {
+      isEligible = false
+      ineligibilityReason = "Supplier price is unavailable."
     } else if (!nafdacRegNumber) {
-      isEligible = false;
-      ineligibilityReason =
-        "NAFDAC registration number is missing.";
+      isEligible = false
+      ineligibilityReason = "NAFDAC registration number is missing."
     } else if (!batchNumber) {
-      isEligible = false;
-      ineligibilityReason =
-        "Batch number is missing.";
+      isEligible = false
+      ineligibilityReason = "Batch number is missing."
     } else if (!expiryDate) {
-      isEligible = false;
-      ineligibilityReason =
-        "Expiry date is missing.";
-    } else if (
-      Number.isNaN(expiryDate.getTime())
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier expiry date is invalid.";
-    } else if (
-      expiryDate <= now
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier product has expired.";
-    } else if (
-      status !== "AVAILABLE" &&
-      status !== "LOW_STOCK"
-    ) {
-      isEligible = false;
-      ineligibilityReason =
-        "Supplier listing is not currently available.";
+      isEligible = false
+      ineligibilityReason = "Expiry date is missing."
+    } else if (Number.isNaN(expiryDate.getTime())) {
+      isEligible = false
+      ineligibilityReason = "Supplier expiry date is invalid."
+    } else if (expiryDate <= now) {
+      isEligible = false
+      ineligibilityReason = "Supplier product has expired."
+    } else if (status !== "AVAILABLE" && status !== "LOW_STOCK") {
+      isEligible = false
+      ineligibilityReason = "Supplier listing is not currently available."
     }
 
     records.push({
@@ -1457,8 +1020,7 @@ export async function matchSuppliers(
         supplierProductId,
 
         supplierName,
-        username:
-          supplier?.username || undefined,
+        username: supplier?.username || undefined,
 
         supplierType,
 
@@ -1492,48 +1054,32 @@ export async function matchSuppliers(
         nafdacRegNumber,
         batchNumber,
 
-        expiryDate:
-          expiryDate?.toISOString() ?? "",
+        expiryDate: expiryDate?.toISOString() ?? "",
 
         manufacturingDate:
-          manufacturingDate &&
-            !Number.isNaN(
-              manufacturingDate.getTime()
-            )
+          manufacturingDate && !Number.isNaN(manufacturingDate.getTime())
             ? manufacturingDate.toISOString()
             : undefined,
 
         verified,
 
-        supplierApprovalStatus:
-          supplierApprovalStatus || undefined,
+        supplierApprovalStatus: supplierApprovalStatus || undefined,
 
-        creditRatingTier:
-          supplier?.creditRatingTier ??
-          undefined,
+        creditRatingTier: supplier?.creditRatingTier ?? undefined,
 
-        isColdChainCertified:
-          Boolean(
-            supplier?.isColdChainCertified
-          ),
+        isColdChainCertified: Boolean(supplier?.isColdChainCertified),
 
-        state:
-          supplier?.state ??
-          undefined,
+        state: supplier?.state ?? undefined,
 
-        lga:
-          supplier?.lga ??
-          undefined,
+        lga: supplier?.lga ?? undefined,
 
-        unit:
-          listing.unit ??
-          "",
+        unit: listing.unit ?? "",
 
         isFlagged,
 
         status,
       },
-    });
+    })
   }
 
   // ---------------------------------------------------------------------------
@@ -1543,35 +1089,27 @@ export async function matchSuppliers(
 
   const eligible = records
     .map((record) => record.result)
-    .filter(
-      (supplier) =>
-        supplier.isEligible &&
-        supplier.finalPrice > 0
-    );
+    .filter((supplier) => supplier.isEligible && supplier.finalPrice > 0)
 
   if (!eligible.length) {
-    return records.map(
-      (record) => record.result
-    );
+    return records.map((record) => record.result)
   }
 
-  const prices = eligible.map(
-    (supplier) => supplier.finalPrice
-  );
+  const prices = eligible.map((supplier) => supplier.finalPrice)
 
-  const minPrice = Math.min(...prices);
-  const maxPrice = Math.max(...prices);
+  const minPrice = Math.min(...prices)
+  const maxPrice = Math.max(...prices)
 
   // ---------------------------------------------------------------------------
   // Calculate ranking scores
   // ---------------------------------------------------------------------------
 
   for (const record of records) {
-    const supplier = record.result;
+    const supplier = record.result
 
     if (!supplier.isEligible) {
-      supplier.totalScore = 0;
-      continue;
+      supplier.totalScore = 0
+      continue
     }
 
     // Lower price = better score
@@ -1579,40 +1117,26 @@ export async function matchSuppliers(
       minPrice === maxPrice
         ? 100
         : Math.max(
-          0,
-          Math.min(
-            100,
-            ((maxPrice - supplier.finalPrice) /
-              (maxPrice - minPrice)) *
-            100
+            0,
+            Math.min(
+              100,
+              ((maxPrice - supplier.finalPrice) / (maxPrice - minPrice)) * 100
+            )
           )
-        );
 
     // More stock coverage = better
-    const stockCoverage =
-      supplier.stock /
-      requestedQuantity;
+    const stockCoverage = supplier.stock / requestedQuantity
 
-    const stockScore =
-      stockCoverage >= 3
-        ? 100
-        : stockCoverage >= 2
-          ? 90
-          : 70;
+    const stockScore = stockCoverage >= 3 ? 100 : stockCoverage >= 2 ? 90 : 70
 
     // Rating: 0 - 5
-    const ratingScore =
-      (supplier.rating / 5) * 100;
+    const ratingScore = (supplier.rating / 5) * 100
 
     // Already represented as percentage
-    const fulfillmentScore =
-      Math.min(
-        100,
-        Math.max(
-          0,
-          supplier.fulfillmentRate
-        )
-      );
+    const fulfillmentScore = Math.min(
+      100,
+      Math.max(0, supplier.fulfillmentRate)
+    )
 
     // Lower delivery time = better
     const deliveryScore =
@@ -1626,63 +1150,41 @@ export async function matchSuppliers(
               ? 70
               : supplier.deliveryDays <= 7
                 ? 55
-                : 30;
+                : 30
 
     const supplierTypeScore =
       supplier.supplierType === "IMPORTER"
         ? 100
         : supplier.supplierType === "DISTRIBUTOR"
           ? 60
-          : 20;
+          : 20
 
     // -------------------------------------------------------------------------
     // Apply weights
     // -------------------------------------------------------------------------
 
-    const weightedPrice =
-      (priceScore / 100) *
-      RANKING_WEIGHTS.price;
+    const weightedPrice = (priceScore / 100) * RANKING_WEIGHTS.price
 
-    const weightedStock =
-      (stockScore / 100) *
-      RANKING_WEIGHTS.stock;
+    const weightedStock = (stockScore / 100) * RANKING_WEIGHTS.stock
 
-    const weightedRating =
-      (ratingScore / 100) *
-      RANKING_WEIGHTS.rating;
+    const weightedRating = (ratingScore / 100) * RANKING_WEIGHTS.rating
 
     const weightedFulfillment =
-      (fulfillmentScore / 100) *
-      RANKING_WEIGHTS.fulfillment;
+      (fulfillmentScore / 100) * RANKING_WEIGHTS.fulfillment
 
-    const weightedDelivery =
-      (deliveryScore / 100) *
-      RANKING_WEIGHTS.delivery;
+    const weightedDelivery = (deliveryScore / 100) * RANKING_WEIGHTS.delivery
 
     const weightedSupplierType =
-      (supplierTypeScore / 100) *
-      RANKING_WEIGHTS.supplierType;
+      (supplierTypeScore / 100) * RANKING_WEIGHTS.supplierType
 
     supplier.scoreBreakdown = {
-      price: Number(
-        weightedPrice.toFixed(2)
-      ),
-      stock: Number(
-        weightedStock.toFixed(2)
-      ),
-      rating: Number(
-        weightedRating.toFixed(2)
-      ),
-      fulfillment: Number(
-        weightedFulfillment.toFixed(2)
-      ),
-      delivery: Number(
-        weightedDelivery.toFixed(2)
-      ),
-      supplierType: Number(
-        weightedSupplierType.toFixed(2)
-      ),
-    };
+      price: Number(weightedPrice.toFixed(2)),
+      stock: Number(weightedStock.toFixed(2)),
+      rating: Number(weightedRating.toFixed(2)),
+      fulfillment: Number(weightedFulfillment.toFixed(2)),
+      delivery: Number(weightedDelivery.toFixed(2)),
+      supplierType: Number(weightedSupplierType.toFixed(2)),
+    }
 
     supplier.totalScore = Number(
       (
@@ -1693,7 +1195,7 @@ export async function matchSuppliers(
         weightedDelivery +
         weightedSupplierType
       ).toFixed(2)
-    );
+    )
   }
 
   // ---------------------------------------------------------------------------
@@ -1701,49 +1203,27 @@ export async function matchSuppliers(
   // ---------------------------------------------------------------------------
 
   records.sort((a, b) => {
-    const supplierA = a.result;
-    const supplierB = b.result;
+    const supplierA = a.result
+    const supplierB = b.result
 
     // Eligible suppliers always appear before ineligible suppliers.
-    if (
-      supplierA.isEligible !==
-      supplierB.isEligible
-    ) {
-      return supplierA.isEligible
-        ? -1
-        : 1;
+    if (supplierA.isEligible !== supplierB.isEligible) {
+      return supplierA.isEligible ? -1 : 1
     }
 
     // Highest score first.
-    if (
-      supplierA.totalScore !==
-      supplierB.totalScore
-    ) {
-      return (
-        supplierB.totalScore -
-        supplierA.totalScore
-      );
+    if (supplierA.totalScore !== supplierB.totalScore) {
+      return supplierB.totalScore - supplierA.totalScore
     }
 
     // Lower actual buyer price wins tie.
-    if (
-      supplierA.finalPrice !==
-      supplierB.finalPrice
-    ) {
-      return (
-        supplierA.finalPrice -
-        supplierB.finalPrice
-      );
+    if (supplierA.finalPrice !== supplierB.finalPrice) {
+      return supplierA.finalPrice - supplierB.finalPrice
     }
 
     // Higher available stock wins remaining tie.
-    return (
-      supplierB.stock -
-      supplierA.stock
-    );
-  });
+    return supplierB.stock - supplierA.stock
+  })
 
-  return records.map(
-    ({ result }) => result
-  );
+  return records.map(({ result }) => result)
 }

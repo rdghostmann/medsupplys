@@ -1,16 +1,10 @@
 // /models/Counter.ts
 
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose"
 
 export interface ICounter extends Document {
-  key: string;
-  sequence: number;
+  key: string
+  sequence: number
 }
 
 const CounterSchema = new Schema<ICounter>(
@@ -31,8 +25,7 @@ const CounterSchema = new Schema<ICounter>(
   {
     versionKey: false,
   }
-);
+)
 
 export const Counter: Model<ICounter> =
-  models.Counter ||
-  model<ICounter>("Counter", CounterSchema);
+  models.Counter || model<ICounter>("Counter", CounterSchema)

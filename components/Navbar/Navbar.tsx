@@ -10,12 +10,7 @@ import { usePathname, useRouter } from "next/navigation"
 
 import { AnimatePresence, motion } from "framer-motion"
 
-import {
-  ChevronRight,
-  Menu,
-  X,
-  LayoutDashboard,
-} from "lucide-react"
+import { ChevronRight, Menu, X, LayoutDashboard } from "lucide-react"
 
 import {
   HouseIcon,
@@ -91,92 +86,52 @@ export default function Navbar() {
       name: "Home",
       href: "/",
       desktop: true,
-      icon: (
-        <HouseIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <HouseIcon size={19} weight="duotone" />,
     },
 
     {
       name: "About",
       href: "/about",
       desktop: true,
-      icon: (
-        <InfoIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <InfoIcon size={19} weight="duotone" />,
     },
 
     {
       name: "Why MedSupply",
       href: "/why-medsupply",
-      icon: (
-        <StorefrontIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <StorefrontIcon size={19} weight="duotone" />,
     },
 
     {
       name: "Features",
       href: "/features",
-      icon: (
-        <ListChecksIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <ListChecksIcon size={19} weight="duotone" />,
     },
 
     {
       name: "Services",
       href: "/services",
       desktop: true,
-      icon: (
-        <GearIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <GearIcon size={19} weight="duotone" />,
     },
 
     {
       name: "How it Works",
       href: "/how-it-works",
-      icon: (
-        <ListChecksIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <ListChecksIcon size={19} weight="duotone" />,
     },
 
     {
       name: "Become a Supplier",
       href: "/become-supplier",
-      icon: (
-        <TruckIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <TruckIcon size={19} weight="duotone" />,
     },
 
     {
       name: "Contact",
       href: "/contact",
       desktop: true,
-      icon: (
-        <PhoneIcon
-          size={19}
-          weight="duotone"
-        />
-      ),
+      icon: <PhoneIcon size={19} weight="duotone" />,
     },
   ]
 
@@ -184,9 +139,7 @@ export default function Navbar() {
      FILTERED NAVIGATION
   ========================================================= */
 
-  const desktopNavLinks = navLinks.filter(
-    (link) => link.desktop
-  )
+  const desktopNavLinks = navLinks.filter((link) => link.desktop)
 
   const mobileNavLinks = navLinks
 
@@ -209,9 +162,7 @@ export default function Navbar() {
       admin: "/admin",
     }
 
-    router.push(
-      routes[role as string] || "/buyer"
-    )
+    router.push(routes[role as string] || "/buyer")
   }
 
   const handleSignOut = async () => {
@@ -237,28 +188,24 @@ export default function Navbar() {
           "h-16 transition-all duration-300",
           // "fixed top-0 left-0 right-0 z-50 h-16 transition-all duration-300",
           scrolled
-            ? "bg-white/95 backdrop-blur-xl border-b border-slate-200 shadow-sm"
-            : "bg-white/80 backdrop-blur-md border-b border-slate-100"
+            ? "border-b border-slate-200 bg-white/95 shadow-sm backdrop-blur-xl"
+            : "border-b border-slate-100 bg-white/80 backdrop-blur-md"
         )}
       >
-        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
-
+        <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* =========================================================
               LOGO
           ========================================================= */}
 
           <div
-            className="flex items-center gap-3 shrink-0 select-none"
+            className="flex shrink-0 items-center gap-3 select-none"
             onContextMenu={(e) => e.preventDefault()}
             onCopy={(e) => e.preventDefault()}
             onCut={(e) => e.preventDefault()}
             onDragStart={(e) => e.preventDefault()}
           >
-            <Link
-              href="/"
-              className="flex items-center gap-3"
-            >
-              <div className="w-10 h-10 rounded-md overflow-hidden flex items-center justify-center">
+            <Link href="/" className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-md">
                 <Image
                   src="/logo.png"
                   width={36}
@@ -271,11 +218,11 @@ export default function Navbar() {
               </div>
 
               <div className="flex flex-col leading-none">
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent">
+                <h1 className="bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-xl font-black tracking-tight text-transparent sm:text-2xl">
                   MedSupply
                 </h1>
 
-                <span className="text-[8px] uppercase tracking-[0.22em] text-slate-400 font-semibold">
+                <span className="text-[8px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
                   Procurement & Verification
                 </span>
               </div>
@@ -292,17 +239,16 @@ export default function Navbar() {
               Contact
           ========================================================= */}
 
-          <div className="hidden lg:flex items-center gap-1">
+          <div className="hidden items-center gap-1 lg:flex">
             {desktopNavLinks.map((link) => {
-              const active =
-                pathname === link.href
+              const active = pathname === link.href
 
               return (
                 <Link
                   key={link.name}
                   href={link.href}
                   className={cn(
-                    "group flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200",
+                    "group flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-all duration-200",
                     active
                       ? "bg-blue-50 text-blue-700"
                       : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
@@ -323,12 +269,9 @@ export default function Navbar() {
                 </Link>
               )
             })}
-
-
-
           </div>
 
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden items-center gap-3 lg:flex">
             {/* =====================================================
                 AUTHENTICATED ACTIONS
             ===================================================== */}
@@ -338,20 +281,18 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={handleDashboard}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:bg-slate-100 transition-all"
+                  className="inline-flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition-all hover:bg-slate-100"
                 >
-                  <LayoutDashboard className="w-4 h-4" />
-
+                  <LayoutDashboard className="h-4 w-4" />
                   Dashboard
                 </button>
 
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-red-200 text-red-600 text-sm font-semibold hover:bg-red-50 transition-all"
+                  className="inline-flex items-center gap-2 rounded-xl border border-red-200 px-4 py-2 text-sm font-semibold text-red-600 transition-all hover:bg-red-50"
                 >
-                  <X className="w-4 h-4" />
-
+                  <X className="h-4 w-4" />
                   Sign Out
                 </button>
               </div>
@@ -359,18 +300,17 @@ export default function Navbar() {
               <div className="flex items-center gap-3">
                 <Link
                   href="/signin"
-                  className="px-4 py-2 rounded-xl text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all"
+                  className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 transition-all hover:bg-slate-100 hover:text-slate-900"
                 >
                   Sign In
                 </Link>
 
                 <Link
                   href="/signup"
-                  className="group inline-flex items-center gap-2 bg-linear-to-r from-blue-600 to-cyan-500 text-white px-5 py-2.5 rounded-2xl text-sm font-bold hover:shadow-xl hover:shadow-blue-500/20 transition-all active:scale-[0.98]"
+                  className="group inline-flex items-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 to-cyan-500 px-5 py-2.5 text-sm font-bold text-white transition-all hover:shadow-xl hover:shadow-blue-500/20 active:scale-[0.98]"
                 >
                   Get Started
-
-                  <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
               </div>
             )}
@@ -383,11 +323,11 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="lg:hidden inline-flex items-center justify-center w-11 h-11 rounded-md border border-slate-200 text-slate-700 hover:bg-slate-100 transition-all"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-md border border-slate-200 text-slate-700 transition-all hover:bg-slate-100 lg:hidden"
             aria-label="Open Menu"
             aria-expanded={isOpen}
           >
-            <Menu className="w-5 h-5" />
+            <Menu className="h-5 w-5" />
           </button>
         </div>
       </nav>
@@ -424,7 +364,7 @@ export default function Navbar() {
                 opacity: 0,
               }}
               onClick={closeMenu}
-              className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 lg:hidden"
+              className="fixed inset-0 z-60 bg-black/40 backdrop-blur-sm lg:hidden"
             />
 
             {/* =====================================================
@@ -446,19 +386,19 @@ export default function Navbar() {
                 stiffness: 260,
                 damping: 24,
               }}
-              className="fixed top-0 left-0 h-screen w-full max-w-sm bg-white z-70 lg:hidden flex flex-col shadow-2xl"
+              className="fixed top-0 left-0 z-70 flex h-screen w-full max-w-sm flex-col bg-white shadow-2xl lg:hidden"
             >
               {/* =================================================
                   HEADER
               ================================================= */}
 
-              <div className="h-16 px-5 border-b border-slate-200 flex items-center justify-between">
+              <div className="flex h-16 items-center justify-between border-b border-slate-200 px-5">
                 <Link
                   href="/"
                   onClick={closeMenu}
                   className="flex items-center gap-3"
                 >
-                  <div className="w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+                  <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg">
                     <Image
                       src="/logo.png"
                       width={36}
@@ -471,11 +411,11 @@ export default function Navbar() {
                   </div>
 
                   <div className="flex flex-col leading-none">
-                    <h3 className="text-2xl bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-transparent font-extrabold tracking-tight">
+                    <h3 className="bg-linear-to-r from-blue-600 via-cyan-500 to-emerald-500 bg-clip-text text-2xl font-extrabold tracking-tight text-transparent">
                       MedSupply
                     </h3>
 
-                    <span className="text-[8px] uppercase tracking-[0.22em] text-slate-400 font-semibold">
+                    <span className="text-[8px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
                       Procurement Platform
                     </span>
                   </div>
@@ -484,10 +424,10 @@ export default function Navbar() {
                 <button
                   type="button"
                   onClick={closeMenu}
-                  className="w-10 h-10 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-all"
+                  className="flex h-10 w-10 items-center justify-center rounded-md border border-slate-200 transition-all hover:bg-slate-100"
                   aria-label="Close Menu"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="h-5 w-5" />
                 </button>
               </div>
 
@@ -497,61 +437,58 @@ export default function Navbar() {
 
               <div className="flex-1 overflow-y-auto px-5 py-6">
                 <div className="space-y-3">
-                  {mobileNavLinks.map(
-                    (link, index) => {
-                      const active =
-                        pathname === link.href
+                  {mobileNavLinks.map((link, index) => {
+                    const active = pathname === link.href
 
-                      return (
-                        <motion.div
-                          key={link.name}
-                          initial={{
-                            opacity: 0,
-                            x: -20,
-                          }}
-                          animate={{
-                            opacity: 1,
-                            x: 0,
-                          }}
-                          transition={{
-                            delay: index * 0.06,
-                          }}
+                    return (
+                      <motion.div
+                        key={link.name}
+                        initial={{
+                          opacity: 0,
+                          x: -20,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                        }}
+                        transition={{
+                          delay: index * 0.06,
+                        }}
+                      >
+                        <Link
+                          href={link.href}
+                          onClick={closeMenu}
+                          className={cn(
+                            "group flex items-center justify-between rounded-2xl border px-5 py-4 transition-all",
+
+                            active
+                              ? "border-blue-100 bg-blue-50"
+                              : "border-slate-100 hover:border-blue-100 hover:bg-blue-50/60"
+                          )}
                         >
-                          <Link
-                            href={link.href}
-                            onClick={closeMenu}
-                            className={cn(
-                              "group flex items-center justify-between px-5 py-4 rounded-2xl border transition-all",
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-xl transition-colors",
 
-                              active
-                                ? "border-blue-100 bg-blue-50"
-                                : "border-slate-100 hover:border-blue-100 hover:bg-blue-50/60"
-                            )}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div
-                                className={cn(
-                                  "flex items-center justify-center w-9 h-9 rounded-xl transition-colors",
-
-                                  active
-                                    ? "bg-blue-100 text-blue-600"
-                                    : "bg-slate-50 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
-                                )}
-                              >
-                                {link.icon}
-                              </div>
-
-                              <span className="text-lg font-semibold text-slate-800">
-                                {link.name}
-                              </span>
+                                active
+                                  ? "bg-blue-100 text-blue-600"
+                                  : "bg-slate-50 text-slate-400 group-hover:bg-blue-100 group-hover:text-blue-600"
+                              )}
+                            >
+                              {link.icon}
                             </div>
 
-                            <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-blue-600 transition-all group-hover:translate-x-1" />
-                          </Link>
-                        </motion.div>
-                      )
-                    }
-                  )}
+                            <span className="text-lg font-semibold text-slate-800">
+                              {link.name}
+                            </span>
+                          </div>
+
+                          <ChevronRight className="h-5 w-5 text-slate-400 transition-all group-hover:translate-x-1 group-hover:text-blue-600" />
+                        </Link>
+                      </motion.div>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -559,16 +496,15 @@ export default function Navbar() {
                   FOOTER ACTIONS
               ================================================= */}
 
-              <div className="border-t border-slate-200 p-5 space-y-3">
+              <div className="space-y-3 border-t border-slate-200 p-5">
                 {isAuthenticated ? (
                   <>
                     <button
                       type="button"
                       onClick={handleDashboard}
-                      className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl border border-slate-200 font-bold text-slate-700 hover:bg-slate-50 transition-all"
+                      className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 py-4 font-bold text-slate-700 transition-all hover:bg-slate-50"
                     >
-                      <LayoutDashboard className="w-5 h-5" />
-
+                      <LayoutDashboard className="h-5 w-5" />
                       Dashboard
                     </button>
 
@@ -579,7 +515,7 @@ export default function Navbar() {
                     <Link
                       href="/signin"
                       onClick={closeMenu}
-                      className="flex items-center justify-center w-full py-4 rounded-2xl border-2 border-slate-100 font-bold text-slate-700 hover:bg-slate-50 transition-all text-lg"
+                      className="flex w-full items-center justify-center rounded-2xl border-2 border-slate-100 py-4 text-lg font-bold text-slate-700 transition-all hover:bg-slate-50"
                     >
                       Sign In
                     </Link>
@@ -587,14 +523,14 @@ export default function Navbar() {
                     <Link
                       href="/signup"
                       onClick={closeMenu}
-                      className="flex items-center justify-center w-full py-4 rounded-2xl bg-linear-to-r from-blue-600 to-cyan-500 text-white font-bold shadow-xl shadow-blue-500/20 hover:opacity-95 transition-all active:scale-[0.98] text-lg"
+                      className="flex w-full items-center justify-center rounded-2xl bg-linear-to-r from-blue-600 to-cyan-500 py-4 text-lg font-bold text-white shadow-xl shadow-blue-500/20 transition-all hover:opacity-95 active:scale-[0.98]"
                     >
                       Get Started
                     </Link>
                   </>
                 )}
 
-                <p className="text-center text-slate-400 text-[10px] pt-4 font-semibold uppercase tracking-[0.22em]">
+                <p className="pt-4 text-center text-[10px] font-semibold tracking-[0.22em] text-slate-400 uppercase">
                   Procurement & Verification
                 </p>
               </div>

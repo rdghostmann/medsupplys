@@ -1,6 +1,6 @@
 // /dashboard/supplier/AuditPage.tsx
 
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -9,35 +9,28 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import AuditLog from "./AuditLog";
-import { SupplierAuditLog } from "@/controllers/audit.actions";
-
+import AuditLog from "./AuditLog"
+import { SupplierAuditLog } from "@/controllers/audit.actions"
 
 interface AuditPageProps {
-  auditLogs: SupplierAuditLog[];
+  auditLogs: SupplierAuditLog[]
 }
 
-export default function AuditPage({
-  auditLogs,
-}: AuditPageProps) {
+export default function AuditPage({ auditLogs }: AuditPageProps) {
   return (
     <div className="flex flex-1 flex-col">
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Audit Trail
-            </BreadcrumbPage>
+            <BreadcrumbPage>Audit Trail</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -50,5 +43,5 @@ export default function AuditPage({
         </div>
       </div>
     </div>
-  );
+  )
 }

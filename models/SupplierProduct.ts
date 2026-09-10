@@ -1,38 +1,28 @@
 // /models/SupplierProduct.ts
 
-import {
-  Schema,
-  Types,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, Types, model, models, Document, Model } from "mongoose"
 
 export type SupplierProductStatus =
   | "AVAILABLE"
   | "LOW_STOCK"
   | "OUT_OF_STOCK"
   | "ON_REQUEST"
-  | "SUSPENDED";
+  | "SUSPENDED"
 
-export type SupplierType =
-  | "importer"
-  | "distributor"
-  | "retailer";
+export type SupplierType = "importer" | "distributor" | "retailer"
 
 export interface ISupplierProduct extends Document {
   /**
    * References the Admin-approved Master Catalogue Product.
    */
-  productId: Types.ObjectId;
+  productId: Types.ObjectId
 
   /**
    * Supplier who owns this listing.
    */
-  supplierId: Types.ObjectId;
+  supplierId: Types.ObjectId
 
-  supplierType: SupplierType;
+  supplierType: SupplierType
 
   /**
    * Supplier-specific regulatory information.
@@ -41,286 +31,281 @@ export interface ISupplierProduct extends Document {
    * because different suppliers/brands/batches may
    * have different NAFDAC registration numbers.
    */
-  nafdacRegNumber: string;
+  nafdacRegNumber: string
 
   /**
    * Supplier pricing
    */
-  basePrice: number;
+  basePrice: number
 
-  commission: number;
+  commission: number
 
-  commissionPercent: number;
+  commissionPercent: number
 
-  finalPrice: number;
+  finalPrice: number
 
   /**
    * Inventory
    */
-  stock: number;
+  stock: number
 
-  minOrderQuantity: number;
+  minOrderQuantity: number
 
-  maxOrderQuantity: number;
+  maxOrderQuantity: number
 
-  unit: string;
+  unit: string
 
   /**
    * Batch / regulatory tracking
    */
-  batchNumber: string;
+  batchNumber: string
 
-  expiryDate: Date;
+  expiryDate: Date
 
-  manufacturingDate?: Date;
+  manufacturingDate?: Date
 
   /**
    * Supplier verification evidence
    */
   verificationImages?: {
-    url: string;
-    label?: string;
-  }[];
+    url: string
+    label?: string
+  }[]
 
   /**
    * Marketplace status
    */
-  status: SupplierProductStatus;
+  status: SupplierProductStatus
 
-  isFlagged: boolean;
+  isFlagged: boolean
 
   /**
    * Marketplace ranking metrics
    */
-  rating: number;
+  rating: number
 
-  fulfillmentRate: number;
+  fulfillmentRate: number
 
-  estimatedDeliveryDays: number;
+  estimatedDeliveryDays: number
 
-  lastStockUpdatedAt?: Date;
+  lastStockUpdatedAt?: Date
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date
+  updatedAt: Date
 }
 
-const SupplierProductSchema =
-  new Schema<ISupplierProduct>(
-    {
-      /**
-       * Master Catalogue Product
-       *
-       * Supplier MUST select an existing approved
-       * Product instead of creating a new product.
-       */
-      productId: {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-        index: true,
-      },
-
-      /**
-       * Supplier account
-       */
-      supplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
-
-      supplierType: {
-        type: String,
-        enum: [
-          "importer",
-          "distributor",
-          "retailer",
-        ],
-        required: true,
-      },
-
-      /**
-       * Supplier-specific NAFDAC registration number.
-       *
-       * Example:
-       * A supplier may select:
-       *
-       *   Product:
-       *   Amoxicillin 500mg Capsule
-       *
-       * Then enter their own:
-       *
-       *   NAFDAC No: A4-1234
-       */
-      nafdacRegNumber: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      /**
-       * Supplier's base selling price
-       */
-      basePrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      /**
-       * Commission amount calculated by the platform
-       */
-      commission: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      /**
-       * Commission percentage inherited from
-       * the Master Product.
-       */
-      commissionPercent: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
-
-      /**
-       * Final marketplace selling price
-       */
-      finalPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      /**
-       * Current supplier inventory
-       */
-      stock: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      minOrderQuantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-
-      maxOrderQuantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-
-      /**
-       * Commercial unit used by this supplier.
-       *
-       * The Master Product still defines the standard
-       * product unit. This field represents the supplier's
-       * actual selling unit where required.
-       */
-      unit: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      /**
-       * Batch traceability
-       */
-      batchNumber: {
-        type: String,
-        required: true,
-        trim: true,
-      },
-
-      expiryDate: {
-        type: Date,
-        required: true,
-      },
-
-      manufacturingDate: {
-        type: Date,
-      },
-
-      /**
-       * Verification evidence
-       */
-      verificationImages: [
-        {
-          url: {
-            type: String,
-            required: true,
-            trim: true,
-          },
-
-          label: {
-            type: String,
-            trim: true,
-          },
-        },
-      ],
-
-      /**
-       * Marketplace inventory status
-       */
-      status: {
-        type: String,
-        enum: [
-          "AVAILABLE",
-          "LOW_STOCK",
-          "OUT_OF_STOCK",
-          "ON_REQUEST",
-          "SUSPENDED",
-        ],
-        default: "AVAILABLE",
-        index: true,
-      },
-
-      isFlagged: {
-        type: Boolean,
-        default: false,
-        index: true,
-      },
-
-      /**
-       * Supplier performance metrics
-       */
-      rating: {
-        type: Number,
-        min: 0,
-        max: 5,
-        default: 0,
-      },
-
-      fulfillmentRate: {
-        type: Number,
-        min: 0,
-        max: 100,
-        default: 0,
-      },
-
-      estimatedDeliveryDays: {
-        type: Number,
-        min: 0,
-        default: 0,
-      },
-
-      lastStockUpdatedAt: {
-        type: Date,
-      },
+const SupplierProductSchema = new Schema<ISupplierProduct>(
+  {
+    /**
+     * Master Catalogue Product
+     *
+     * Supplier MUST select an existing approved
+     * Product instead of creating a new product.
+     */
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
+      index: true,
     },
-    {
-      timestamps: true,
-      versionKey: false,
-    }
-  );
+
+    /**
+     * Supplier account
+     */
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    supplierType: {
+      type: String,
+      enum: ["importer", "distributor", "retailer"],
+      required: true,
+    },
+
+    /**
+     * Supplier-specific NAFDAC registration number.
+     *
+     * Example:
+     * A supplier may select:
+     *
+     *   Product:
+     *   Amoxicillin 500mg Capsule
+     *
+     * Then enter their own:
+     *
+     *   NAFDAC No: A4-1234
+     */
+    nafdacRegNumber: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    /**
+     * Supplier's base selling price
+     */
+    basePrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    /**
+     * Commission amount calculated by the platform
+     */
+    commission: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    /**
+     * Commission percentage inherited from
+     * the Master Product.
+     */
+    commissionPercent: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+
+    /**
+     * Final marketplace selling price
+     */
+    finalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    /**
+     * Current supplier inventory
+     */
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    minOrderQuantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    maxOrderQuantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    /**
+     * Commercial unit used by this supplier.
+     *
+     * The Master Product still defines the standard
+     * product unit. This field represents the supplier's
+     * actual selling unit where required.
+     */
+    unit: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    /**
+     * Batch traceability
+     */
+    batchNumber: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    expiryDate: {
+      type: Date,
+      required: true,
+    },
+
+    manufacturingDate: {
+      type: Date,
+    },
+
+    /**
+     * Verification evidence
+     */
+    verificationImages: [
+      {
+        url: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+
+        label: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
+
+    /**
+     * Marketplace inventory status
+     */
+    status: {
+      type: String,
+      enum: [
+        "AVAILABLE",
+        "LOW_STOCK",
+        "OUT_OF_STOCK",
+        "ON_REQUEST",
+        "SUSPENDED",
+      ],
+      default: "AVAILABLE",
+      index: true,
+    },
+
+    isFlagged: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    /**
+     * Supplier performance metrics
+     */
+    rating: {
+      type: Number,
+      min: 0,
+      max: 5,
+      default: 0,
+    },
+
+    fulfillmentRate: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0,
+    },
+
+    estimatedDeliveryDays: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    lastStockUpdatedAt: {
+      type: Date,
+    },
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+)
 
 /**
  * One supplier can only have one active listing
@@ -334,7 +319,7 @@ SupplierProductSchema.index(
   {
     unique: true,
   }
-);
+)
 
 /**
  * Dynamic Ranked Pool / Supplier Matching Engine
@@ -348,7 +333,7 @@ SupplierProductSchema.index({
   productId: 1,
   status: 1,
   basePrice: 1,
-});
+})
 
 /**
  * Supplier dashboard queries
@@ -356,14 +341,14 @@ SupplierProductSchema.index({
 SupplierProductSchema.index({
   supplierId: 1,
   status: 1,
-});
+})
 
 /**
  * Regulatory lookup
  */
 SupplierProductSchema.index({
   nafdacRegNumber: 1,
-});
+})
 
 /**
  * Expiry monitoring
@@ -371,11 +356,8 @@ SupplierProductSchema.index({
 SupplierProductSchema.index({
   expiryDate: 1,
   status: 1,
-});
+})
 
 export const SupplierProduct: Model<ISupplierProduct> =
   models.SupplierProduct ||
-  model<ISupplierProduct>(
-    "SupplierProduct",
-    SupplierProductSchema
-  );
+  model<ISupplierProduct>("SupplierProduct", SupplierProductSchema)

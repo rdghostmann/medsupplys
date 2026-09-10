@@ -1,14 +1,11 @@
 // /dashboard/supplier/page.tsx
 
-import { getCurrentSupplierDashboard } from "@/controllers/supplier.action";
-import SupplierDashboard from "./SupplierDashboard";
+import { getCurrentSupplierDashboard } from "@/controllers/supplier.action"
+import SupplierDashboard from "./SupplierDashboard"
 
 export default async function Page() {
-  const {
-    user,
-    incomingProcurementRequests,
-    orders,
-  } = await getCurrentSupplierDashboard();
+  const { user, incomingProcurementRequests, orders } =
+    await getCurrentSupplierDashboard()
 
   return (
     <SupplierDashboard
@@ -16,5 +13,5 @@ export default async function Page() {
       incomingProcurementRequests={incomingProcurementRequests}
       orders={orders}
     />
-  );
+  )
 }

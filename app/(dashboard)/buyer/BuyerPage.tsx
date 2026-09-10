@@ -1,5 +1,5 @@
 // BuyerPage.tsx
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -8,27 +8,25 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import BuyerOverview from "./components/BuyerOverview";
+import BuyerOverview from "./components/BuyerOverview"
 import {
   CurrentBuyerCreditAccount,
   CurrentBuyerProcurement,
   CurrentBuyerUser,
   CurrentBuyerWallet,
-} from "@/controllers/buyer.actions";
-import type { Order } from "@/types";
-
-
+} from "@/controllers/buyer.actions"
+import type { Order } from "@/types"
 
 interface BuyerPageProps {
-  user: CurrentBuyerUser | null;
-  wallet: CurrentBuyerWallet | null;
-  creditAccount: CurrentBuyerCreditAccount | null;
-  orders: Order[];
-  fallbackQueue: CurrentBuyerProcurement[];
-  nonCompletedOrderCount: number;
-  totalOrderCount: number;
+  user: CurrentBuyerUser | null
+  wallet: CurrentBuyerWallet | null
+  creditAccount: CurrentBuyerCreditAccount | null
+  orders: Order[]
+  fallbackQueue: CurrentBuyerProcurement[]
+  nonCompletedOrderCount: number
+  totalOrderCount: number
 }
 
 export default function BuyerPage({
@@ -49,17 +47,13 @@ export default function BuyerPage({
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/buyer">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/buyer">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Buyer Overview
-            </BreadcrumbPage>
+            <BreadcrumbPage>Buyer Overview</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -85,5 +79,5 @@ export default function BuyerPage({
         </div>
       </div>
     </div>
-  );
+  )
 }

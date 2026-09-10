@@ -1,99 +1,57 @@
 // /app/api/payments/flutterwave/webhook/route.ts
 
-import {
-  NextRequest,
-  NextResponse,
-} from "next/server";
+import { NextRequest, NextResponse } from "next/server"
 
-import crypto from "crypto";
+import crypto from "crypto"
 
-import {
-  verifyWalletTopup,
-} from "@/services/payment.service";
+import { verifyWalletTopup } from "@/services/payment.service"
 
-function verifyFlutterwaveSignature(
-  rawBody: string,
-  signature: string
-) {
-  const secretHash =
-    process.env.FLW_SECRET_HASH;
+function verifyFlutterwaveSignature(rawBody: string, signature: string) {
+  const secretHash = process.env.FLW_SECRET_HASH
 
   if (!secretHash) {
-    throw new Error(
-      "FLW_SECRET_HASH is not configured"
-    );
+    throw new Error("FLW_SECRET_HASH is not configured")
   }
 
-  const hash =
-    crypto
-      .createHmac(
-        "sha256",
-        secretHash
-      )
-      .update(rawBody)
-      .digest("base64");
+  const hash = crypto
+    .createHmac("sha256", secretHash)
+    .update(rawBody)
+    .digest("base64")
 
-  const expected =
-    Buffer.from(hash);
+  const expected = Buffer.from(hash)
 
-  const received =
-    Buffer.from(signature);
+  const received = Buffer.from(signature)
 
-  if (
-    expected.length !==
-    received.length
-  ) {
-    return false;
+  if (expected.length !== received.length) {
+    return false
   }
 
-  return crypto.timingSafeEqual(
-    expected,
-    received
-  );
+  return crypto.timingSafeEqual(expected, received)
 }
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
   try {
-    const rawBody =
-      await request.text();
+    const rawBody = await request.text()
 
-    const signature =
-      request.headers.get(
-        "flutterwave-signature"
-      );
+    const signature = request.headers.get("flutterwave-signature")
 
     if (!signature) {
-      return new NextResponse(
-        "Missing signature",
-        {
-          status: 401,
-        }
-      );
+      return new NextResponse("Missing signature", {
+        status: 401,
+      })
     }
 
-    const valid =
-      verifyFlutterwaveSignature(
-        rawBody,
-        signature
-      );
+    const valid = verifyFlutterwaveSignature(rawBody, signature)
 
     if (!valid) {
-      return new NextResponse(
-        "Invalid signature",
-        {
-          status: 401,
-        }
-      );
+      return new NextResponse("Invalid signature", {
+        status: 401,
+      })
     }
 
-    const event =
-      JSON.parse(rawBody);
+    const event = JSON.parse(rawBody)
 
-    const reference =
-      event?.data?.reference ??
-      event?.data?.tx_ref;
+    const reference = event?.data?.reference ?? event?.data?.tx_ref
 
     if (!reference) {
       return NextResponse.json(
@@ -103,7 +61,7 @@ export async function POST(
         {
           status: 200,
         }
-      );
+      )
     }
 
     /**
@@ -114,9 +72,7 @@ export async function POST(
      * transaction ID to independently verify
      * the payment.
      */
-    await verifyWalletTopup(
-      reference
-    );
+    await verifyWalletTopup(reference)
 
     return NextResponse.json(
       {
@@ -125,12 +81,9 @@ export async function POST(
       {
         status: 200,
       }
-    );
+    )
   } catch (error) {
-    console.error(
-      "[FLUTTERWAVE_WEBHOOK]",
-      error
-    );
+    console.error("[FLUTTERWAVE_WEBHOOK]", error)
 
     return NextResponse.json(
       {
@@ -139,6 +92,6 @@ export async function POST(
       {
         status: 500,
       }
-    );
+    )
   }
 }

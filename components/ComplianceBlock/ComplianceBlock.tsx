@@ -1,19 +1,16 @@
-"use client";
+"use client"
 
-import Image from "next/image";
-import { motion } from "framer-motion";
-import {
-  ExternalLink,
-  ShieldCheck,
-} from "lucide-react";
-import { SectionHeader } from "../ui/SectionHeader";
+import Image from "next/image"
+import { motion } from "framer-motion"
+import { ExternalLink, ShieldCheck } from "lucide-react"
+import { SectionHeader } from "../ui/SectionHeader"
 
 interface ComplianceBadge {
-  id: string;
-  name: string;
-  fullName: string;
-  image: string;
-  description: string;
+  id: string
+  name: string
+  fullName: string
+  image: string
+  description: string
 }
 
 const COMPLIANCE_BADGES: ComplianceBadge[] = [
@@ -49,16 +46,12 @@ const COMPLIANCE_BADGES: ComplianceBadge[] = [
     description:
       "Certified logistics and supply chain processes ensuring consistent quality.",
   },
-];
+]
 
 export default function ComplianceSection() {
   return (
-    <section
-      className="py-10 bg-white"
-      id="compliance-section"
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-
+    <section className="bg-white py-10" id="compliance-section">
+      <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
         {/* =========================================================
             HEADER
         ========================================================= */}
@@ -77,7 +70,7 @@ export default function ComplianceSection() {
           }}
           className="mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-900 text-xs font-semibold uppercase tracking-wider mb-5">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-blue-200 bg-blue-50 px-3.5 py-1 text-xs font-semibold tracking-wider text-blue-900 uppercase">
             <ShieldCheck size={14} className="text-emerald-600" />
             <span>Compliance & Safety</span>
           </div>
@@ -86,7 +79,6 @@ export default function ComplianceSection() {
             title="Meeting the Highest Pharmaceutical & Data Security Standards"
             subtitle="Ensuring patient safety and supply chain integrity through rigorous compliance with regulatory standards."
           />
-        
 
           {/* <p className="text-slate-600 max-w-2xl mx-auto">
             Meeting the highest pharmaceutical and data security
@@ -99,7 +91,7 @@ export default function ComplianceSection() {
             COMPLIANCE BADGES
         ========================================================= */}
 
-        <div className="grid grid-cols-1 sm:grid-cols-4 lg:grid-cols-4 gap-12 items-center justify-items-center mb-16">
+        <div className="mb-16 grid grid-cols-1 items-center justify-items-center gap-12 sm:grid-cols-4 lg:grid-cols-4">
           {COMPLIANCE_BADGES.map((badge, index) => (
             <motion.div
               key={badge.id}
@@ -123,45 +115,19 @@ export default function ComplianceSection() {
                   BADGE IMAGE
               ===================================================== */}
 
-              <div
-                className="
-                  w-30
-                  h-30
-                  rounded-full
-                  bg-white
-                  flex
-                  items-center
-                  justify-center
-                  p-2
-                  mb-6
-                  transition-all
-                  duration-300
-                  group-hover:bg-white
-                  group-hover:shadow-xl
-                  group-hover:shadow-white
-                  relative
-                  overflow-hidden
-                "
-              >
+              <div className="relative mb-6 flex h-30 w-30 items-center justify-center overflow-hidden rounded-full bg-white p-2 transition-all duration-300 group-hover:bg-white group-hover:shadow-xl group-hover:shadow-white">
                 <Image
                   src={badge.image}
                   alt={`${badge.name} compliance logo`}
                   width={90}
                   height={90}
-                  className="
-                    w-full
-                    h-full
-                    object-contain
-                    transition-transform
-                    duration-300
-                    group-hover:scale-110
-                  "
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-110"
                   unoptimized
                 />
 
                 {/* Decorative lines */}
-                <div className="absolute top-2 w-12 h-px bg-slate-100" />
-                <div className="absolute bottom-2 w-12 h-px bg-slate-100" />
+                <div className="absolute top-2 h-px w-12 bg-slate-100" />
+                <div className="absolute bottom-2 h-px w-12 bg-slate-100" />
               </div>
 
               {/* =====================================================
@@ -169,11 +135,11 @@ export default function ComplianceSection() {
               ===================================================== */}
 
               <div className="space-y-2">
-                <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">
+                <h3 className="font-bold text-slate-900 transition-colors group-hover:text-blue-600">
                   {badge.fullName}
                 </h3>
 
-                <p className="text-xs text-slate-500 leading-relaxed px-4">
+                <p className="px-4 text-xs leading-relaxed text-slate-500">
                   {badge.description}
                 </p>
               </div>
@@ -195,28 +161,12 @@ export default function ComplianceSection() {
           viewport={{
             once: true,
           }}
-          className="
-            hidden
-            items-center
-            gap-2
-            px-8
-            py-3
-            rounded-xl
-            bg-slate-800
-            text-white
-            font-bold
-            hover:bg-slate-900
-            transition-all
-            shadow-lg
-            active:scale-95
-            text-sm
-          "
+          className="hidden items-center gap-2 rounded-xl bg-slate-800 px-8 py-3 text-sm font-bold text-white shadow-lg transition-all hover:bg-slate-900 active:scale-95"
         >
           Compliance Portal
-
           <ExternalLink size={16} />
         </motion.button>
       </div>
     </section>
-  );
+  )
 }

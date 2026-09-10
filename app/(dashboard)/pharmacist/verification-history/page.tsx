@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import PharmacistHistoryPage from "./PharmacistHistoryPage";
+import PharmacistHistoryPage from "./PharmacistHistoryPage"
 
 export default function Page() {
   return (
@@ -15,7 +15,9 @@ export default function Page() {
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/pharmacist">Pharmacist Verification Portal</BreadcrumbLink>
+            <BreadcrumbLink href="/pharmacist">
+              Pharmacist Verification Portal
+            </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />
           <BreadcrumbItem>
@@ -26,13 +28,11 @@ export default function Page() {
 
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-          
           <div className="px-4 lg:px-6">
-          <PharmacistHistoryPage />
+            <PharmacistHistoryPage />
           </div>
         </div>
       </div>
     </div>
-
   )
 }

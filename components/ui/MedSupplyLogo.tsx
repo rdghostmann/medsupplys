@@ -1,27 +1,27 @@
-import React from 'react';
+import React from "react"
 
 interface MedSupplyLogoProps {
-  variant?: 'full' | 'horizontal' | 'iconOnly';
-  size?: 'sm' | 'md' | 'lg' | 'xl';
-  showTagline?: boolean;
-  className?: string;
+  variant?: "full" | "horizontal" | "iconOnly"
+  size?: "sm" | "md" | "lg" | "xl"
+  showTagline?: boolean
+  className?: string
 }
 
 export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
-  variant = 'horizontal',
-  size = 'md',
+  variant = "horizontal",
+  size = "md",
   showTagline = false,
-  className = ''
+  className = "",
 }) => {
   // Dimension definitions
   const iconSizes = {
     sm: 28,
     md: 38,
     lg: 52,
-    xl: 72
-  };
+    xl: 72,
+  }
 
-  const currentIconSize = iconSizes[size];
+  const currentIconSize = iconSizes[size]
 
   // SVG Icon Component of the Pill / Capsule with Network and Checkmark
   const LogoIcon = (
@@ -47,7 +47,13 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
         </clipPath>
 
         <filter id="capsuleShadow" x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy="6" stdDeviation="12" floodColor="#1d4ed8" floodOpacity="0.22" />
+          <feDropShadow
+            dx="0"
+            dy="6"
+            stdDeviation="12"
+            floodColor="#1d4ed8"
+            floodOpacity="0.22"
+          />
         </filter>
       </defs>
 
@@ -65,7 +71,13 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
         />
 
         {/* Constellation Network Nodes & Interconnecting Lines */}
-        <g clipPath="url(#innerCapsuleClip)" stroke="#ffffff" strokeWidth="1.2" strokeOpacity="0.45" fill="#ffffff">
+        <g
+          clipPath="url(#innerCapsuleClip)"
+          stroke="#ffffff"
+          strokeWidth="1.2"
+          strokeOpacity="0.45"
+          fill="#ffffff"
+        >
           <line x1="-90" y1="-15" x2="-65" y2="18" />
           <line x1="-65" y1="18" x2="-30" y2="-8" />
           <line x1="-30" y1="-8" x2="-5" y2="25" />
@@ -109,67 +121,75 @@ export const MedSupplyLogo: React.FC<MedSupplyLogoProps> = ({
         />
       </g>
     </svg>
-  );
+  )
 
-  if (variant === 'iconOnly') {
+  if (variant === "iconOnly") {
     return (
       <div className={`inline-flex items-center justify-center ${className}`}>
         {LogoIcon}
       </div>
-    );
+    )
   }
 
   // Text sizes corresponding to size prop
   const titleSizes = {
-    sm: 'text-base',
-    md: 'text-xl sm:text-2xl',
-    lg: 'text-2xl sm:text-3xl',
-    xl: 'text-3xl sm:text-4xl'
-  };
+    sm: "text-base",
+    md: "text-xl sm:text-2xl",
+    lg: "text-2xl sm:text-3xl",
+    xl: "text-3xl sm:text-4xl",
+  }
 
   const subSizes = {
-    sm: 'text-[9px]',
-    md: 'text-[11px] sm:text-xs',
-    lg: 'text-xs sm:text-sm',
-    xl: 'text-sm sm:text-base'
-  };
+    sm: "text-[9px]",
+    md: "text-[11px] sm:text-xs",
+    lg: "text-xs sm:text-sm",
+    xl: "text-sm sm:text-base",
+  }
 
-  if (variant === 'full') {
+  if (variant === "full") {
     return (
       <div className={`flex flex-col items-center text-center ${className}`}>
         {LogoIcon}
         <div className="mt-3">
-          <span className={`${titleSizes[size]} font-extrabold tracking-tight leading-none`}>
+          <span
+            className={`${titleSizes[size]} leading-none font-extrabold tracking-tight`}
+          >
             <span className="text-[#1e3a8a]">Med</span>
             <span className="text-[#00b87c]">Supply</span>
           </span>
-          <p className={`${subSizes[size]} text-slate-500 font-medium tracking-wide mt-1`}>
+          <p
+            className={`${subSizes[size]} mt-1 font-medium tracking-wide text-slate-500`}
+          >
             Procurement &amp; Verification
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   // Default: Horizontal
   return (
-    <div className={`flex items-center gap-2.5 sm:gap-3 group ${className}`}>
+    <div className={`group flex items-center gap-2.5 sm:gap-3 ${className}`}>
       {LogoIcon}
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
-          <h3 className={`${titleSizes[size]} bg-linear-to-r from-blue-600 via-teal-500 to-emerald-500 bg-clip-text font-extrabold tracking-tight text-transparent`}>
+          <h3
+            className={`${titleSizes[size]} bg-linear-to-r from-blue-600 via-teal-500 to-emerald-500 bg-clip-text font-extrabold tracking-tight text-transparent`}
+          >
             MedSupply
           </h3>
-          <span className="hidden sm:inline-flex text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-800 border border-blue-200">
+          <span className="hidden rounded-full border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[9px] font-bold tracking-wider text-blue-800 uppercase sm:inline-flex">
             B2B
           </span>
         </div>
-        {(showTagline || size === 'lg' || size === 'xl') && (
-          <span className={`${subSizes[size]} text-slate-500 font-medium tracking-tight mt-0.5`}>
+        {(showTagline || size === "lg" || size === "xl") && (
+          <span
+            className={`${subSizes[size]} mt-0.5 font-medium tracking-tight text-slate-500`}
+          >
             Procurement &amp; Verification
           </span>
         )}
       </div>
     </div>
-  );
-};
+  )
+}

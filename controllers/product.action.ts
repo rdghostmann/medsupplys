@@ -1,21 +1,21 @@
 // /controllers/product.action.ts
 
-"use server";
+"use server"
 
-import { connectToDB } from "@/lib/connectToDB";
-import { Product } from "@/models/Product";
-import { SupplierProduct } from "@/models/SupplierProduct";
-import { User } from "@/models/User";
-import { MasterProduct, ProductStatus } from "@/types";
+import { connectToDB } from "@/lib/connectToDB"
+import { Product } from "@/models/Product"
+import { SupplierProduct } from "@/models/SupplierProduct"
+import { User } from "@/models/User"
+import { MasterProduct, ProductStatus } from "@/types"
 
 export interface SupplierInventoryRecord {
-  id: string;
-  productId: string;
-  supplierName: string;
-  supplierType: "Importer" | "Distributor" | "Retailer";
-  stock: number;
-  basePrice: number;
-  fulfillmentRate: number;
+  id: string
+  productId: string
+  supplierName: string
+  supplierType: "Importer" | "Distributor" | "Retailer"
+  stock: number
+  basePrice: number
+  fulfillmentRate: number
 }
 
 const normalizeSupplierType = (
@@ -23,21 +23,19 @@ const normalizeSupplierType = (
 ): SupplierInventoryRecord["supplierType"] => {
   switch (value?.toLowerCase()) {
     case "importer":
-      return "Importer";
+      return "Importer"
     case "retailer":
-      return "Retailer";
+      return "Retailer"
     default:
-      return "Distributor";
+      return "Distributor"
   }
-};
+}
 
 export async function findAllMasterProducts(): Promise<MasterProduct[]> {
   try {
-    await connectToDB();
+    await connectToDB()
 
-    const products = await Product.find({})
-      .sort({ createdAt: -1 })
-      .lean();
+    const products = await Product.find({}).sort({ createdAt: -1 }).lean()
 
     return products.map((product) => ({
       id: String(product._id),
@@ -58,33 +56,22 @@ export async function findAllMasterProducts(): Promise<MasterProduct[]> {
 
       packSize: product.packSize ?? "",
 
-      referenceBasePrice: Number(
-        product.referenceBasePrice ?? 0
-      ),
+      referenceBasePrice: Number(product.referenceBasePrice ?? 0),
 
-      commissionPercent: Number(
-        product.commissionPercent ?? 0
-      ),
+      commissionPercent: Number(product.commissionPercent ?? 0),
 
-      maxMarkupPercent: Number(
-        product.maxMarkupPercent ?? 0
-      ),
+      maxMarkupPercent: Number(product.maxMarkupPercent ?? 0),
 
       status: (product.status ?? "ACTIVE") as ProductStatus,
 
       storageCondition: product.storageCondition ?? "",
 
       image: product.image ?? undefined,
-    }));
+    }))
   } catch (error) {
-    console.error(
-      "findAllMasterProducts error:",
-      error
-    );
+    console.error("findAllMasterProducts error:", error)
 
-    throw new Error(
-      "Failed to fetch master product catalogue."
-    );
+    throw new Error("Failed to fetch master product catalogue.")
   }
 }
 
@@ -92,7 +79,7 @@ export async function findAllSupplierProductInventory(): Promise<
   SupplierInventoryRecord[]
 > {
   try {
-    await connectToDB();
+    await connectToDB()
 
     const supplierProducts = await SupplierProduct.find({
       isFlagged: false,
@@ -104,29 +91,24 @@ export async function findAllSupplierProductInventory(): Promise<
         "_id productId supplierId supplierType stock basePrice fulfillmentRate"
       )
       .sort({ createdAt: -1 })
-      .lean();
+      .lean()
 
     const supplierIds = supplierProducts.map(
       (supplierProduct) => supplierProduct.supplierId
-    );
+    )
 
     const suppliers = await User.find({
       _id: { $in: supplierIds },
     })
       .select("_id firstName lastName username organizationName")
-      .lean();
+      .lean()
 
     const supplierMap = new Map(
-      suppliers.map((supplier) => [
-        supplier._id.toString(),
-        supplier,
-      ])
-    );
+      suppliers.map((supplier) => [supplier._id.toString(), supplier])
+    )
 
     return supplierProducts.map((supplierProduct) => {
-      const supplier = supplierMap.get(
-        supplierProduct.supplierId.toString()
-      );
+      const supplier = supplierMap.get(supplierProduct.supplierId.toString())
 
       return {
         id: supplierProduct._id.toString(),
@@ -134,28 +116,17 @@ export async function findAllSupplierProductInventory(): Promise<
         supplierName:
           supplier?.organizationName ||
           supplier?.username ||
-          [supplier?.firstName, supplier?.lastName]
-            .filter(Boolean)
-            .join(" ") ||
+          [supplier?.firstName, supplier?.lastName].filter(Boolean).join(" ") ||
           "Unknown Supplier",
-        supplierType: normalizeSupplierType(
-          supplierProduct.supplierType
-        ),
+        supplierType: normalizeSupplierType(supplierProduct.supplierType),
         stock: Number(supplierProduct.stock || 0),
         basePrice: Number(supplierProduct.basePrice || 0),
-        fulfillmentRate: Number(
-          supplierProduct.fulfillmentRate || 0
-        ),
-      };
-    });
+        fulfillmentRate: Number(supplierProduct.fulfillmentRate || 0),
+      }
+    })
   } catch (error) {
-    console.error(
-      "findAllSupplierProductInventory error:",
-      error
-    );
+    console.error("findAllSupplierProductInventory error:", error)
 
-    throw new Error(
-      "Failed to fetch supplier product inventory."
-    );
+    throw new Error("Failed to fetch supplier product inventory.")
   }
 }

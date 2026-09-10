@@ -1,15 +1,14 @@
-'use client';
+"use client"
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { Home, Search, ArrowLeft } from 'lucide-react';
-import Image from 'next/image';
+import Link from "next/link"
+import { motion } from "framer-motion"
+import { Home, Search, ArrowLeft } from "lucide-react"
+import Image from "next/image"
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-6">
-      <div className="max-w-xl w-full text-center space-y-6">
-
+    <div className="flex min-h-screen items-center justify-center bg-background px-6">
+      <div className="w-full max-w-xl space-y-6 text-center">
         {/* Animated 404 */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -23,7 +22,6 @@ export default function NotFound() {
             width={300}
             height={200}
             className="mx-auto"
-
           />
 
           <h1 className="hidden text-7xl font-extrabold tracking-tight text-blue-600">
@@ -42,36 +40,36 @@ export default function NotFound() {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.1 }}
-          className="glass-card rounded-2xl p-6 space-y-4"
+          className="glass-card space-y-4 rounded-2xl p-6"
         >
           <p className="flex items-center text-sm text-muted-foreground">
-            <Search className="w-3 h-3" />
+            <Search className="h-3 w-3" />
 
             <span className="ml-2">
-              Try searching for what you are looking for or go back to the homepage.
+              Try searching for what you are looking for or go back to the
+              homepage.
             </span>
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <div className="flex flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/"
-              className="flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:opacity-90 transition"
+              className="flex items-center justify-center gap-2 rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:opacity-90"
             >
-              <Home className="w-4 h-4" />
+              <Home className="h-4 w-4" />
               Go Home
             </Link>
 
             <button
               onClick={() => window.history.back()}
-              className="cursor-pointer flex items-center justify-center gap-2 px-4 py-2 rounded-md border border-border hover:bg-muted transition"
+              className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-border px-4 py-2 transition hover:bg-muted"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="h-4 w-4" />
               Go Back
             </button>
           </div>
         </motion.div>
-
       </div>
     </div>
-  );
+  )
 }

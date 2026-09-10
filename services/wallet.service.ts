@@ -1,80 +1,73 @@
 // /services/wallet.service.ts
 
-"use server";
+"use server"
 
-import {
-  ClientSession,
-  Types,
-} from "mongoose";
+import { ClientSession, Types } from "mongoose"
 
-import { connectToDB } from "@/lib/connectToDB";
+import { connectToDB } from "@/lib/connectToDB"
 
-import { User } from "@/models/User";
-import { Wallet } from "@/models/Wallet";
+import { User } from "@/models/User"
+import { Wallet } from "@/models/Wallet"
 
 import {
   WalletTransaction,
   WalletTransactionType,
   WalletTransactionDirection,
   WalletTransactionSource,
-} from "@/models/WalletTransaction";
+} from "@/models/WalletTransaction"
 
 /* =========================================================
    TYPES
 ========================================================= */
 
 interface WalletMutationParams {
-  buyerId: string | Types.ObjectId;
+  buyerId: string | Types.ObjectId
 
-  amount: number;
+  amount: number
 
-  reference: string;
+  reference: string
 
-  description: string;
+  description: string
 
-  source: WalletTransactionSource;
+  source: WalletTransactionSource
 
-  type: WalletTransactionType;
+  type: WalletTransactionType
 
-  paymentTransactionId?: string | Types.ObjectId;
+  paymentTransactionId?: string | Types.ObjectId
 
-  orderId?: string | Types.ObjectId;
+  orderId?: string | Types.ObjectId
 
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
 
-  session?: ClientSession;
+  session?: ClientSession
 }
 
 interface WalletResult {
-  success: boolean;
+  success: boolean
 
-  alreadyProcessed?: boolean;
+  alreadyProcessed?: boolean
 
-  wallet?: unknown;
+  wallet?: unknown
 
-  transaction?: unknown;
+  transaction?: unknown
 
-  message?: string;
+  message?: string
 }
 
 /* =========================================================
    HELPERS
 ========================================================= */
 
-function toObjectId(
-  value: string | Types.ObjectId
-): Types.ObjectId {
+function toObjectId(value: string | Types.ObjectId): Types.ObjectId {
   if (value instanceof Types.ObjectId) {
-    return value;
+    return value
   }
 
   if (!Types.ObjectId.isValid(value)) {
-    throw new Error(
-      "Invalid MongoDB ObjectId."
-    );
+    throw new Error("Invalid MongoDB ObjectId.")
   }
 
-  return new Types.ObjectId(value);
+  return new Types.ObjectId(value)
 }
 
 /**
@@ -85,26 +78,17 @@ function toObjectId(
  */
 function validateAmount(amount: number) {
   if (!Number.isFinite(amount)) {
-    throw new Error(
-      "Invalid wallet amount."
-    );
+    throw new Error("Invalid wallet amount.")
   }
 
   if (amount <= 0) {
-    throw new Error(
-      "Wallet amount must be greater than zero."
-    );
+    throw new Error("Wallet amount must be greater than zero.")
   }
 
-  const rounded =
-    Math.round(
-      (amount + Number.EPSILON) * 100
-    ) / 100;
+  const rounded = Math.round((amount + Number.EPSILON) * 100) / 100
 
   if (rounded !== amount) {
-    throw new Error(
-      "Wallet amount cannot contain more than 2 decimal places."
-    );
+    throw new Error("Wallet amount cannot contain more than 2 decimal places.")
   }
 }
 
@@ -115,7 +99,7 @@ function mergeMetadata(
   return {
     ...(metadata ?? {}),
     ...financialMetadata,
-  };
+  }
 }
 
 /* =========================================================
@@ -126,93 +110,74 @@ async function findExistingTransaction(
   reference: string,
   session?: ClientSession
 ) {
-  const query =
-    WalletTransaction.findOne({
-      reference,
-    });
+  const query = WalletTransaction.findOne({
+    reference,
+  })
 
   if (session) {
-    query.session(session);
+    query.session(session)
   }
 
-  return query.lean();
+  return query.lean()
 }
 
 /* =========================================================
    GET / CREATE WALLET
 ========================================================= */
 
-export async function getOrCreateBuyerWallet(
-  buyerId: string | Types.ObjectId
-) {
-  await connectToDB();
+export async function getOrCreateBuyerWallet(buyerId: string | Types.ObjectId) {
+  await connectToDB()
 
-  const buyerObjectId =
-    toObjectId(buyerId);
+  const buyerObjectId = toObjectId(buyerId)
 
-  const buyer = await User.findById(
-    buyerObjectId
-  )
-    .select(
-      "_id role status firstName lastName organizationName"
-    )
-    .lean();
+  const buyer = await User.findById(buyerObjectId)
+    .select("_id role status firstName lastName organizationName")
+    .lean()
 
   if (!buyer) {
-    throw new Error(
-      "Buyer account not found."
-    );
+    throw new Error("Buyer account not found.")
   }
 
   if (buyer.role !== "buyer") {
-    throw new Error(
-      "Only buyer accounts can have buyer wallets."
-    );
+    throw new Error("Only buyer accounts can have buyer wallets.")
   }
 
   if (buyer.status !== "active") {
-    throw new Error(
-      "Buyer account is not active."
-    );
+    throw new Error("Buyer account is not active.")
   }
 
-  let wallet =
-    await Wallet.findOne({
-      buyerId: buyerObjectId,
-    });
+  let wallet = await Wallet.findOne({
+    buyerId: buyerObjectId,
+  })
 
   if (!wallet) {
     const buyerName =
-      `${buyer.firstName ?? ""} ${
-        buyer.lastName ?? ""
-      }`.trim() ||
+      `${buyer.firstName ?? ""} ${buyer.lastName ?? ""}`.trim() ||
       buyer.organizationName ||
-      "Buyer";
+      "Buyer"
 
     try {
-      wallet =
-        await Wallet.create({
-          buyerId:
-            buyerObjectId,
+      wallet = await Wallet.create({
+        buyerId: buyerObjectId,
 
-          buyerName,
+        buyerName,
 
-          currency: "NGN",
+        currency: "NGN",
 
-          availableBalance: 0,
+        availableBalance: 0,
 
-          heldBalance: 0,
+        heldBalance: 0,
 
-          totalDeposited: 0,
+        totalDeposited: 0,
 
-          totalSpent: 0,
+        totalSpent: 0,
 
-          totalRefunded: 0,
+        totalRefunded: 0,
 
-          totalReversed: 0,
+        totalReversed: 0,
 
-          status: "ACTIVE",
-        });
+        status: "ACTIVE",
+      })
     } catch (error: unknown) {
       /**
        * buyerId is unique.
@@ -221,51 +186,41 @@ export async function getOrCreateBuyerWallet(
        * simultaneously, retrieve the wallet created
        * by the competing request.
        */
-      wallet =
-        await Wallet.findOne({
-          buyerId: buyerObjectId,
-        });
+      wallet = await Wallet.findOne({
+        buyerId: buyerObjectId,
+      })
 
       if (!wallet) {
-        throw error;
+        throw error
       }
     }
   }
 
-  return wallet;
+  return wallet
 }
 
 /* =========================================================
    GET WALLET
 ========================================================= */
 
-export async function getBuyerWallet(
-  buyerId: string | Types.ObjectId
-) {
-  await connectToDB();
+export async function getBuyerWallet(buyerId: string | Types.ObjectId) {
+  await connectToDB()
 
-  const buyerObjectId =
-    toObjectId(buyerId);
+  const buyerObjectId = toObjectId(buyerId)
 
-  const wallet =
-    await Wallet.findOne({
-      buyerId: buyerObjectId,
-    }).lean();
+  const wallet = await Wallet.findOne({
+    buyerId: buyerObjectId,
+  }).lean()
 
-  return wallet ?? null;
+  return wallet ?? null
 }
 
 /* =========================================================
    GET WALLET BALANCE
 ========================================================= */
 
-export async function getBuyerWalletBalance(
-  buyerId: string | Types.ObjectId
-) {
-  const wallet =
-    await getBuyerWallet(
-      buyerId
-    );
+export async function getBuyerWalletBalance(buyerId: string | Types.ObjectId) {
+  const wallet = await getBuyerWallet(buyerId)
 
   if (!wallet) {
     return {
@@ -286,7 +241,7 @@ export async function getBuyerWalletBalance(
       currency: "NGN" as const,
 
       status: "ACTIVE" as const,
-    };
+    }
   }
 
   return {
@@ -294,33 +249,24 @@ export async function getBuyerWalletBalance(
      * `balance` retained for compatibility
      * with existing UI components.
      */
-    balance:
-      wallet.availableBalance,
+    balance: wallet.availableBalance,
 
-    availableBalance:
-      wallet.availableBalance,
+    availableBalance: wallet.availableBalance,
 
-    heldBalance:
-      wallet.heldBalance,
+    heldBalance: wallet.heldBalance,
 
-    totalDeposited:
-      wallet.totalDeposited,
+    totalDeposited: wallet.totalDeposited,
 
-    totalSpent:
-      wallet.totalSpent,
+    totalSpent: wallet.totalSpent,
 
-    totalRefunded:
-      wallet.totalRefunded,
+    totalRefunded: wallet.totalRefunded,
 
-    totalReversed:
-      wallet.totalReversed,
+    totalReversed: wallet.totalReversed,
 
-    currency:
-      wallet.currency,
+    currency: wallet.currency,
 
-    status:
-      wallet.status,
-  };
+    status: wallet.status,
+  }
 }
 
 /* =========================================================
@@ -328,28 +274,17 @@ export async function getBuyerWalletBalance(
 ========================================================= */
 
 export async function creditWallet(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  > & {
-    type?:
-      | "TOPUP"
-      | "REFUND"
-      | "REVERSAL"
-      | "ADJUSTMENT";
+  params: Omit<WalletMutationParams, "type"> & {
+    type?: "TOPUP" | "REFUND" | "REVERSAL" | "ADJUSTMENT"
   }
 ): Promise<WalletResult> {
-  await connectToDB();
+  await connectToDB()
 
-  validateAmount(
-    params.amount
-  );
+  validateAmount(params.amount)
 
-  const buyerId =
-    toObjectId(params.buyerId);
+  const buyerId = toObjectId(params.buyerId)
 
-  const transactionType =
-    params.type ?? "TOPUP";
+  const transactionType = params.type ?? "TOPUP"
 
   /*
    * ---------------------------------------------------------
@@ -363,22 +298,16 @@ export async function creditWallet(
    * remains the database-level protection against
    * concurrent duplicate requests.
    */
-  const existingTransaction =
-    await findExistingTransaction(
-      params.reference
-    );
+  const existingTransaction = await findExistingTransaction(params.reference)
 
   if (existingTransaction) {
     return {
-      success:
-        existingTransaction.status ===
-        "SUCCESS",
+      success: existingTransaction.status === "SUCCESS",
 
       alreadyProcessed: true,
 
-      transaction:
-        existingTransaction,
-    };
+      transaction: existingTransaction,
+    }
   }
 
   /*
@@ -389,16 +318,13 @@ export async function creditWallet(
    * Wallet balance update and ledger creation must
    * succeed or fail together.
    */
-  const session =
-    params.session ??
-    (await Wallet.startSession());
+  const session = params.session ?? (await Wallet.startSession())
 
-  const ownsSession =
-    !params.session;
+  const ownsSession = !params.session
 
   try {
     if (ownsSession) {
-      session.startTransaction();
+      session.startTransaction()
     }
 
     /*
@@ -407,29 +333,24 @@ export async function creditWallet(
      * This closes the gap between the initial
      * fast check and the actual wallet mutation.
      */
-    const transactionInSession =
-      await WalletTransaction.findOne({
-        reference:
-          params.reference,
-      })
-        .session(session)
-        .lean();
+    const transactionInSession = await WalletTransaction.findOne({
+      reference: params.reference,
+    })
+      .session(session)
+      .lean()
 
     if (transactionInSession) {
       if (ownsSession) {
-        await session.commitTransaction();
+        await session.commitTransaction()
       }
 
       return {
-        success:
-          transactionInSession.status ===
-          "SUCCESS",
+        success: transactionInSession.status === "SUCCESS",
 
         alreadyProcessed: true,
 
-        transaction:
-          transactionInSession,
-      };
+        transaction: transactionInSession,
+      }
     }
 
     /*
@@ -437,23 +358,16 @@ export async function creditWallet(
      * LOAD WALLET
      * -------------------------------------------------------
      */
-    const wallet =
-      await Wallet.findOne({
-        buyerId,
-      }).session(session);
+    const wallet = await Wallet.findOne({
+      buyerId,
+    }).session(session)
 
     if (!wallet) {
-      throw new Error(
-        "Buyer wallet not found."
-      );
+      throw new Error("Buyer wallet not found.")
     }
 
-    if (
-      wallet.status !== "ACTIVE"
-    ) {
-      throw new Error(
-        "Wallet is not active."
-      );
+    if (wallet.status !== "ACTIVE") {
+      throw new Error("Wallet is not active.")
     }
 
     /*
@@ -461,50 +375,41 @@ export async function creditWallet(
      * BALANCE CALCULATION
      * -------------------------------------------------------
      */
-    const balanceBefore =
-      wallet.availableBalance;
+    const balanceBefore = wallet.availableBalance
 
-    const balanceAfter =
-      balanceBefore +
-      params.amount;
+    const balanceAfter = balanceBefore + params.amount
 
-    const heldBalanceBefore =
-      wallet.heldBalance;
+    const heldBalanceBefore = wallet.heldBalance
 
-    const heldBalanceAfter =
-      heldBalanceBefore;
+    const heldBalanceAfter = heldBalanceBefore
 
     /*
      * -------------------------------------------------------
      * UPDATE WALLET
      * -------------------------------------------------------
      */
-    wallet.availableBalance =
-      balanceAfter;
+    wallet.availableBalance = balanceAfter
 
     switch (transactionType) {
       case "TOPUP":
-        wallet.totalDeposited +=
-          params.amount;
-        break;
+        wallet.totalDeposited += params.amount
+        break
 
       case "REFUND":
-        wallet.totalRefunded +=
-          params.amount;
-        break;
+        wallet.totalRefunded += params.amount
+        break
 
       case "REVERSAL":
-        wallet.totalReversed +=
-          params.amount;
-        break;
+        wallet.totalReversed += params.amount
+        break
 
       case "ADJUSTMENT":
-        break;
+        break
     }
 
     await wallet.save({
       session,
-    });
+    })
 
     /*
      * -------------------------------------------------------
@@ -517,77 +422,52 @@ export async function creditWallet(
      * the same reference cannot both create a
      * successful ledger entry.
      */
-    const transaction =
-      await WalletTransaction.create(
-        [
-          {
-            walletId:
-              wallet._id,
-
-            buyerId,
-
-            type:
-              transactionType,
-
-            amount:
-              params.amount,
-
-            direction:
-              "CREDIT" as WalletTransactionDirection,
-
-            balanceBefore,
-
-            balanceAfter,
-
-            reference:
-              params.reference,
-
-            description:
-              params.description,
-
-            status:
-              "SUCCESS",
-
-            source:
-              params.source,
-
-            paymentTransactionId:
-              params.paymentTransactionId
-                ? toObjectId(
-                    params.paymentTransactionId
-                  )
-                : undefined,
-
-            orderId:
-              params.orderId
-                ? toObjectId(
-                    params.orderId
-                  )
-                : undefined,
-
-            metadata:
-              mergeMetadata(
-                params.metadata,
-                {
-                  availableBalanceBefore:
-                    balanceBefore,
-
-                  availableBalanceAfter:
-                    balanceAfter,
-
-                  heldBalanceBefore:
-                    heldBalanceBefore,
-
-                  heldBalanceAfter:
-                    heldBalanceAfter,
-                }
-              ),
-          },
-        ],
+    const transaction = await WalletTransaction.create(
+      [
         {
-          session,
-        }
-      );
+          walletId: wallet._id,
+
+          buyerId,
+
+          type: transactionType,
+
+          amount: params.amount,
+
+          direction: "CREDIT" as WalletTransactionDirection,
+
+          balanceBefore,
+
+          balanceAfter,
+
+          reference: params.reference,
+
+          description: params.description,
+
+          status: "SUCCESS",
+
+          source: params.source,
+
+          paymentTransactionId: params.paymentTransactionId
+            ? toObjectId(params.paymentTransactionId)
+            : undefined,
+
+          orderId: params.orderId ? toObjectId(params.orderId) : undefined,
+
+          metadata: mergeMetadata(params.metadata, {
+            availableBalanceBefore: balanceBefore,
+
+            availableBalanceAfter: balanceAfter,
+
+            heldBalanceBefore: heldBalanceBefore,
+
+            heldBalanceAfter: heldBalanceAfter,
+          }),
+        },
+      ],
+      {
+        session,
+      }
+    )
 
     /*
      * -------------------------------------------------------
@@ -595,7 +475,7 @@ export async function creditWallet(
      * -------------------------------------------------------
      */
     if (ownsSession) {
-      await session.commitTransaction();
+      await session.commitTransaction()
     }
 
     return {
@@ -605,9 +485,8 @@ export async function creditWallet(
 
       wallet,
 
-      transaction:
-        transaction[0],
-    };
+      transaction: transaction[0],
+    }
   } catch (error: unknown) {
     /*
      * -------------------------------------------------------
@@ -615,7 +494,7 @@ export async function creditWallet(
      * -------------------------------------------------------
      */
     if (ownsSession) {
-      await session.abortTransaction();
+      await session.abortTransaction()
     }
 
     /*
@@ -634,33 +513,27 @@ export async function creditWallet(
       error &&
       typeof error === "object" &&
       "code" in error &&
-      (error as { code?: number })
-        .code === 11000
+      (error as { code?: number }).code === 11000
     ) {
-      const existingTransaction =
-        await WalletTransaction.findOne({
-          reference:
-            params.reference,
-        }).lean();
+      const existingTransaction = await WalletTransaction.findOne({
+        reference: params.reference,
+      }).lean()
 
       if (existingTransaction) {
         return {
-          success:
-            existingTransaction.status ===
-            "SUCCESS",
+          success: existingTransaction.status === "SUCCESS",
 
           alreadyProcessed: true,
 
-          transaction:
-            existingTransaction,
-        };
+          transaction: existingTransaction,
+        }
       }
     }
 
-    throw error;
+    throw error
   } finally {
     if (ownsSession) {
-      await session.endSession();
+      await session.endSession()
     }
   }
 }
@@ -670,183 +543,122 @@ export async function creditWallet(
 ========================================================= */
 
 export async function debitWallet(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  > & {
-    type?:
-      | "PURCHASE"
-      | "ADJUSTMENT";
+  params: Omit<WalletMutationParams, "type"> & {
+    type?: "PURCHASE" | "ADJUSTMENT"
   }
 ): Promise<WalletResult> {
-  await connectToDB();
+  await connectToDB()
 
-  validateAmount(
-    params.amount
-  );
+  validateAmount(params.amount)
 
-  const buyerId =
-    toObjectId(params.buyerId);
+  const buyerId = toObjectId(params.buyerId)
 
-  const transactionType =
-    params.type ?? "PURCHASE";
+  const transactionType = params.type ?? "PURCHASE"
 
-  const existingTransaction =
-    await findExistingTransaction(
-      params.reference
-    );
+  const existingTransaction = await findExistingTransaction(params.reference)
 
   if (existingTransaction) {
     return {
-      success:
-        existingTransaction.status ===
-        "SUCCESS",
+      success: existingTransaction.status === "SUCCESS",
 
       alreadyProcessed: true,
 
-      transaction:
-        existingTransaction,
-    };
+      transaction: existingTransaction,
+    }
   }
 
-  const session =
-    params.session ??
-    (await Wallet.startSession());
+  const session = params.session ?? (await Wallet.startSession())
 
-  const ownsSession =
-    !params.session;
+  const ownsSession = !params.session
 
   try {
     if (ownsSession) {
-      session.startTransaction();
+      session.startTransaction()
     }
 
-    const wallet =
-      await Wallet.findOne({
-        buyerId,
-      }).session(session);
+    const wallet = await Wallet.findOne({
+      buyerId,
+    }).session(session)
 
     if (!wallet) {
-      throw new Error(
-        "Buyer wallet not found."
-      );
+      throw new Error("Buyer wallet not found.")
     }
 
     if (wallet.status !== "ACTIVE") {
-      throw new Error(
-        "Wallet is not active."
-      );
+      throw new Error("Wallet is not active.")
     }
 
-    if (
-      wallet.availableBalance <
-      params.amount
-    ) {
-      throw new Error(
-        "Insufficient wallet balance."
-      );
+    if (wallet.availableBalance < params.amount) {
+      throw new Error("Insufficient wallet balance.")
     }
 
-    const balanceBefore =
-      wallet.availableBalance;
+    const balanceBefore = wallet.availableBalance
 
-    const balanceAfter =
-      balanceBefore -
-      params.amount;
+    const balanceAfter = balanceBefore - params.amount
 
-    const heldBalanceBefore =
-      wallet.heldBalance;
+    const heldBalanceBefore = wallet.heldBalance
 
-    const heldBalanceAfter =
-      heldBalanceBefore;
+    const heldBalanceAfter = heldBalanceBefore
 
-    wallet.availableBalance =
-      balanceAfter;
+    wallet.availableBalance = balanceAfter
 
-    if (
-      transactionType ===
-      "PURCHASE"
-    ) {
-      wallet.totalSpent +=
-        params.amount;
+    if (transactionType === "PURCHASE") {
+      wallet.totalSpent += params.amount
     }
 
     await wallet.save({
       session,
-    });
+    })
 
-    const transaction =
-      await WalletTransaction.create(
-        [
-          {
-            walletId:
-              wallet._id,
-
-            buyerId,
-
-            type:
-              transactionType,
-
-            amount:
-              params.amount,
-
-            direction:
-              "DEBIT" as WalletTransactionDirection,
-
-            balanceBefore,
-
-            balanceAfter,
-
-            reference:
-              params.reference,
-
-            description:
-              params.description,
-
-            status:
-              "SUCCESS",
-
-            source:
-              params.source,
-
-            paymentTransactionId:
-              params.paymentTransactionId
-                ? toObjectId(
-                    params.paymentTransactionId
-                  )
-                : undefined,
-
-            orderId:
-              params.orderId
-                ? toObjectId(
-                    params.orderId
-                  )
-                : undefined,
-
-            metadata:
-              mergeMetadata(
-                params.metadata,
-                {
-                  availableBalanceBefore:
-                    balanceBefore,
-
-                  availableBalanceAfter:
-                    balanceAfter,
-
-                  heldBalanceBefore,
-
-                  heldBalanceAfter,
-                }
-              ),
-          },
-        ],
+    const transaction = await WalletTransaction.create(
+      [
         {
-          session,
-        }
-      );
+          walletId: wallet._id,
+
+          buyerId,
+
+          type: transactionType,
+
+          amount: params.amount,
+
+          direction: "DEBIT" as WalletTransactionDirection,
+
+          balanceBefore,
+
+          balanceAfter,
+
+          reference: params.reference,
+
+          description: params.description,
+
+          status: "SUCCESS",
+
+          source: params.source,
+
+          paymentTransactionId: params.paymentTransactionId
+            ? toObjectId(params.paymentTransactionId)
+            : undefined,
+
+          orderId: params.orderId ? toObjectId(params.orderId) : undefined,
+
+          metadata: mergeMetadata(params.metadata, {
+            availableBalanceBefore: balanceBefore,
+
+            availableBalanceAfter: balanceAfter,
+
+            heldBalanceBefore,
+
+            heldBalanceAfter,
+          }),
+        },
+      ],
+      {
+        session,
+      }
+    )
 
     if (ownsSession) {
-      await session.commitTransaction();
+      await session.commitTransaction()
     }
 
     return {
@@ -856,18 +668,17 @@ export async function debitWallet(
 
       wallet,
 
-      transaction:
-        transaction[0],
-    };
+      transaction: transaction[0],
+    }
   } catch (error) {
     if (ownsSession) {
-      await session.abortTransaction();
+      await session.abortTransaction()
     }
 
-    throw error;
+    throw error
   } finally {
     if (ownsSession) {
-      await session.endSession();
+      await session.endSession()
     }
   }
 }
@@ -886,89 +697,58 @@ export async function debitWallet(
  * No money is considered spent yet.
  */
 export async function holdWalletFunds(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  >
+  params: Omit<WalletMutationParams, "type">
 ): Promise<WalletResult> {
-  await connectToDB();
+  await connectToDB()
 
-  validateAmount(
-    params.amount
-  );
+  validateAmount(params.amount)
 
-  const buyerId =
-    toObjectId(params.buyerId);
+  const buyerId = toObjectId(params.buyerId)
 
-  const existingTransaction =
-    await findExistingTransaction(
-      params.reference
-    );
+  const existingTransaction = await findExistingTransaction(params.reference)
 
   if (existingTransaction) {
     return {
-      success:
-        existingTransaction.status ===
-        "SUCCESS",
+      success: existingTransaction.status === "SUCCESS",
 
       alreadyProcessed: true,
 
-      transaction:
-        existingTransaction,
-    };
+      transaction: existingTransaction,
+    }
   }
 
-  const session =
-    params.session ??
-    (await Wallet.startSession());
+  const session = params.session ?? (await Wallet.startSession())
 
-  const ownsSession =
-    !params.session;
+  const ownsSession = !params.session
 
   try {
     if (ownsSession) {
-      session.startTransaction();
+      session.startTransaction()
     }
 
-    const wallet =
-      await Wallet.findOne({
-        buyerId,
-      }).session(session);
+    const wallet = await Wallet.findOne({
+      buyerId,
+    }).session(session)
 
     if (!wallet) {
-      throw new Error(
-        "Buyer wallet not found."
-      );
+      throw new Error("Buyer wallet not found.")
     }
 
     if (wallet.status !== "ACTIVE") {
-      throw new Error(
-        "Wallet is not active."
-      );
+      throw new Error("Wallet is not active.")
     }
 
-    if (
-      wallet.availableBalance <
-      params.amount
-    ) {
-      throw new Error(
-        "Insufficient available wallet balance."
-      );
+    if (wallet.availableBalance < params.amount) {
+      throw new Error("Insufficient available wallet balance.")
     }
 
-    const availableBefore =
-      wallet.availableBalance;
+    const availableBefore = wallet.availableBalance
 
-    const availableAfter =
-      availableBefore -
-      params.amount;
+    const availableAfter = availableBefore - params.amount
 
-    const heldBefore =
-      wallet.heldBalance;
+    const heldBefore = wallet.heldBalance
 
-    const heldAfter =
-      heldBefore +
-      params.amount;
+    const heldAfter = heldBefore + params.amount
 
     /*
      * HOLD:
@@ -978,102 +758,71 @@ export async function holdWalletFunds(
      *
      * Total wallet value remains unchanged.
      */
-    wallet.availableBalance =
-      availableAfter;
+    wallet.availableBalance = availableAfter
 
-    wallet.heldBalance =
-      heldAfter;
+    wallet.heldBalance = heldAfter
 
     await wallet.save({
       session,
-    });
+    })
 
-    const transaction =
-      await WalletTransaction.create(
-        [
-          {
-            walletId:
-              wallet._id,
-
-            buyerId,
-
-            type:
-              "HOLD",
-
-            amount:
-              params.amount,
-
-            direction:
-              "DEBIT" as WalletTransactionDirection,
-
-            /*
-             * Existing ledger contract:
-             *
-             * balanceBefore / balanceAfter
-             * represent AVAILABLE balance.
-             */
-            balanceBefore:
-              availableBefore,
-
-            balanceAfter:
-              availableAfter,
-
-            reference:
-              params.reference,
-
-            description:
-              params.description ||
-              "Wallet funds held for order",
-
-            status:
-              "SUCCESS",
-
-            source:
-              params.source,
-
-            paymentTransactionId:
-              params.paymentTransactionId
-                ? toObjectId(
-                    params.paymentTransactionId
-                  )
-                : undefined,
-
-            orderId:
-              params.orderId
-                ? toObjectId(
-                    params.orderId
-                  )
-                : undefined,
-
-            metadata:
-              mergeMetadata(
-                params.metadata,
-                {
-                  operation:
-                    "HOLD",
-
-                  availableBalanceBefore:
-                    availableBefore,
-
-                  availableBalanceAfter:
-                    availableAfter,
-
-                  heldBalanceBefore:
-                    heldBefore,
-
-                  heldBalanceAfter:
-                    heldAfter,
-                }
-              ),
-          },
-        ],
+    const transaction = await WalletTransaction.create(
+      [
         {
-          session,
-        }
-      );
+          walletId: wallet._id,
+
+          buyerId,
+
+          type: "HOLD",
+
+          amount: params.amount,
+
+          direction: "DEBIT" as WalletTransactionDirection,
+
+          /*
+           * Existing ledger contract:
+           *
+           * balanceBefore / balanceAfter
+           * represent AVAILABLE balance.
+           */
+          balanceBefore: availableBefore,
+
+          balanceAfter: availableAfter,
+
+          reference: params.reference,
+
+          description: params.description || "Wallet funds held for order",
+
+          status: "SUCCESS",
+
+          source: params.source,
+
+          paymentTransactionId: params.paymentTransactionId
+            ? toObjectId(params.paymentTransactionId)
+            : undefined,
+
+          orderId: params.orderId ? toObjectId(params.orderId) : undefined,
+
+          metadata: mergeMetadata(params.metadata, {
+            operation: "HOLD",
+
+            availableBalanceBefore: availableBefore,
+
+            availableBalanceAfter: availableAfter,
+
+            heldBalanceBefore: heldBefore,
+
+            heldBalanceAfter: heldAfter,
+          }),
+        },
+      ],
+      {
+        session,
+      }
+    )
 
     if (ownsSession) {
-      await session.commitTransaction();
+      await session.commitTransaction()
     }
 
     return {
@@ -1083,18 +832,17 @@ export async function holdWalletFunds(
 
       wallet,
 
-      transaction:
-        transaction[0],
-    };
+      transaction: transaction[0],
+    }
   } catch (error) {
     if (ownsSession) {
-      await session.abortTransaction();
+      await session.abortTransaction()
     }
 
-    throw error;
+    throw error
   } finally {
     if (ownsSession) {
-      await session.endSession();
+      await session.endSession()
     }
   }
 }
@@ -1115,180 +863,118 @@ export async function holdWalletFunds(
  * requires the reserved wallet funds.
  */
 export async function releaseWalletHold(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  >
+  params: Omit<WalletMutationParams, "type">
 ): Promise<WalletResult> {
-  await connectToDB();
+  await connectToDB()
 
-  validateAmount(
-    params.amount
-  );
+  validateAmount(params.amount)
 
-  const buyerId =
-    toObjectId(params.buyerId);
+  const buyerId = toObjectId(params.buyerId)
 
-  const existingTransaction =
-    await findExistingTransaction(
-      params.reference
-    );
+  const existingTransaction = await findExistingTransaction(params.reference)
 
   if (existingTransaction) {
     return {
-      success:
-        existingTransaction.status ===
-        "SUCCESS",
+      success: existingTransaction.status === "SUCCESS",
 
       alreadyProcessed: true,
 
-      transaction:
-        existingTransaction,
-    };
+      transaction: existingTransaction,
+    }
   }
 
-  const session =
-    params.session ??
-    (await Wallet.startSession());
+  const session = params.session ?? (await Wallet.startSession())
 
-  const ownsSession =
-    !params.session;
+  const ownsSession = !params.session
 
   try {
     if (ownsSession) {
-      session.startTransaction();
+      session.startTransaction()
     }
 
-    const wallet =
-      await Wallet.findOne({
-        buyerId,
-      }).session(session);
+    const wallet = await Wallet.findOne({
+      buyerId,
+    }).session(session)
 
     if (!wallet) {
-      throw new Error(
-        "Buyer wallet not found."
-      );
+      throw new Error("Buyer wallet not found.")
     }
 
     if (wallet.status !== "ACTIVE") {
-      throw new Error(
-        "Wallet is not active."
-      );
+      throw new Error("Wallet is not active.")
     }
 
-    if (
-      wallet.heldBalance <
-      params.amount
-    ) {
-      throw new Error(
-        "Insufficient held wallet balance."
-      );
+    if (wallet.heldBalance < params.amount) {
+      throw new Error("Insufficient held wallet balance.")
     }
 
-    const availableBefore =
-      wallet.availableBalance;
+    const availableBefore = wallet.availableBalance
 
-    const availableAfter =
-      availableBefore +
-      params.amount;
+    const availableAfter = availableBefore + params.amount
 
-    const heldBefore =
-      wallet.heldBalance;
+    const heldBefore = wallet.heldBalance
 
-    const heldAfter =
-      heldBefore -
-      params.amount;
+    const heldAfter = heldBefore - params.amount
 
-    wallet.availableBalance =
-      availableAfter;
+    wallet.availableBalance = availableAfter
 
-    wallet.heldBalance =
-      heldAfter;
+    wallet.heldBalance = heldAfter
 
     await wallet.save({
       session,
-    });
+    })
 
-    const transaction =
-      await WalletTransaction.create(
-        [
-          {
-            walletId:
-              wallet._id,
-
-            buyerId,
-
-            type:
-              "RELEASE",
-
-            amount:
-              params.amount,
-
-            direction:
-              "CREDIT" as WalletTransactionDirection,
-
-            balanceBefore:
-              availableBefore,
-
-            balanceAfter:
-              availableAfter,
-
-            reference:
-              params.reference,
-
-            description:
-              params.description ||
-              "Wallet funds released",
-
-            status:
-              "SUCCESS",
-
-            source:
-              params.source,
-
-            paymentTransactionId:
-              params.paymentTransactionId
-                ? toObjectId(
-                    params.paymentTransactionId
-                  )
-                : undefined,
-
-            orderId:
-              params.orderId
-                ? toObjectId(
-                    params.orderId
-                  )
-                : undefined,
-
-            metadata:
-              mergeMetadata(
-                params.metadata,
-                {
-                  operation:
-                    "RELEASE",
-
-                  availableBalanceBefore:
-                    availableBefore,
-
-                  availableBalanceAfter:
-                    availableAfter,
-
-                  heldBalanceBefore:
-                    heldBefore,
-
-                  heldBalanceAfter:
-                    heldAfter,
-                }
-              ),
-          },
-        ],
+    const transaction = await WalletTransaction.create(
+      [
         {
-          session,
-        }
-      );
+          walletId: wallet._id,
+
+          buyerId,
+
+          type: "RELEASE",
+
+          amount: params.amount,
+
+          direction: "CREDIT" as WalletTransactionDirection,
+
+          balanceBefore: availableBefore,
+
+          balanceAfter: availableAfter,
+
+          reference: params.reference,
+
+          description: params.description || "Wallet funds released",
+
+          status: "SUCCESS",
+
+          source: params.source,
+
+          paymentTransactionId: params.paymentTransactionId
+            ? toObjectId(params.paymentTransactionId)
+            : undefined,
+
+          orderId: params.orderId ? toObjectId(params.orderId) : undefined,
+
+          metadata: mergeMetadata(params.metadata, {
+            operation: "RELEASE",
+
+            availableBalanceBefore: availableBefore,
+
+            availableBalanceAfter: availableAfter,
+
+            heldBalanceBefore: heldBefore,
+
+            heldBalanceAfter: heldAfter,
+          }),
+        },
+      ],
+      {
+        session,
+      }
+    )
 
     if (ownsSession) {
-      await session.commitTransaction();
+      await session.commitTransaction()
     }
 
     return {
@@ -1298,18 +984,17 @@ export async function releaseWalletHold(
 
       wallet,
 
-      transaction:
-        transaction[0],
-    };
+      transaction: transaction[0],
+    }
   } catch (error) {
     if (ownsSession) {
-      await session.abortTransaction();
+      await session.abortTransaction()
     }
 
-    throw error;
+    throw error
   } finally {
     if (ownsSession) {
-      await session.endSession();
+      await session.endSession()
     }
   }
 }
@@ -1335,186 +1020,126 @@ export async function releaseWalletHold(
  * totalSpent ↑
  */
 export async function captureWalletHold(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  >
+  params: Omit<WalletMutationParams, "type">
 ): Promise<WalletResult> {
-  await connectToDB();
+  await connectToDB()
 
-  validateAmount(
-    params.amount
-  );
+  validateAmount(params.amount)
 
-  const buyerId =
-    toObjectId(params.buyerId);
+  const buyerId = toObjectId(params.buyerId)
 
-  const existingTransaction =
-    await findExistingTransaction(
-      params.reference
-    );
+  const existingTransaction = await findExistingTransaction(params.reference)
 
   if (existingTransaction) {
     return {
-      success:
-        existingTransaction.status ===
-        "SUCCESS",
+      success: existingTransaction.status === "SUCCESS",
 
       alreadyProcessed: true,
 
-      transaction:
-        existingTransaction,
-    };
+      transaction: existingTransaction,
+    }
   }
 
-  const session =
-    params.session ??
-    (await Wallet.startSession());
+  const session = params.session ?? (await Wallet.startSession())
 
-  const ownsSession =
-    !params.session;
+  const ownsSession = !params.session
 
   try {
     if (ownsSession) {
-      session.startTransaction();
+      session.startTransaction()
     }
 
-    const wallet =
-      await Wallet.findOne({
-        buyerId,
-      }).session(session);
+    const wallet = await Wallet.findOne({
+      buyerId,
+    }).session(session)
 
     if (!wallet) {
-      throw new Error(
-        "Buyer wallet not found."
-      );
+      throw new Error("Buyer wallet not found.")
     }
 
     if (wallet.status !== "ACTIVE") {
-      throw new Error(
-        "Wallet is not active."
-      );
+      throw new Error("Wallet is not active.")
     }
 
-    if (
-      wallet.heldBalance <
-      params.amount
-    ) {
-      throw new Error(
-        "Insufficient held wallet balance."
-      );
+    if (wallet.heldBalance < params.amount) {
+      throw new Error("Insufficient held wallet balance.")
     }
 
-    const availableBefore =
-      wallet.availableBalance;
+    const availableBefore = wallet.availableBalance
 
-    const availableAfter =
-      availableBefore;
+    const availableAfter = availableBefore
 
-    const heldBefore =
-      wallet.heldBalance;
+    const heldBefore = wallet.heldBalance
 
-    const heldAfter =
-      heldBefore -
-      params.amount;
+    const heldAfter = heldBefore - params.amount
 
-    wallet.heldBalance =
-      heldAfter;
+    wallet.heldBalance = heldAfter
 
-    wallet.totalSpent +=
-      params.amount;
+    wallet.totalSpent += params.amount
 
     await wallet.save({
       session,
-    });
+    })
 
-    const transaction =
-      await WalletTransaction.create(
-        [
-          {
-            walletId:
-              wallet._id,
-
-            buyerId,
-
-            type:
-              "PURCHASE",
-
-            amount:
-              params.amount,
-
-            /**
-             * The actual money was removed from
-             * availableBalance at HOLD time.
-             *
-             * CAPTURE therefore does not create
-             * another available-balance debit.
-             */
-            direction:
-              "DEBIT" as WalletTransactionDirection,
-
-            balanceBefore:
-              availableBefore,
-
-            balanceAfter:
-              availableAfter,
-
-            reference:
-              params.reference,
-
-            description:
-              params.description ||
-              "Wallet-held funds captured for order",
-
-            status:
-              "SUCCESS",
-
-            source:
-              params.source,
-
-            paymentTransactionId:
-              params.paymentTransactionId
-                ? toObjectId(
-                    params.paymentTransactionId
-                  )
-                : undefined,
-
-            orderId:
-              params.orderId
-                ? toObjectId(
-                    params.orderId
-                  )
-                : undefined,
-
-            metadata:
-              mergeMetadata(
-                params.metadata,
-                {
-                  operation:
-                    "CAPTURE",
-
-                  availableBalanceBefore:
-                    availableBefore,
-
-                  availableBalanceAfter:
-                    availableAfter,
-
-                  heldBalanceBefore:
-                    heldBefore,
-
-                  heldBalanceAfter:
-                    heldAfter,
-                }
-              ),
-          },
-        ],
+    const transaction = await WalletTransaction.create(
+      [
         {
-          session,
-        }
-      );
+          walletId: wallet._id,
+
+          buyerId,
+
+          type: "PURCHASE",
+
+          amount: params.amount,
+
+          /**
+           * The actual money was removed from
+           * availableBalance at HOLD time.
+           *
+           * CAPTURE therefore does not create
+           * another available-balance debit.
+           */
+          direction: "DEBIT" as WalletTransactionDirection,
+
+          balanceBefore: availableBefore,
+
+          balanceAfter: availableAfter,
+
+          reference: params.reference,
+
+          description:
+            params.description || "Wallet-held funds captured for order",
+
+          status: "SUCCESS",
+
+          source: params.source,
+
+          paymentTransactionId: params.paymentTransactionId
+            ? toObjectId(params.paymentTransactionId)
+            : undefined,
+
+          orderId: params.orderId ? toObjectId(params.orderId) : undefined,
+
+          metadata: mergeMetadata(params.metadata, {
+            operation: "CAPTURE",
+
+            availableBalanceBefore: availableBefore,
+
+            availableBalanceAfter: availableAfter,
+
+            heldBalanceBefore: heldBefore,
+
+            heldBalanceAfter: heldAfter,
+          }),
+        },
+      ],
+      {
+        session,
+      }
+    )
 
     if (ownsSession) {
-      await session.commitTransaction();
+      await session.commitTransaction()
     }
 
     return {
@@ -1524,18 +1149,17 @@ export async function captureWalletHold(
 
       wallet,
 
-      transaction:
-        transaction[0],
-    };
+      transaction: transaction[0],
+    }
   } catch (error) {
     if (ownsSession) {
-      await session.abortTransaction();
+      await session.abortTransaction()
     }
 
-    throw error;
+    throw error
   } finally {
     if (ownsSession) {
-      await session.endSession();
+      await session.endSession()
     }
   }
 }
@@ -1545,20 +1169,15 @@ export async function captureWalletHold(
 ========================================================= */
 
 export async function refundWallet(
-  params: Omit<
-    WalletMutationParams,
-    "type"
-  >
+  params: Omit<WalletMutationParams, "type">
 ): Promise<WalletResult> {
   return creditWallet({
     ...params,
 
     type: "REFUND",
 
-    description:
-      params.description ||
-      "Order refund credited to wallet",
-  });
+    description: params.description || "Order refund credited to wallet",
+  })
 }
 
 /* =========================================================
@@ -1568,77 +1187,51 @@ export async function refundWallet(
 export async function getWalletTransactions(
   buyerId: string | Types.ObjectId,
   options?: {
-    page?: number;
+    page?: number
 
-    limit?: number;
+    limit?: number
 
-    type?: WalletTransactionType;
+    type?: WalletTransactionType
 
-    status?: string;
+    status?: string
 
-    source?: WalletTransactionSource;
+    source?: WalletTransactionSource
 
-    orderId?: string | Types.ObjectId;
+    orderId?: string | Types.ObjectId
   }
 ) {
-  await connectToDB();
+  await connectToDB()
 
-  const buyerObjectId =
-    toObjectId(buyerId);
+  const buyerObjectId = toObjectId(buyerId)
 
-  const page = Math.max(
-    options?.page ?? 1,
-    1
-  );
+  const page = Math.max(options?.page ?? 1, 1)
 
-  const limit = Math.min(
-    Math.max(
-      options?.limit ?? 20,
-      1
-    ),
-    100
-  );
+  const limit = Math.min(Math.max(options?.limit ?? 20, 1), 100)
 
-  const skip =
-    (page - 1) * limit;
+  const skip = (page - 1) * limit
 
-  const filter: Record<
-    string,
-    unknown
-  > = {
-    buyerId:
-      buyerObjectId,
-  };
+  const filter: Record<string, unknown> = {
+    buyerId: buyerObjectId,
+  }
 
   if (options?.type) {
-    filter.type =
-      options.type;
+    filter.type = options.type
   }
 
   if (options?.status) {
-    filter.status =
-      options.status;
+    filter.status = options.status
   }
 
   if (options?.source) {
-    filter.source =
-      options.source;
+    filter.source = options.source
   }
 
   if (options?.orderId) {
-    filter.orderId =
-      toObjectId(
-        options.orderId
-      );
+    filter.orderId = toObjectId(options.orderId)
   }
 
-  const [
-    transactions,
-    total,
-  ] = await Promise.all([
-    WalletTransaction.find(
-      filter
-    )
+  const [transactions, total] = await Promise.all([
+    WalletTransaction.find(filter)
       .sort({
         createdAt: -1,
       })
@@ -1646,10 +1239,8 @@ export async function getWalletTransactions(
       .limit(limit)
       .lean(),
 
-    WalletTransaction.countDocuments(
-      filter
-    ),
-  ]);
+    WalletTransaction.countDocuments(filter),
+  ])
 
   return {
     transactions,
@@ -1661,9 +1252,7 @@ export async function getWalletTransactions(
 
       total,
 
-      pages: Math.ceil(
-        total / limit
-      ),
+      pages: Math.ceil(total / limit),
     },
-  };
+  }
 }

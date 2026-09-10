@@ -1,14 +1,14 @@
-import React from 'react'
-import WhyMedSupplyPage from './WhyMedSupplyPage'
-import Navbar from '@/components/Navbar/Navbar'
-import Footer from '@/components/Footer/Footer'
+import React from "react"
+import WhyMedSupplyPage from "./WhyMedSupplyPage"
+import Navbar from "@/components/Navbar/Navbar"
+import Footer from "@/components/Footer/Footer"
 
 const page = () => {
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <WhyMedSupplyPage />
-      <Footer/>
+      <Footer />
     </div>
   )
 }

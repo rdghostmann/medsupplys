@@ -1,5 +1,5 @@
 // /dashboard/admin/master-system-audit/MasterSystemPage.tsx
-"use client";
+"use client"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,13 +8,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import MasterSystemAudit from "./MasterSystemAudit";
-import type { AdminAuditLog } from "@/controllers/admin.actions";
+import MasterSystemAudit from "./MasterSystemAudit"
+import type { AdminAuditLog } from "@/controllers/admin.actions"
 
 export default function MasterSystemPage({
   audits,
 }: {
-  audits: AdminAuditLog[];
+  audits: AdminAuditLog[]
 }) {
   return (
     <div className="flex flex-1 flex-col">
@@ -34,11 +34,9 @@ export default function MasterSystemPage({
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           <div className="px-4 lg:px-6">
             <MasterSystemAudit audits={audits} />
-
           </div>
         </div>
       </div>
     </div>
-
   )
 }

@@ -1,6 +1,6 @@
 // app/(dashboard)/buyer/page.tsx
-import { getCurrentBuyerDashboard } from "@/controllers/buyer.actions";
-import BuyerPage from "./BuyerPage";
+import { getCurrentBuyerDashboard } from "@/controllers/buyer.actions"
+import BuyerPage from "./BuyerPage"
 
 export default async function Page() {
   const {
@@ -11,8 +11,7 @@ export default async function Page() {
     fallbackQueue,
     nonCompletedOrderCount,
     totalOrderCount,
-  } =
-    await getCurrentBuyerDashboard();
+  } = await getCurrentBuyerDashboard()
 
   return (
     <BuyerPage
@@ -24,5 +23,5 @@ export default async function Page() {
       nonCompletedOrderCount={nonCompletedOrderCount}
       totalOrderCount={totalOrderCount}
     />
-  );
+  )
 }

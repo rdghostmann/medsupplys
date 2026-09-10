@@ -1,12 +1,6 @@
 // /models/Notification.ts
 
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose"
 
 /* =========================================================
    Types
@@ -16,7 +10,7 @@ export type NotificationRecipientRole =
   | "buyer"
   | "supplier"
   | "pharmacist"
-  | "admin";
+  | "admin"
 
 export type NotificationType =
   | "ORDER"
@@ -26,149 +20,141 @@ export type NotificationType =
   | "WALLET"
   | "CREDIT"
   | "KYC"
-  | "SYSTEM";
+  | "SYSTEM"
 
 /* =========================================================
    Interface
    ========================================================= */
 
-export interface INotification
-  extends Document {
-  recipientId: Schema.Types.ObjectId;
+export interface INotification extends Document {
+  recipientId: Schema.Types.ObjectId
 
-  recipientRole:
-    NotificationRecipientRole;
+  recipientRole: NotificationRecipientRole
 
-  title: string;
+  title: string
 
-  message: string;
+  message: string
 
-  type: NotificationType;
+  type: NotificationType
 
-  isRead: boolean;
+  isRead: boolean
 
-  readAt?: Date;
+  readAt?: Date
 
-  entityType?: string;
+  entityType?: string
 
-  entityId?: Schema.Types.ObjectId;
+  entityId?: Schema.Types.ObjectId
 
-  createdAt: Date;
+  createdAt: Date
 
-  expiresAt?: Date;
+  expiresAt?: Date
 }
 
 /* =========================================================
    Schema
    ========================================================= */
 
-const NotificationSchema =
-  new Schema<INotification>(
-    {
-      /* -----------------------------------------------------
+const NotificationSchema = new Schema<INotification>(
+  {
+    /* -----------------------------------------------------
          Recipient
          ----------------------------------------------------- */
 
-      recipientId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
+    recipientId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
 
-      recipientRole: {
-        type: String,
-        enum: [
-          "buyer",
-          "supplier",
-          "pharmacist",
-          "admin",
-        ],
-        required: true,
-        index: true,
-      },
+    recipientRole: {
+      type: String,
+      enum: ["buyer", "supplier", "pharmacist", "admin"],
+      required: true,
+      index: true,
+    },
 
-      /* -----------------------------------------------------
+    /* -----------------------------------------------------
          Notification Content
          ----------------------------------------------------- */
 
-      title: {
-        type: String,
-        required: true,
-        trim: true,
-      },
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-      message: {
-        type: String,
-        required: true,
-        trim: true,
-      },
+    message: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-      /* -----------------------------------------------------
+    /* -----------------------------------------------------
          Notification Type
          ----------------------------------------------------- */
 
-      type: {
-        type: String,
-        enum: [
-          "ORDER",
-          "SUPPLIER",
-          "VERIFICATION",
-          "PAYMENT",
-          "WALLET",
-          "CREDIT",
-          "KYC",
-          "SYSTEM",
-        ],
-        required: true,
-        index: true,
-      },
+    type: {
+      type: String,
+      enum: [
+        "ORDER",
+        "SUPPLIER",
+        "VERIFICATION",
+        "PAYMENT",
+        "WALLET",
+        "CREDIT",
+        "KYC",
+        "SYSTEM",
+      ],
+      required: true,
+      index: true,
+    },
 
-      /* -----------------------------------------------------
+    /* -----------------------------------------------------
          Read State
          ----------------------------------------------------- */
 
-      isRead: {
-        type: Boolean,
-        default: false,
-        index: true,
-      },
+    isRead: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
 
-      readAt: {
-        type: Date,
-      },
+    readAt: {
+      type: Date,
+    },
 
-      /* -----------------------------------------------------
+    /* -----------------------------------------------------
          Related Entity
          ----------------------------------------------------- */
 
-      entityType: {
-        type: String,
-        trim: true,
-      },
+    entityType: {
+      type: String,
+      trim: true,
+    },
 
-      entityId: {
-        type: Schema.Types.ObjectId,
-        index: true,
-      },
+    entityId: {
+      type: Schema.Types.ObjectId,
+      index: true,
+    },
 
-      /* -----------------------------------------------------
+    /* -----------------------------------------------------
          Expiration
          ----------------------------------------------------- */
 
-      expiresAt: {
-        type: Date,
-      },
+    expiresAt: {
+      type: Date,
     },
-    {
-      timestamps: {
-        createdAt: true,
-        updatedAt: false,
-      },
+  },
+  {
+    timestamps: {
+      createdAt: true,
+      updatedAt: false,
+    },
 
-      versionKey: false,
-    }
-  );
+    versionKey: false,
+  }
+)
 
 /* =========================================================
    Indexes
@@ -184,7 +170,7 @@ NotificationSchema.index({
   recipientId: 1,
   isRead: 1,
   createdAt: -1,
-});
+})
 
 /**
  * Useful for querying all notifications associated
@@ -194,7 +180,7 @@ NotificationSchema.index({
   entityType: 1,
   entityId: 1,
   createdAt: -1,
-});
+})
 
 /**
  * Useful when notification cleanup/expiration jobs
@@ -209,16 +195,12 @@ NotificationSchema.index(
     expireAfterSeconds: 0,
     sparse: true,
   }
-);
+)
 
 /* =========================================================
    Model
    ========================================================= */
 
-export const Notification:
-  Model<INotification> =
+export const Notification: Model<INotification> =
   models.Notification ||
-  model<INotification>(
-    "Notification",
-    NotificationSchema
-  );
+  model<INotification>("Notification", NotificationSchema)

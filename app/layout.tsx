@@ -2,23 +2,21 @@ import { Geist, Geist_Mono, Outfit, Space_Grotesk } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
-import { cn } from "@/lib/utils";
-import { Toaster } from "@/components/ui/sonner";
-import type { Metadata } from "next";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import SessionWrapper from "@/components/SessionWrapper/SessionWrapper";
-import ReactQueryProvider from "@/provider/ReactQueryProvider";
-
-
+import { cn } from "@/lib/utils"
+import { Toaster } from "@/components/ui/sonner"
+import type { Metadata } from "next"
+import { TooltipProvider } from "@/components/ui/tooltip"
+import SessionWrapper from "@/components/SessionWrapper/SessionWrapper"
+import ReactQueryProvider from "@/provider/ReactQueryProvider"
 
 const fontSansBig = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-sans-big'
+  subsets: ["latin"],
+  variable: "--font-sans-big",
 })
 
 const outfit = Outfit({
-  subsets: ['latin'],
-  variable: '--font-mono-outfit'
+  subsets: ["latin"],
+  variable: "--font-mono-outfit",
 })
 
 const fontSans = Geist({
@@ -34,7 +32,6 @@ const fontSans = Geist({
 const fontMono = {
   variable: "--font-mono",
 }
-
 
 export const metadata: Metadata = {
   title: {
@@ -123,7 +120,7 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-};
+}
 
 export default function RootLayout({
   children,
@@ -134,7 +131,13 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn("antialiased", fontMono.variable, outfit.variable, fontSans.variable, fontSansBig.variable)}
+      className={cn(
+        "antialiased",
+        fontMono.variable,
+        outfit.variable,
+        fontSans.variable,
+        fontSansBig.variable
+      )}
     >
       <body cz-shortcut-listen="true">
         <ThemeProvider
@@ -145,15 +148,12 @@ export default function RootLayout({
         >
           <SessionWrapper>
             <TooltipProvider>
-              <ReactQueryProvider>
-                {children}
-              </ReactQueryProvider>
+              <ReactQueryProvider>{children}</ReactQueryProvider>
               <Toaster richColors position="top-right" />
             </TooltipProvider>
           </SessionWrapper>
         </ThemeProvider>
       </body>
-
     </html>
   )
 }

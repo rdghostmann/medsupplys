@@ -1,14 +1,14 @@
-import React from 'react'
-import { HowItWorksPage } from './HowItWorksPage'
-import Navbar from '@/components/Navbar/Navbar'
-import Footer from '@/components/Footer/Footer'
+import React from "react"
+import { HowItWorksPage } from "./HowItWorksPage"
+import Navbar from "@/components/Navbar/Navbar"
+import Footer from "@/components/Footer/Footer"
 
 const page = () => {
   return (
     <div>
-      <Navbar/>
+      <Navbar />
       <HowItWorksPage />
-      <Footer/>
+      <Footer />
     </div>
   )
 }

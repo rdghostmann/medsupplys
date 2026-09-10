@@ -1,67 +1,57 @@
 // BuyerOverview.tsx
-"use client";
+"use client"
 
-import React, { useMemo } from "react";
+import React, { useMemo } from "react"
 
-import FallBackQueueMonitor from "./FallBackQueueMonitor";
-import FinancialOperationalMetricCards from "./FinancialOperationalMetricCards";
-import WelcomeBanner from "./WelcomeBanner";
+import FallBackQueueMonitor from "./FallBackQueueMonitor"
+import FinancialOperationalMetricCards from "./FinancialOperationalMetricCards"
+import WelcomeBanner from "./WelcomeBanner"
 
-import type {
-  Order,
-  OrderStatus,
-  Supplier,
-  ProcurementOrder,
-} from "@/types";
+import type { Order, OrderStatus, Supplier, ProcurementOrder } from "@/types"
 import {
   CurrentBuyerCreditAccount,
   CurrentBuyerProcurement,
   CurrentBuyerUser,
   CurrentBuyerWallet,
-} from "@/controllers/buyer.actions";
-
-
+} from "@/controllers/buyer.actions"
 
 /* ============================================================
    PROPS
 ============================================================ */
 
 export interface BuyerOverviewProps {
-  user?: CurrentBuyerUser;
+  user?: CurrentBuyerUser
 
-  wallet?: CurrentBuyerWallet;
+  wallet?: CurrentBuyerWallet
 
-  creditAccount?: CurrentBuyerCreditAccount;
+  creditAccount?: CurrentBuyerCreditAccount
 
-  nonCompletedOrderCount?: number;
+  nonCompletedOrderCount?: number
 
-  totalOrderCount?: number;
+  totalOrderCount?: number
 
-  orders?: Order[];
+  orders?: Order[]
 
-  fallbackQueue?: CurrentBuyerProcurement[];
+  fallbackQueue?: CurrentBuyerProcurement[]
 
-  recentProcurements?: ProcurementOrder[];
+  recentProcurements?: ProcurementOrder[]
 
-  loading?: boolean;
+  loading?: boolean
 }
 
 /* ============================================================
    DEFAULTS
 ============================================================ */
 
+const DEFAULT_ORDERS: Order[] = []
 
-const DEFAULT_ORDERS: Order[] = [];
-
-const DEFAULT_QUEUE: CurrentBuyerProcurement[] = [];
+const DEFAULT_QUEUE: CurrentBuyerProcurement[] = []
 
 /* ============================================================
    COMPONENT
 ============================================================ */
 
-export const BuyerOverview: React.FC<
-  BuyerOverviewProps
-> = ({
+export const BuyerOverview: React.FC<BuyerOverviewProps> = ({
   user,
 
   wallet,
@@ -86,20 +76,17 @@ export const BuyerOverview: React.FC<
 
   const displayName = useMemo(() => {
     if (user?.firstName?.trim()) {
-      return [
-        user.firstName.trim(),
-        user.lastName?.trim(),
-      ]
+      return [user.firstName.trim(), user.lastName?.trim()]
         .filter(Boolean)
-        .join(" ");
+        .join(" ")
     }
 
     if (user?.name?.trim()) {
-      return user.name.trim();
+      return user.name.trim()
     }
 
-    return "Buyer";
-  }, [user]);
+    return "Buyer"
+  }, [user])
 
   /* ==========================================================
      ORDER METRICS
@@ -111,7 +98,7 @@ export const BuyerOverview: React.FC<
       "Supplier Contacted",
       "Under Verification",
       "Supplier Confirmed",
-    ];
+    ]
 
     const activeStatuses: OrderStatus[] = [
       "Supplier Contacted",
@@ -119,25 +106,23 @@ export const BuyerOverview: React.FC<
       "Under Verification",
       "In Transit to Office",
       "Verified",
-    ];
+    ]
 
     const pending = orders.filter((order) =>
       pendingStatuses.includes(order.status)
-    ).length;
+    ).length
 
     const active = orders.filter((order) =>
       activeStatuses.includes(order.status)
-    ).length;
+    ).length
 
     const delivered = orders.filter(
-      (order) =>
-        order.status === "Delivered"
-    ).length;
+      (order) => order.status === "Delivered"
+    ).length
 
     const rejected = orders.filter(
-      (order) =>
-        order.status === "Rejected"
-    ).length;
+      (order) => order.status === "Rejected"
+    ).length
 
     return {
       total: orders.length,
@@ -145,30 +130,23 @@ export const BuyerOverview: React.FC<
       active,
       delivered,
       rejected,
-    };
-  }, [orders]);
+    }
+  }, [orders])
 
   /* ==========================================================
      FINANCIAL METRICS
   ========================================================== */
 
   const financialMetrics = useMemo(() => {
-    const balance = Number(
-      wallet?.balance || 0
-    );
+    const balance = Number(wallet?.balance || 0)
 
-    const creditLimit = Number(
-      creditAccount?.creditLimit || 0
-    );
+    const creditLimit = Number(creditAccount?.creditLimit || 0)
 
-    const creditUsed = Number(
-      creditAccount?.creditUsed || 0
-    );
+    const creditUsed = Number(creditAccount?.creditUsed || 0)
 
     const availableCredit = Number(
-      creditAccount?.availableCredit ??
-        Math.max(creditLimit - creditUsed, 0)
-    );
+      creditAccount?.availableCredit ?? Math.max(creditLimit - creditUsed, 0)
+    )
 
     return {
       balance,
@@ -179,26 +157,22 @@ export const BuyerOverview: React.FC<
 
       availableCredit,
 
-      totalPurchasingPower:
-        balance + availableCredit,
-    };
-  }, [wallet, creditAccount]);
+      totalPurchasingPower: balance + availableCredit,
+    }
+  }, [wallet, creditAccount])
 
   /* ==========================================================
      FALLBACK QUEUE
   ========================================================== */
 
-  const hasFallbackQueue =   fallbackQueue.length > 0;
+  const hasFallbackQueue = fallbackQueue.length > 0
 
   /* ==========================================================
      RENDER
   ========================================================== */
 
   return (
-    <section
-      aria-labelledby="buyer-overview-title"
-      className="space-y-6"
-    >
+    <section aria-labelledby="buyer-overview-title" className="space-y-6">
       {/* ========================================================
           WELCOME BANNER
       ======================================================== */}
@@ -206,15 +180,9 @@ export const BuyerOverview: React.FC<
       <WelcomeBanner
         id="buyer-overview-title"
         fullName={displayName}
-        organization={
-          user?.organization
-        }
-        walletBalance={
-          financialMetrics.balance
-        }
-        creditAvailable={
-          financialMetrics.availableCredit
-        }
+        organization={user?.organization}
+        walletBalance={financialMetrics.balance}
+        creditAvailable={financialMetrics.availableCredit}
         loading={loading}
       />
 
@@ -223,36 +191,16 @@ export const BuyerOverview: React.FC<
       ======================================================== */}
 
       <FinancialOperationalMetricCards
-        walletBalance={
-          financialMetrics.balance
-        }
-        creditLimit={
-          financialMetrics.creditLimit
-        }
-        creditUsed={
-          financialMetrics.creditUsed
-        }
-        availableCredit={
-          financialMetrics.availableCredit
-        }
-        totalPurchasingPower={
-          financialMetrics.totalPurchasingPower
-        }
-        totalOrders={
-          orderMetrics.total
-        }
-        pendingOrders={
-          nonCompletedOrderCount
-        }
-        activeOrders={
-          totalOrderCount
-        }
-        deliveredOrders={
-          orderMetrics.delivered
-        }
-        rejectedOrders={
-          orderMetrics.rejected
-        }
+        walletBalance={financialMetrics.balance}
+        creditLimit={financialMetrics.creditLimit}
+        creditUsed={financialMetrics.creditUsed}
+        availableCredit={financialMetrics.availableCredit}
+        totalPurchasingPower={financialMetrics.totalPurchasingPower}
+        totalOrders={orderMetrics.total}
+        pendingOrders={nonCompletedOrderCount}
+        activeOrders={totalOrderCount}
+        deliveredOrders={orderMetrics.delivered}
+        rejectedOrders={orderMetrics.rejected}
         loading={loading}
       />
 
@@ -283,7 +231,7 @@ export const BuyerOverview: React.FC<
       )}
       */}
     </section>
-  );
-};
+  )
+}
 
-export default BuyerOverview;
+export default BuyerOverview

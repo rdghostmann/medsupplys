@@ -1,7 +1,7 @@
 // app/(dashboard)/admin/global-sourcing-monitor/GlobalSourcingPage.tsx
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 
 import {
   Breadcrumb,
@@ -10,37 +10,33 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import GlobalSourcingMonitor from "./GlobalSourcingMonitor";
+import GlobalSourcingMonitor from "./GlobalSourcingMonitor"
 
-import type {
-  AdminProcurement,
-} from "@/controllers/procurement.controller";
+import type { AdminProcurement } from "@/controllers/procurement.controller"
 
 interface GlobalSourcingPageProps {
-  procurements: AdminProcurement[];
+  procurements: AdminProcurement[]
 }
 
 export default function GlobalSourcingPage({
   procurements,
 }: GlobalSourcingPageProps) {
-  const router = useRouter();
+  const router = useRouter()
 
   const refreshProcurements = async () => {
     // Backend refresh can be added later.
-    await Promise.resolve();
-  };
+    await Promise.resolve()
+  }
 
   const handleOpenCatalogue = () => {
-    router.push("/buyer/catalogue");
-  };
+    router.push("/buyer/catalogue")
+  }
 
   const handleOpenOrders = (orderId: string) => {
-    router.push(
-      `/buyer/orders?orderId=${encodeURIComponent(orderId)}`
-    );
-  };
+    router.push(`/buyer/orders?orderId=${encodeURIComponent(orderId)}`)
+  }
 
   return (
     <div className="flex flex-1 flex-col">
@@ -48,17 +44,13 @@ export default function GlobalSourcingPage({
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/admin">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/admin">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Global Sourcing Monitor
-            </BreadcrumbPage>
+            <BreadcrumbPage>Global Sourcing Monitor</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -77,5 +69,5 @@ export default function GlobalSourcingPage({
         </div>
       </div>
     </div>
-  );
+  )
 }

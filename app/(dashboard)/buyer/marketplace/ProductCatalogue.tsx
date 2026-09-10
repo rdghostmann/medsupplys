@@ -1,66 +1,54 @@
 // ProductCatalogue.tsx
-"use client";
+"use client"
 
-import React, { useMemo, useState } from "react";
-import {
-  Package2,
-  Search,
-  SlidersHorizontal,
-  X,
-} from "lucide-react";
+import React, { useMemo, useState } from "react"
+import { Package2, Search, SlidersHorizontal, X } from "lucide-react"
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 
-import ProductCard from "./ProductCard";
-import SourcingDrawer from "./SourcingDrawer";
+import ProductCard from "./ProductCard"
+import SourcingDrawer from "./SourcingDrawer"
 
-import type { MarketplaceProduct } from "@/types";
+import type { MarketplaceProduct } from "@/types"
 
 interface ProductCatalogueProps {
-  products: MarketplaceProduct[];
+  products: MarketplaceProduct[]
 }
 
-export default function ProductCatalogue({
-  products,
-}: ProductCatalogueProps) {
-  const [search, setSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("ALL");
+export default function ProductCatalogue({ products }: ProductCatalogueProps) {
+  const [search, setSearch] = useState("")
+  const [selectedCategory, setSelectedCategory] = useState("ALL")
 
   const [selectedProduct, setSelectedProduct] =
-    useState<MarketplaceProduct | null>(null);
+    useState<MarketplaceProduct | null>(null)
 
-  const [isSourcingOpen, setIsSourcingOpen] = useState(false);
+  const [isSourcingOpen, setIsSourcingOpen] = useState(false)
 
   /*
    * Build categories from the Master Product catalogue.
    */
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(
-      new Set(
-        products
-          .map((product) => product.category)
-          .filter(Boolean)
-      )
-    ).sort();
+      new Set(products.map((product) => product.category).filter(Boolean))
+    ).sort()
 
-    return ["ALL", ...uniqueCategories];
-  }, [products]);
+    return ["ALL", ...uniqueCategories]
+  }, [products])
 
   /*
    * Search + category filtering.
    */
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedSearch = search.trim().toLowerCase()
 
     return products.filter((product) => {
       const matchesCategory =
-        selectedCategory === "ALL" ||
-        product.category === selectedCategory;
+        selectedCategory === "ALL" || product.category === selectedCategory
 
       if (!normalizedSearch) {
-        return matchesCategory;
+        return matchesCategory
       }
 
       const searchableText = [
@@ -77,52 +65,42 @@ export default function ProductCatalogue({
       ]
         .filter(Boolean)
         .join(" ")
-        .toLowerCase();
+        .toLowerCase()
 
-      return (
-        matchesCategory &&
-        searchableText.includes(normalizedSearch)
-      );
-    });
-  }, [
-    products,
-    search,
-    selectedCategory,
-  ]);
+      return matchesCategory && searchableText.includes(normalizedSearch)
+    })
+  }, [products, search, selectedCategory])
 
   /*
    * ProductCard → SourcingDrawer
    */
-  const handleProcure = (
-    product: MarketplaceProduct
-  ) => {
-    setSelectedProduct(product);
-    setIsSourcingOpen(true);
-  };
+  const handleProcure = (product: MarketplaceProduct) => {
+    setSelectedProduct(product)
+    setIsSourcingOpen(true)
+  }
 
   /*
    * Close drawer.
    */
   const handleCloseSourcing = () => {
-    setIsSourcingOpen(false);
+    setIsSourcingOpen(false)
 
     window.setTimeout(() => {
-      setSelectedProduct(null);
-    }, 250);
-  };
+      setSelectedProduct(null)
+    }, 250)
+  }
 
   /*
    * Clear catalogue filters.
    */
   const clearFilters = () => {
-    setSearch("");
-    setSelectedCategory("ALL");
-  };
+    setSearch("")
+    setSelectedCategory("ALL")
+  }
 
   return (
     <>
       <section className="space-y-6">
-
         {/* Catalogue Header */}
         <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
@@ -146,8 +124,8 @@ export default function ProductCatalogue({
                 </div>
 
                 <p className="mt-1 text-sm text-slate-500">
-                  Browse verified healthcare products from across
-                  Importers, Manufacturers and Tier-1 Distributors.
+                  Browse verified healthcare products from across Importers,
+                  Manufacturers and Tier-1 Distributors.
                 </p>
               </div>
             </div>
@@ -160,50 +138,35 @@ export default function ProductCatalogue({
 
         {/* Search + Filters */}
         <div className="space-y-3">
-
           <div className="flex flex-col gap-3 md:flex-row">
-
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-slate-400" />
 
               <Input
                 value={search}
-                onChange={(event) =>
-                  setSearch(event.target.value)
-                }
+                onChange={(event) => setSearch(event.target.value)}
                 placeholder="Search pharmaceutical products..."
-                className="h-11 rounded-xl border-slate-200 bg-white pl-10 pr-10"
+                className="h-11 rounded-xl border-slate-200 bg-white pr-10 pl-10"
               />
 
               {search && (
                 <button
                   type="button"
                   onClick={() => setSearch("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-slate-400 hover:text-slate-700"
                   aria-label="Clear search"
                 >
                   <X className="h-4 w-4" />
                 </button>
               )}
             </div>
-
-
           </div>
 
           {/* Category Filter */}
           <div className="w-full overflow-hidden">
-            <div
-              className="
-                flex
-                w-full
-                gap-2
-                overflow-x-auto
-                pb-2
-                [-ms-overflow-style:none]
-              "
-            >
+            <div className="flex w-full gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none]">
               {categories.map((category) => {
-                const active = selectedCategory === category;
+                const active = selectedCategory === category
 
                 return (
                   <button
@@ -211,15 +174,15 @@ export default function ProductCatalogue({
                     type="button"
                     onClick={() => setSelectedCategory(category)}
                     className={[
-                      "shrink-0 whitespace-nowrap rounded-full border px-4 py-2",
+                      "shrink-0 rounded-full border px-4 py-2 whitespace-nowrap",
                       "text-xs font-semibold transition-all duration-200",
-                      "focus:outline-none focus:ring-2 focus:ring-blue-500/30",
+                      "focus:ring-2 focus:ring-blue-500/30 focus:outline-none",
                       active
                         ? "border-blue-600 bg-blue-600 text-white shadow-sm"
                         : [
-                          "border-slate-200 bg-white text-slate-600",
-                          "hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
-                        ].join(" "),
+                            "border-slate-200 bg-white text-slate-600",
+                            "hover:border-blue-200 hover:bg-blue-50 hover:text-blue-700",
+                          ].join(" "),
                     ].join(" ")}
                   >
                     {category === "ALL" && (
@@ -228,7 +191,7 @@ export default function ProductCatalogue({
 
                     {category === "ALL" ? "All Products" : category}
                   </button>
-                );
+                )
               })}
             </div>
           </div>
@@ -247,7 +210,6 @@ export default function ProductCatalogue({
           </div>
         ) : (
           <div className="flex min-h-75 flex-col items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 px-6 text-center">
-
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-sm">
               <Package2 className="h-6 w-6 text-slate-400" />
             </div>
@@ -257,8 +219,8 @@ export default function ProductCatalogue({
             </h3>
 
             <p className="mt-1 max-w-md text-sm text-slate-500">
-              No pharmaceutical products match your current
-              search or category filter.
+              No pharmaceutical products match your current search or category
+              filter.
             </p>
 
             {(search || selectedCategory !== "ALL") && (
@@ -289,5 +251,5 @@ export default function ProductCatalogue({
         />
       )}
     </>
-  );
+  )
 }

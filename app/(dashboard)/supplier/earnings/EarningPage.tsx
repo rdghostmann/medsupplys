@@ -1,5 +1,5 @@
 // /dashboard/supplier/EarningPage.tsx
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -8,20 +8,20 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import SupplierRevenueCommission from "./SupplierRevenueCommission";
+import SupplierRevenueCommission from "./SupplierRevenueCommission"
 
 import type {
   CurrentSupplierUser,
   SupplierOrder,
   SupplierPayoutRecord,
-} from "@/controllers/supplier.action";
+} from "@/controllers/supplier.action"
 
 interface EarningPageProps {
-  user: CurrentSupplierUser | null;
-  orders: SupplierOrder[];
-  payouts: SupplierPayoutRecord[];
+  user: CurrentSupplierUser | null
+  orders: SupplierOrder[]
+  payouts: SupplierPayoutRecord[]
 }
 
 export default function EarningPage({
@@ -35,17 +35,13 @@ export default function EarningPage({
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Revenue & Commission
-            </BreadcrumbPage>
+            <BreadcrumbPage>Revenue & Commission</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -63,5 +59,5 @@ export default function EarningPage({
         </div>
       </div>
     </div>
-  );
+  )
 }

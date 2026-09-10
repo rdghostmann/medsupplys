@@ -1,13 +1,6 @@
 // /models/CreditTransaction.ts
 
-import {
-  Schema,
-  Types,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, Types, model, models, Document, Model } from "mongoose"
 
 export type CreditTransactionType =
   | "CREDIT_PURCHASE"
@@ -15,151 +8,138 @@ export type CreditTransactionType =
   | "ADJUSTMENT"
   | "REVERSAL"
   | "INTEREST"
-  | "FEE";
+  | "FEE"
 
-export type CreditTransactionDirection =
-  | "CHARGE"
-  | "PAYMENT"
-  | "CREDIT";
+export type CreditTransactionDirection = "CHARGE" | "PAYMENT" | "CREDIT"
 
-export interface ICreditTransaction
-  extends Document {
-  creditAccountId: Types.ObjectId;
+export interface ICreditTransaction extends Document {
+  creditAccountId: Types.ObjectId
 
-  buyerId: Types.ObjectId;
+  buyerId: Types.ObjectId
 
-  type: CreditTransactionType;
+  type: CreditTransactionType
 
-  amount: number;
+  amount: number
 
-  direction: CreditTransactionDirection;
+  direction: CreditTransactionDirection
 
-  balanceBefore: number;
+  balanceBefore: number
 
-  balanceAfter: number;
+  balanceAfter: number
 
-  reference: string;
+  reference: string
 
-  procurementId?: Types.ObjectId;
+  procurementId?: Types.ObjectId
 
-  orderId?: Types.ObjectId;
+  orderId?: Types.ObjectId
 
-  description: string;
+  description: string
 
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
 
-  createdAt: Date;
+  createdAt: Date
 }
 
-const CreditTransactionSchema =
-  new Schema<ICreditTransaction>(
-    {
-      creditAccountId: {
-        type: Schema.Types.ObjectId,
-        ref: "CreditAccount",
-        required: true,
-        index: true,
-      },
-
-      buyerId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
-
-      type: {
-        type: String,
-        enum: [
-          "CREDIT_PURCHASE",
-          "PAYMENT",
-          "ADJUSTMENT",
-          "REVERSAL",
-          "INTEREST",
-          "FEE",
-        ],
-        required: true,
-      },
-
-      amount: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      direction: {
-        type: String,
-        enum: [
-          "CHARGE",
-          "PAYMENT",
-          "CREDIT",
-        ],
-        required: true,
-      },
-
-      balanceBefore: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      balanceAfter: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      reference: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-      },
-
-      procurementId: {
-        type: Schema.Types.ObjectId,
-        ref: "Procurement",
-        index: true,
-      },
-
-      orderId: {
-        type: Schema.Types.ObjectId,
-        ref: "Order",
-        index: true,
-      },
-
-      description: {
-        type: String,
-        required: true,
-      },
-
-      metadata: {
-        type: Schema.Types.Mixed,
-      },
+const CreditTransactionSchema = new Schema<ICreditTransaction>(
+  {
+    creditAccountId: {
+      type: Schema.Types.ObjectId,
+      ref: "CreditAccount",
+      required: true,
+      index: true,
     },
-    {
-      timestamps: {
-        createdAt: true,
-        updatedAt: false,
-      },
-      versionKey: false,
-    }
-  );
+
+    buyerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    type: {
+      type: String,
+      enum: [
+        "CREDIT_PURCHASE",
+        "PAYMENT",
+        "ADJUSTMENT",
+        "REVERSAL",
+        "INTEREST",
+        "FEE",
+      ],
+      required: true,
+    },
+
+    amount: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    direction: {
+      type: String,
+      enum: ["CHARGE", "PAYMENT", "CREDIT"],
+      required: true,
+    },
+
+    balanceBefore: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    balanceAfter: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    reference: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
+
+    procurementId: {
+      type: Schema.Types.ObjectId,
+      ref: "Procurement",
+      index: true,
+    },
+
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      index: true,
+    },
+
+    description: {
+      type: String,
+      required: true,
+    },
+
+    metadata: {
+      type: Schema.Types.Mixed,
+    },
+  },
+  {
+    timestamps: {
+      createdAt: true,
+      updatedAt: false,
+    },
+    versionKey: false,
+  }
+)
 
 CreditTransactionSchema.index({
   buyerId: 1,
   createdAt: -1,
-});
+})
 
 CreditTransactionSchema.index({
   procurementId: 1,
   createdAt: -1,
-});
+})
 
-export const CreditTransaction:
-  Model<ICreditTransaction> =
+export const CreditTransaction: Model<ICreditTransaction> =
   models.CreditTransaction ||
-  model<ICreditTransaction>(
-    "CreditTransaction",
-    CreditTransactionSchema
-  );
+  model<ICreditTransaction>("CreditTransaction", CreditTransactionSchema)

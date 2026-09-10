@@ -1,7 +1,7 @@
 // app/(dashboard)/buyer/procurement-sourcing/page.tsx
-"use client";
+"use client"
 
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/navigation"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,12 +9,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-import BuyerProcurements from "./BuyerProcurements";
+import BuyerProcurements from "./BuyerProcurements"
 
 export default function Page() {
-  const router = useRouter();
+  const router = useRouter()
 
   /**
    * Mock refresh handler.
@@ -25,15 +25,15 @@ export default function Page() {
    */
   const refreshProcurements = async () => {
     // Future API synchronization can be handled here.
-    await Promise.resolve();
-  };
+    await Promise.resolve()
+  }
 
   /**
    * Navigate to the Master Catalogue.
    */
   const handleOpenCatalogue = () => {
-    router.push("/buyer/catalogue");
-  };
+    router.push("/buyer/catalogue")
+  }
 
   /**
    * Navigate to Buyer Orders.
@@ -42,10 +42,8 @@ export default function Page() {
    * Orders page can optionally open the specific order.
    */
   const handleOpenOrders = (orderId: string) => {
-    router.push(
-      `/buyer/orders?orderId=${encodeURIComponent(orderId)}`
-    );
-  };
+    router.push(`/buyer/orders?orderId=${encodeURIComponent(orderId)}`)
+  }
 
   return (
     <div className="flex flex-1 flex-col">
@@ -53,17 +51,13 @@ export default function Page() {
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/buyer">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/buyer">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Procurement Sourcing
-            </BreadcrumbPage>
+            <BreadcrumbPage>Procurement Sourcing</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -81,5 +75,5 @@ export default function Page() {
         </div>
       </div>
     </div>
-  );
+  )
 }

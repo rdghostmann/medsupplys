@@ -123,4 +123,6 @@ SupplierInventorySchema.index({
   productId: 1,
 })
 
-export const SupplierInventory = models.SupplierInventory || model("SupplierInventory", SupplierInventorySchema)
+export const SupplierInventory =
+  models.SupplierInventory ||
+  model("SupplierInventory", SupplierInventorySchema)

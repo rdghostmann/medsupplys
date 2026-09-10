@@ -67,7 +67,7 @@ const TrendIcon = ({ trend }: { trend?: string }) => {
 
 export function AdminStatsCard() {
   return (
-    <div className="grid grid-cols-2 md:grid-col-4 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
+    <div className="md:grid-col-4 grid grid-cols-2 gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @5xl/main:grid-cols-4">
       {stats.map((item, index) => (
         <Card
           key={item.title}

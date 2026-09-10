@@ -48,7 +48,7 @@ function ThemeHotkey() {
         return
       }
 
-      // FIX: Use optional chaining and nullish coalescing to prevent 
+      // FIX: Use optional chaining and nullish coalescing to prevent
       // "Cannot read properties of undefined (reading 'toLowerCase')"
       if ((event.key?.toLowerCase() ?? "") !== "d") {
         return
@@ -73,4 +73,3 @@ function ThemeHotkey() {
 }
 
 export { ThemeProvider }
-

@@ -1,64 +1,55 @@
-"use client";
+"use client"
 
-import React, { useMemo } from "react";
-import {
-  Package,
-  ShieldCheck,
-  Percent,
-  Layers,
-} from "lucide-react";
+import React, { useMemo } from "react"
+import { Package, ShieldCheck, Percent, Layers } from "lucide-react"
 
-import type { MasterProduct } from "@/types";
+import type { MasterProduct } from "@/types"
 
 interface CatalogStatsProps {
-  products: MasterProduct[];
+  products: MasterProduct[]
 }
 
-export function CatalogStats({
-  products,
-}: CatalogStatsProps) {
+export function CatalogStats({ products }: CatalogStatsProps) {
   const stats = useMemo(() => {
-    const total = products.length;
+    const total = products.length
 
     const activeCount = products.filter(
       (product) => product.status === "ACTIVE"
-    ).length;
+    ).length
 
     const avgCommission =
       total > 0
         ? (
             products.reduce(
-              (acc, product) =>
-                acc + Number(product.commissionPercent || 0),
+              (acc, product) => acc + Number(product.commissionPercent || 0),
               0
             ) / total
           ).toFixed(1)
-        : "0";
+        : "0"
 
     const totalCatalogBaseValue = products.reduce(
-      (acc, product) =>
-        acc + Number(product.referenceBasePrice || 0),
+      (acc, product) => acc + Number(product.referenceBasePrice || 0),
       0
-    );
+    )
 
     return {
       total,
       activeCount,
       avgCommission,
       totalCatalogBaseValue,
-    };
-  }, [products]);
+    }
+  }, [products])
 
   return (
     <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
       {/* Cataloged Lines */}
       <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
         <div className="min-w-0">
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
             Cataloged Lines
           </span>
 
-          <span className="mt-1 block font-display text-2xl font-bold text-slate-900">
+          <span className="font-display mt-1 block text-2xl font-bold text-slate-900">
             {stats.total}
           </span>
 
@@ -75,7 +66,7 @@ export function CatalogStats({
       {/* Hospital Sourcing */}
       <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
         <div className="min-w-0">
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
             Hospital Sourcing
           </span>
 
@@ -102,11 +93,11 @@ export function CatalogStats({
       {/* Platform Fee */}
       <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
         <div className="min-w-0">
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
             Avg Platform Fee
           </span>
 
-          <span className="mt-1 block font-display text-2xl font-bold text-blue-700">
+          <span className="font-display mt-1 block text-2xl font-bold text-blue-700">
             {stats.avgCommission}%
           </span>
 
@@ -123,7 +114,7 @@ export function CatalogStats({
       {/* Basket */}
       <div className="flex items-center justify-between rounded-xl border border-slate-200/90 bg-white p-4 shadow-xs">
         <div className="min-w-0">
-          <span className="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
             Catalog Basket Price
           </span>
 
@@ -141,7 +132,7 @@ export function CatalogStats({
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default CatalogStats;
+export default CatalogStats

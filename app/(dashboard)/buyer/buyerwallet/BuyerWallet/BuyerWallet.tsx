@@ -1,81 +1,66 @@
 // BuyerWallet.tsx
 
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import {
-  Wallet as WalletIcon,
-  ShieldCheck,
-  Lock,
-} from "lucide-react";
-import { toast } from "sonner";
+import React, { useState } from "react"
+import { Wallet as WalletIcon, ShieldCheck, Lock } from "lucide-react"
+import { toast } from "sonner"
 
 import TransactionHistoryLedger, {
   WalletTransaction,
-} from "./TransactionHistoryLedger";
+} from "./TransactionHistoryLedger"
 import type {
   CurrentBuyerWallet,
   CurrentBuyerWalletTransaction,
-} from "@/controllers/buyer.actions";
+} from "@/controllers/buyer.actions"
 
-import TopUpModal from "./TopUpModal";
-import { useRouter } from "next/dist/client/components/navigation";
+import TopUpModal from "./TopUpModal"
+import { useRouter } from "next/dist/client/components/navigation"
 
-type BuyerWalletData = CurrentBuyerWallet;
-
+type BuyerWalletData = CurrentBuyerWallet
 
 /* -------------------------------------------------------------------------- */
 /* Helpers                                                                    */
 /* -------------------------------------------------------------------------- */
 
 const formatCurrency = (value: number) =>
-  `₦${Number(value || 0).toLocaleString("en-NG")}`;
+  `₦${Number(value || 0).toLocaleString("en-NG")}`
 
 /* -------------------------------------------------------------------------- */
 /* Component                                                                  */
 /* -------------------------------------------------------------------------- */
 
 interface BuyerWalletProps {
-  wallet: BuyerWalletData | null;
-  walletTransactions: CurrentBuyerWalletTransaction[];
+  wallet: BuyerWalletData | null
+  walletTransactions: CurrentBuyerWalletTransaction[]
 }
 
 export const BuyerWallet: React.FC<BuyerWalletProps> = ({
   wallet,
   walletTransactions: initialTransactions,
 }) => {
-
-
-
-  const walletState = wallet;
+  const walletState = wallet
 
   const [transactions, setTransactions] =
-    useState<WalletTransaction[]>(initialTransactions);
+    useState<WalletTransaction[]>(initialTransactions)
 
-  const [isRefreshing, setIsRefreshing] =
-    useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
-  const [isTopUpModalOpen, setIsTopUpModalOpen] =
-    useState(false);
-  const router = useRouter();
+  const [isTopUpModalOpen, setIsTopUpModalOpen] = useState(false)
+  const router = useRouter()
   const refreshAll = async () => {
-    setIsRefreshing(true);
+    setIsRefreshing(true)
 
     try {
-      router.refresh();
+      router.refresh()
 
-      await new Promise(
-        (resolve) =>
-          setTimeout(resolve, 500)
-      );
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
-      toast.success(
-        "Wallet ledger refreshed"
-      );
+      toast.success("Wallet ledger refreshed")
     } finally {
-      setIsRefreshing(false);
+      setIsRefreshing(false)
     }
-  };
+  }
 
   /* ------------------------------------------------------------------------ */
   /* UI                                                                        */
@@ -91,29 +76,15 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500">
-            Direct Paystack automated settlement, atomic
-            balance locking, and immutable cryptographic
-            ledger
+            Direct Paystack automated settlement, atomic balance locking, and
+            immutable cryptographic ledger
           </p>
         </div>
 
         <button
           type="button"
           onClick={() => setIsTopUpModalOpen(true)}
-          className="
-          flex cursor-pointer
-          items-center gap-1.5
-          self-start
-          rounded-xl
-          bg-emerald-600
-          px-4 py-2
-          text-xs font-bold
-          text-white
-          shadow-md
-          shadow-emerald-600/20
-          transition
-          hover:bg-emerald-700
-        "
+          className="flex cursor-pointer items-center gap-1.5 self-start rounded-xl bg-emerald-600 px-4 py-2 text-xs font-bold text-white shadow-md shadow-emerald-600/20 transition hover:bg-emerald-700"
         >
           <WalletIcon className="h-4 w-4" />
 
@@ -125,25 +96,26 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {/* Available Balance */}
         <div className="relative overflow-hidden rounded-2xl bg-linear-to-br from-blue-900 to-slate-900 p-6 text-white shadow-lg">
-         <div>
-           <div className="mb-1 text-xs font-bold uppercase tracking-wider text-blue-200">
-            Available Balance
-          </div>
+          <div>
+            <div className="mb-1 text-xs font-bold tracking-wider text-blue-200 uppercase">
+              Available Balance
+            </div>
 
-          <div className="mt-2 font-mono text-2xl font-bold">
-            {formatCurrency(walletState?.balance || 0)}
-          </div>
-           <p className="mt-1 text-[11px] text-slate-500">
+            <div className="mt-2 font-mono text-2xl font-bold">
+              {formatCurrency(walletState?.balance || 0)}
+            </div>
+            <p className="mt-1 text-[11px] text-slate-500">
               Available institutional procurement wallet balance
             </p>
-         </div>
+          </div>
 
           <div className="mt-4 flex items-center gap-1 border-t border-white/20 pt-3 text-[11px] text-slate-400">
             <span
-              className={`h-2 w-2 animate-pulse rounded-full ${walletState?.status === "ACTIVE"
-                ? "bg-emerald-400"
-                : "bg-red-400"
-                }`}
+              className={`h-2 w-2 animate-pulse rounded-full ${
+                walletState?.status === "ACTIVE"
+                  ? "bg-emerald-400"
+                  : "bg-red-400"
+              }`}
             />
 
             <span>
@@ -160,7 +132,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
         {/* Credit Allowance */}
         <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-amber-200 bg-linear-to-br from-amber-50 via-white to-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 text-xs font-bold uppercase tracking-wider text-amber-700">
+            <div className="mb-1 text-xs font-bold tracking-wider text-amber-700 uppercase">
               Credit Allowance
             </div>
 
@@ -187,7 +159,7 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
         {/* Available Purchasing Power */}
         <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl border border-emerald-200 bg-linear-to-br from-emerald-50 via-white to-white p-5 shadow-xs">
           <div>
-            <div className="mb-1 text-xs font-bold uppercase tracking-wider text-emerald-700">
+            <div className="mb-1 text-xs font-bold tracking-wider text-emerald-700 uppercase">
               Purchasing Power
             </div>
 
@@ -196,7 +168,6 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
               <div className="font-mono text-2xl font-bold text-emerald-700">
                 {formatCurrency(walletState?.purchasingPower || 0)}
               </div>
-
             </div>
 
             <p className="mt-1 text-[11px] text-slate-500">
@@ -225,19 +196,16 @@ export const BuyerWallet: React.FC<BuyerWalletProps> = ({
         currentUser={
           walletState?.buyerId
             ? {
-              id: walletState.buyerId,
-            }
+                id: walletState.buyerId,
+              }
             : null
         }
         onSuccess={async () => {
-          await refreshAll();
+          await refreshAll()
         }}
       />
     </div>
+  )
+}
 
-
-
-  );
-};
-
-export default BuyerWallet;
+export default BuyerWallet

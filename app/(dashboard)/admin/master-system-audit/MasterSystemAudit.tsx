@@ -1,62 +1,62 @@
-"use client";
+"use client"
 
 import {
   flexRender,
   getCoreRowModel,
   useReactTable,
   type ColumnDef,
-} from "@tanstack/react-table";
-import { useMemo } from "react";
-import type { AdminAuditLog } from "@/controllers/admin.actions";
+} from "@tanstack/react-table"
+import { useMemo } from "react"
+import type { AdminAuditLog } from "@/controllers/admin.actions"
 
 type MasterSystemAuditEntry = {
-  id: string;
-  actorId: string;
-  actorName: string;
-  actorRole: "ADMIN" | "BUYER" | "SUPPLIER" | "PHARMACIST";
-  action: string;
-  entity: string;
-  entityId: string;
-  newValue: string;
-  details: string;
-  ipAddress: string;
-  timestamp: string;
-};
+  id: string
+  actorId: string
+  actorName: string
+  actorRole: "ADMIN" | "BUYER" | "SUPPLIER" | "PHARMACIST"
+  action: string
+  entity: string
+  entityId: string
+  newValue: string
+  details: string
+  ipAddress: string
+  timestamp: string
+}
 
 const getRoleClass = (role: MasterSystemAuditEntry["actorRole"]) => {
   switch (role) {
     case "ADMIN":
-      return "bg-purple-100 text-purple-700";
+      return "bg-purple-100 text-purple-700"
 
     case "BUYER":
-      return "bg-blue-100 text-blue-700";
+      return "bg-blue-100 text-blue-700"
 
     case "SUPPLIER":
-      return "bg-amber-100 text-amber-700";
+      return "bg-amber-100 text-amber-700"
 
     case "PHARMACIST":
-      return "bg-emerald-100 text-emerald-700";
+      return "bg-emerald-100 text-emerald-700"
 
     default:
-      return "bg-slate-100 text-slate-600";
+      return "bg-slate-100 text-slate-600"
   }
-};
+}
 
 const formatDate = (timestamp: string) => {
   return new Date(timestamp).toLocaleDateString("en-NG", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  });
-};
+  })
+}
 
 const formatTime = (timestamp: string) => {
   return new Date(timestamp).toLocaleTimeString([], {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
-  });
-};
+  })
+}
 
 const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
   const columns = useMemo<ColumnDef<MasterSystemAuditEntry>[]>(
@@ -65,17 +65,17 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         accessorKey: "timestamp",
         header: "Timestamp",
         cell: ({ row }) => {
-          const timestamp = row.original.timestamp;
+          const timestamp = row.original.timestamp
 
           return (
-            <div className="text-slate-500 font-mono text-[11px] whitespace-nowrap">
+            <div className="font-mono text-[11px] whitespace-nowrap text-slate-500">
               <div>{formatDate(timestamp)}</div>
 
-              <div className="text-[10px] text-slate-400 mt-0.5">
+              <div className="mt-0.5 text-[10px] text-slate-400">
                 {formatTime(timestamp)}
               </div>
             </div>
-          );
+          )
         },
       },
 
@@ -83,7 +83,7 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         accessorKey: "actorName",
         header: "Actor (Role)",
         cell: ({ row }) => {
-          const log = row.original;
+          const log = row.original
 
           return (
             <div className="flex flex-col gap-1">
@@ -92,14 +92,14 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
               </span>
 
               <span
-                className={`w-fit text-[9px] font-bold px-1.5 py-0.5 rounded ${getRoleClass(
+                className={`w-fit rounded px-1.5 py-0.5 text-[9px] font-bold ${getRoleClass(
                   log.actorRole
                 )}`}
               >
                 {log.actorRole}
               </span>
             </div>
-          );
+          )
         },
       },
 
@@ -107,7 +107,7 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         accessorKey: "action",
         header: "Action",
         cell: ({ row }) => (
-          <span className="font-mono font-semibold text-blue-700 text-[11.5px]">
+          <span className="font-mono text-[11.5px] font-semibold text-blue-700">
             {row.original.action}
           </span>
         ),
@@ -117,19 +117,17 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         accessorKey: "entity",
         header: "Entity",
         cell: ({ row }) => {
-          const log = row.original;
+          const log = row.original
 
           return (
             <div>
-              <div className="font-semibold text-slate-700">
-                {log.entity}
-              </div>
+              <div className="font-semibold text-slate-700">{log.entity}</div>
 
-              <div className="font-mono text-[10px] text-slate-400 mt-0.5">
+              <div className="mt-0.5 font-mono text-[10px] text-slate-400">
                 {log.entityId}
               </div>
             </div>
-          );
+          )
         },
       },
 
@@ -137,38 +135,35 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         accessorKey: "details",
         header: "Details",
         cell: ({ row }) => {
-          const log = row.original;
+          const log = row.original
 
           return (
-            <div className="text-slate-600 max-w-md">
-              <div className="truncate">
-                {log.details}
-              </div>
+            <div className="max-w-md text-slate-600">
+              <div className="truncate">{log.details}</div>
 
-              <div className="text-[10px] text-slate-400 mt-1 font-mono truncate">
+              <div className="mt-1 truncate font-mono text-[10px] text-slate-400">
                 {log.newValue}
               </div>
 
-              <div className="text-[9px] text-slate-400 mt-1 font-mono">
+              <div className="mt-1 font-mono text-[9px] text-slate-400">
                 IP: {log.ipAddress}
               </div>
             </div>
-          );
+          )
         },
       },
     ],
     []
-  );
+  )
 
   const table = useReactTable({
     data: audits,
     columns,
     getCoreRowModel: getCoreRowModel(),
-  });
+  })
 
   return (
-    <div className="bg-white rounded-2xl  shadow-xs overflow-hidden">
-
+    <div className="overflow-hidden rounded-2xl bg-white shadow-xs">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h1 className="font-display text-xl font-bold text-slate-900">
@@ -176,14 +171,15 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
           </h1>
 
           <p className="mt-0.5 text-xs text-slate-500">
-            Administer verified supplier pool, NAFDAC master catalog, matching algorithm, platform monetization, and audit trails
+            Administer verified supplier pool, NAFDAC master catalog, matching
+            algorithm, platform monetization, and audit trails
           </p>
         </div>
       </div>
 
       {/* Header */}
-      <div className="p-5 border-b border-slate-100 flex items-center justify-between">
-        <h2 className="font-display text-sm font-bold text-slate-900 uppercase tracking-wider">
+      <div className="flex items-center justify-between border-b border-slate-100 p-5">
+        <h2 className="font-display text-sm font-bold tracking-wider text-slate-900 uppercase">
           System-wide Cryptographic Audit Trail ({audits.length} Events)
         </h2>
       </div>
@@ -191,20 +187,17 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs">
-          <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10.5px] border-b border-slate-100">
+          <thead className="border-b border-slate-100 bg-slate-50 text-[10.5px] tracking-wider text-slate-500 uppercase">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <th
-                    key={header.id}
-                    className="py-3 px-4 font-semibold"
-                  >
+                  <th key={header.id} className="px-4 py-3 font-semibold">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </th>
                 ))}
               </tr>
@@ -213,19 +206,10 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
 
           <tbody className="divide-y divide-slate-100">
             {table.getRowModel().rows.map((row) => (
-              <tr
-                key={row.id}
-                className="hover:bg-slate-50 transition"
-              >
+              <tr key={row.id} className="transition hover:bg-slate-50">
                 {row.getVisibleCells().map((cell) => (
-                  <td
-                    key={cell.id}
-                    className="py-3 px-4"
-                  >
-                    {flexRender(
-                      cell.column.columnDef.cell,
-                      cell.getContext()
-                    )}
+                  <td key={cell.id} className="px-4 py-3">
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}
               </tr>
@@ -245,7 +229,7 @@ const MasterSystemAudit = ({ audits }: { audits: AdminAuditLog[] }) => {
         </table>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default MasterSystemAudit;
+export default MasterSystemAudit

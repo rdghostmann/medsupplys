@@ -1,18 +1,8 @@
 // /models/Product.ts
 
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose"
 
-export type ProductStatus =
-  | "ACTIVE"
-  | "INACTIVE"
-  | "SUSPENDED"
-  | "ARCHIVED";
+export type ProductStatus = "ACTIVE" | "INACTIVE" | "SUSPENDED" | "ARCHIVED"
 
 export interface IProduct extends Document {
   /**
@@ -21,57 +11,57 @@ export interface IProduct extends Document {
    * This is the approved product definition
    * controlled by Admin.
    */
-  name: string;
+  name: string
 
-  genericName?: string;
-  brandName?: string;
+  genericName?: string
+  brandName?: string
 
-  activeIngredient: string;
-  strength: string;
-  dosageForm: string;
+  activeIngredient: string
+  strength: string
+  dosageForm: string
 
-  category: string;
+  category: string
 
-  unit: string;
-  packSize?: string;
+  unit: string
+  packSize?: string
 
   /**
    * Platform reference pricing
    */
-  referenceBasePrice: number;
+  referenceBasePrice: number
 
-  commissionPercent: number;
+  commissionPercent: number
 
-  maxMarkupPercent: number;
+  maxMarkupPercent: number
 
   /**
    * Product lifecycle
    */
-  status: ProductStatus;
+  status: ProductStatus
 
   /**
    * Product handling information
    */
-  storageCondition?: string;
+  storageCondition?: string
 
-  requiresColdChain: boolean;
+  requiresColdChain: boolean
 
-  controlledDrug: boolean;
+  controlledDrug: boolean
 
-  prescriptionRequired: boolean;
+  prescriptionRequired: boolean
 
-  description?: string;
+  description?: string
 
-  image?: string;
+  image?: string
 
   /**
    * Audit
    */
-  createdBy?: Schema.Types.ObjectId;
-  updatedBy?: Schema.Types.ObjectId;
+  createdBy?: Schema.Types.ObjectId
+  updatedBy?: Schema.Types.ObjectId
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date
+  updatedAt: Date
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -159,12 +149,7 @@ const ProductSchema = new Schema<IProduct>(
 
     status: {
       type: String,
-      enum: [
-        "ACTIVE",
-        "INACTIVE",
-        "SUSPENDED",
-        "ARCHIVED",
-      ],
+      enum: ["ACTIVE", "INACTIVE", "SUSPENDED", "ARCHIVED"],
       default: "ACTIVE",
       index: true,
     },
@@ -213,7 +198,7 @@ const ProductSchema = new Schema<IProduct>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
 /**
  * Master catalogue search
@@ -223,7 +208,7 @@ ProductSchema.index({
   genericName: "text",
   brandName: "text",
   activeIngredient: "text",
-});
+})
 
 /**
  * Useful catalogue filters
@@ -231,13 +216,12 @@ ProductSchema.index({
 ProductSchema.index({
   category: 1,
   status: 1,
-});
+})
 
 ProductSchema.index({
   status: 1,
   name: 1,
-});
+})
 
 export const Product: Model<IProduct> =
-  models.Product ||
-  model<IProduct>("Product", ProductSchema);
+  models.Product || model<IProduct>("Product", ProductSchema)

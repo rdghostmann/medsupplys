@@ -31,10 +31,7 @@ export function getTierPricing(basePrice: number, type: string) {
   }
 }
 
-export function calcOrderTotal(
-  units: number,
-  unitPrice: number
-) {
+export function calcOrderTotal(units: number, unitPrice: number) {
   if (!units || !unitPrice) return 0
 
   return units * unitPrice

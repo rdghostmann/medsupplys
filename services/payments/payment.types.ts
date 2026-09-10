@@ -1,11 +1,8 @@
 // /services/payments/payment.types.ts
 
-export type PaymentProvider =
-  | "PAYSTACK"
-  | "FLUTTERWAVE";
+export type PaymentProvider = "PAYSTACK" | "FLUTTERWAVE"
 
-export type PaymentPurpose =
-  | "WALLET_TOPUP";
+export type PaymentPurpose = "WALLET_TOPUP"
 
 export type PaymentStatus =
   | "PENDING"
@@ -13,60 +10,56 @@ export type PaymentStatus =
   | "FAILED"
   | "CANCELLED"
   | "ABANDONED"
-  | "REVERSED";
+  | "REVERSED"
 
 export interface InitializePaymentParams {
-  buyerId: string;
-  email: string;
-  name: string;
-  phone?: string;
+  buyerId: string
+  email: string
+  name: string
+  phone?: string
 
-  amount: number;
-  currency: "NGN";
+  amount: number
+  currency: "NGN"
 
-  reference: string;
+  reference: string
 
-  purpose: PaymentPurpose;
+  purpose: PaymentPurpose
 
-  callbackUrl: string;
+  callbackUrl: string
 
-  metadata?: Record<string, unknown>;
+  metadata?: Record<string, unknown>
 }
 
 export interface InitializePaymentResult {
-  success: boolean;
+  success: boolean
 
-  provider: PaymentProvider;
+  provider: PaymentProvider
 
-  reference: string;
+  reference: string
 
-  checkoutUrl: string;
+  checkoutUrl: string
 
-  providerReference?: string;
+  providerReference?: string
 
-  message?: string;
+  message?: string
 }
 
 export interface VerifyPaymentResult {
-  success: boolean;
+  success: boolean
 
-  provider: PaymentProvider;
+  provider: PaymentProvider
 
-  reference: string;
+  reference: string
 
-  providerReference?: string;
+  providerReference?: string
 
-  amount: number;
+  amount: number
 
-  currency: string;
+  currency: string
 
-  status:
-    | "SUCCESS"
-    | "FAILED"
-    | "PENDING";
+  status: "SUCCESS" | "FAILED" | "PENDING"
 
-  raw?: unknown;
+  raw?: unknown
 
-  message?: string;
+  message?: string
 }
-

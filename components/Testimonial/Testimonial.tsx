@@ -1,20 +1,20 @@
 // Testimonial.tsx
-"use client";
+"use client"
 
-import { useEffect } from "react";
-import { motion, useAnimation } from "framer-motion";
-import { Star, Quote, Building2 } from "lucide-react";
+import { useEffect } from "react"
+import { motion, useAnimation } from "framer-motion"
+import { Star, Quote, Building2 } from "lucide-react"
 
 interface Testimonial {
-  id: string;
-  author: string;
-  role: string;
-  quote: string;
-  rating: number;
-  organization: string;
-  organizationType: string;
-  avatarUrl?: string;
-  featured?: boolean;
+  id: string
+  author: string
+  role: string
+  quote: string
+  rating: number
+  organization: string
+  organizationType: string
+  avatarUrl?: string
+  featured?: boolean
 }
 
 export const TESTIMONIALS: Testimonial[] = [
@@ -54,38 +54,34 @@ export const TESTIMONIALS: Testimonial[] = [
     avatarUrl:
       "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=256&q=80",
   },
-];
+]
 
 /**
  * Generate initials from the testimonial author's name.
  */
 function getInitials(name: string): string {
-  const words = name
-    .replace(/,/g, "")
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
+  const words = name.replace(/,/g, "").trim().split(/\s+/).filter(Boolean)
 
   if (words.length === 0) {
-    return "MS";
+    return "MS"
   }
 
   if (words.length === 1) {
-    return words[0].slice(0, 2).toUpperCase();
+    return words[0].slice(0, 2).toUpperCase()
   }
 
-  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+  return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase()
 }
 
 export default function Testimonial() {
-  const controls = useAnimation();
+  const controls = useAnimation()
 
   // Triple the list to create a seamless scrolling track.
   const scrollItems: Testimonial[] = [
     ...TESTIMONIALS,
     ...TESTIMONIALS,
     ...TESTIMONIALS,
-  ];
+  ]
 
   useEffect(() => {
     controls.start({
@@ -96,12 +92,12 @@ export default function Testimonial() {
         repeat: Infinity,
         repeatType: "loop",
       },
-    });
-  }, [controls]);
+    })
+  }, [controls])
 
   const handleMouseEnter = () => {
-    controls.stop();
-  };
+    controls.stop()
+  }
 
   const handleMouseLeave = () => {
     controls.start({
@@ -112,8 +108,8 @@ export default function Testimonial() {
         repeat: Infinity,
         repeatType: "loop",
       },
-    });
-  };
+    })
+  }
 
   return (
     <section
@@ -135,7 +131,6 @@ export default function Testimonial() {
               className="h-1.5 w-1.5 animate-pulse rounded-full bg-blue-600"
               aria-hidden="true"
             />
-
             Healthcare Trust
           </motion.div>
 
@@ -173,13 +168,13 @@ export default function Testimonial() {
       >
         {/* Left Fade */}
         <div
-          className="pointer-events-none absolute left-0 top-0 z-10 h-full w-16 bg-linear-to-r from-white to-transparent sm:w-24"
+          className="pointer-events-none absolute top-0 left-0 z-10 h-full w-16 bg-linear-to-r from-white to-transparent sm:w-24"
           aria-hidden="true"
         />
 
         {/* Right Fade */}
         <div
-          className="pointer-events-none absolute right-0 top-0 z-10 h-full w-16 bg-linear-to-l from-white to-transparent sm:w-24"
+          className="pointer-events-none absolute top-0 right-0 z-10 h-full w-16 bg-linear-to-l from-white to-transparent sm:w-24"
           aria-hidden="true"
         />
 
@@ -190,26 +185,20 @@ export default function Testimonial() {
             animate={controls}
           >
             {scrollItems.map((testimonial, index) => {
-              const initials = getInitials(testimonial.author);
+              const initials = getInitials(testimonial.author)
 
               return (
                 <article
                   key={`${testimonial.id}-${index}`}
-                  className={`
-                    relative flex w-[85vw] shrink-0 flex-col
-                    rounded-3xl border-2 p-6
-                    transition-all duration-500
-                    sm:w-[45vw] sm:p-8
-                    lg:w-[30vw]
-                    ${testimonial.featured
+                  className={`relative flex w-[85vw] shrink-0 flex-col rounded-3xl border-2 p-6 transition-all duration-500 sm:w-[45vw] sm:p-8 lg:w-[30vw] ${
+                    testimonial.featured
                       ? "translate-y-2 border-blue-500 bg-blue-600 text-white shadow-2xl shadow-blue-500/20"
                       : "border-slate-100 bg-slate-50 text-slate-900 hover:-translate-y-2 hover:border-blue-100 hover:bg-white hover:shadow-xl"
-                    }
-                  `}
+                  } `}
                 >
                   {/* Featured Badge */}
                   {testimonial.featured && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full border border-blue-200 bg-white px-4 py-1 text-xs font-bold uppercase tracking-widest text-blue-600 shadow-lg">
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full border border-blue-200 bg-white px-4 py-1 text-xs font-bold tracking-widest whitespace-nowrap text-blue-600 uppercase shadow-lg">
                       Top Rated
                     </div>
                   )}
@@ -220,7 +209,7 @@ export default function Testimonial() {
                     aria-label={`${testimonial.rating} out of 5 stars`}
                   >
                     {Array.from({ length: 5 }).map((_, starIndex) => {
-                      const isActive = starIndex < testimonial.rating;
+                      const isActive = starIndex < testimonial.rating
 
                       return (
                         <Star
@@ -238,7 +227,7 @@ export default function Testimonial() {
                                 : "text-slate-300"
                           }
                         />
-                      );
+                      )
                     })}
                   </div>
 
@@ -246,36 +235,32 @@ export default function Testimonial() {
                   <div className="relative mb-8">
                     <Quote
                       aria-hidden="true"
-                      className={`
-                        absolute -left-2 -top-2 h-8 w-8 opacity-10
-                        ${testimonial.featured
-                          ? "text-white"
-                          : "text-blue-600"
-                        }
-                      `}
+                      className={`absolute -top-2 -left-2 h-8 w-8 opacity-10 ${
+                        testimonial.featured ? "text-white" : "text-blue-600"
+                      } `}
                     />
 
-                    <blockquote className="relative z-10 text-base font-medium italic leading-relaxed sm:text-lg">
+                    <blockquote className="relative z-10 text-base leading-relaxed font-medium italic sm:text-lg">
                       &ldquo;{testimonial.quote}&rdquo;
                     </blockquote>
                   </div>
 
                   {/* Organization */}
-                  <div className="hidden mb-6">
+                  <div className="mb-6 hidden">
                     <p
-                      className={`text-xs font-semibold ${testimonial.featured
-                        ? "text-blue-100"
-                        : "text-blue-700"
-                        }`}
+                      className={`text-xs font-semibold ${
+                        testimonial.featured ? "text-blue-100" : "text-blue-700"
+                      }`}
                     >
                       {testimonial.organization}
                     </p>
 
                     <p
-                      className={`mt-1 text-[11px] ${testimonial.featured
-                        ? "text-blue-200"
-                        : "text-slate-500"
-                        }`}
+                      className={`mt-1 text-[11px] ${
+                        testimonial.featured
+                          ? "text-blue-200"
+                          : "text-slate-500"
+                      }`}
                     >
                       {testimonial.organizationType}
                     </p>
@@ -296,14 +281,11 @@ export default function Testimonial() {
                       </div>
                     ) : (
                       <div
-                        className={`
-                          flex h-12 w-12 shrink-0 items-center justify-center
-                          rounded-full border text-sm font-bold
-                          ${testimonial.featured
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border text-sm font-bold ${
+                          testimonial.featured
                             ? "border-white/30 bg-white/20 text-white"
                             : "border-blue-100 bg-blue-50 text-blue-700"
-                          }
-                        `}
+                        } `}
                         aria-hidden="true"
                       >
                         {initials}
@@ -313,40 +295,33 @@ export default function Testimonial() {
                     {/* Author Information */}
                     <div className="min-w-0">
                       <div
-                        className={`
-                          truncate text-sm font-bold
-                          ${testimonial.featured
-                            ? "text-white"
-                            : "text-slate-900"
-                          }
-                        `}
+                        className={`truncate text-sm font-bold ${
+                          testimonial.featured ? "text-white" : "text-slate-900"
+                        } `}
                       >
                         {testimonial.author}
                       </div>
 
                       <div
-                        className={`
-                          mt-0.5 text-xs
-                          ${testimonial.featured
+                        className={`mt-0.5 text-xs ${
+                          testimonial.featured
                             ? "text-blue-100"
                             : "text-slate-500"
-                          }
-                        `}
+                        } `}
                       >
                         <Building2 size={11} />
 
                         {testimonial.role}
                         {/* {testimonial.organization} */}
-
                       </div>
                     </div>
                   </div>
                 </article>
-              );
+              )
             })}
           </motion.div>
         </div>
       </div>
     </section>
-  );
+  )
 }

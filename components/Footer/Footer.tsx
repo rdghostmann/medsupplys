@@ -1,8 +1,8 @@
 // components/Footer/Footer.tsx
 
-import Link from "next/link";
-import { MedSupplyLogo } from "../ui/MedSupplyLogo";
-import { ShieldCheck, Mail, MapPin } from "lucide-react";
+import Link from "next/link"
+import { MedSupplyLogo } from "../ui/MedSupplyLogo"
+import { ShieldCheck, Mail, MapPin } from "lucide-react"
 
 const Footer = () => {
   return (
@@ -13,7 +13,6 @@ const Footer = () => {
       {/* Main Footer */}
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 sm:py-16 lg:px-8">
         <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5 lg:gap-8">
-          
           {/* =========================================================
               Column 1: Brand & Identity
           ========================================================= */}
@@ -32,8 +31,8 @@ const Footer = () => {
 
             <p className="max-w-sm pt-1 text-xs leading-relaxed text-slate-600">
               Modernizing pharmaceutical procurement and institutional
-              verification through intelligent technology, audited
-              transparency, and trusted supplier networks.
+              verification through intelligent technology, audited transparency,
+              and trusted supplier networks.
             </p>
 
             {/* Trust / Contact Information */}
@@ -45,8 +44,7 @@ const Footer = () => {
                 </div>
 
                 <span>
-                  Good Distribution Practice (GDP) &amp; NAFDAC Verified
-                  Network
+                  Good Distribution Practice (GDP) &amp; NAFDAC Verified Network
                 </span>
               </div>
 
@@ -82,7 +80,7 @@ const Footer = () => {
               Column 2: Platform
           ========================================================= */}
           <div>
-            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold tracking-wider text-slate-900 uppercase">
               Platform
             </h4>
 
@@ -155,7 +153,7 @@ const Footer = () => {
               Column 3: For Healthcare
           ========================================================= */}
           <div>
-            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold tracking-wider text-slate-900 uppercase">
               For Healthcare
             </h4>
 
@@ -211,7 +209,7 @@ const Footer = () => {
               Column 4: Company & Compliance
           ========================================================= */}
           <div>
-            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold uppercase tracking-wider text-slate-900">
+            <h4 className="mb-4 border-b border-slate-100 pb-1 text-xs font-bold tracking-wider text-slate-900 uppercase">
               Company &amp; Audit
             </h4>
 
@@ -270,14 +268,11 @@ const Footer = () => {
       ========================================================= */}
       <div className="border-t border-slate-100 bg-slate-50/70 py-6 text-xs text-slate-500">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 sm:flex-row sm:px-6 lg:px-8">
-          
           <p className="text-center sm:text-left">
             &copy; 2026{" "}
-            <span className="font-bold text-slate-700">
-              MedSupply
-            </span>
-            . All rights reserved. &bull; Enterprise pharmaceutical
-            procurement &amp; verification infrastructure.
+            <span className="font-bold text-slate-700">MedSupply</span>. All
+            rights reserved. &bull; Enterprise pharmaceutical procurement &amp;
+            verification infrastructure.
           </p>
 
           {/* Social / External Links */}
@@ -312,7 +307,7 @@ const Footer = () => {
         </div>
       </div>
     </footer>
-  );
-};
+  )
+}
 
-export default Footer;
+export default Footer

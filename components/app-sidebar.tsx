@@ -15,7 +15,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { SquaresFourIcon, ListIcon, ChartBarIcon, FolderIcon, UsersIcon, CameraIcon, FileTextIcon, GearIcon, QuestionIcon, MagnifyingGlassIcon, DatabaseIcon, ChartLineIcon, FileIcon, CommandIcon } from "@phosphor-icons/react"
+import {
+  SquaresFourIcon,
+  ListIcon,
+  ChartBarIcon,
+  FolderIcon,
+  UsersIcon,
+  CameraIcon,
+  FileTextIcon,
+  GearIcon,
+  QuestionIcon,
+  MagnifyingGlassIcon,
+  DatabaseIcon,
+  ChartLineIcon,
+  FileIcon,
+  CommandIcon,
+} from "@phosphor-icons/react"
 
 const data = {
   user: {
@@ -23,58 +38,39 @@ const data = {
     email: "m@example.com",
     avatar: "/avatars/shadcn.webp",
   },
- 
+
   navMain: [
     {
       title: "Dashboard",
       url: "#",
-      icon: (
-        <SquaresFourIcon
-        />
-      ),
+      icon: <SquaresFourIcon />,
     },
     {
       title: "Lifecycle",
       url: "#",
-      icon: (
-        <ListIcon
-        />
-      ),
+      icon: <ListIcon />,
     },
     {
       title: "Analytics",
       url: "#",
-      icon: (
-        <ChartBarIcon
-        />
-      ),
+      icon: <ChartBarIcon />,
     },
     {
       title: "Projects",
       url: "#",
-      icon: (
-        <FolderIcon
-        />
-      ),
+      icon: <FolderIcon />,
     },
     {
       title: "Team",
       url: "#",
-      icon: (
-        <UsersIcon
-        />
-      ),
+      icon: <UsersIcon />,
     },
   ],
-
 
   navClouds: [
     {
       title: "Capture",
-      icon: (
-        <CameraIcon
-        />
-      ),
+      icon: <CameraIcon />,
       isActive: true,
       url: "#",
       items: [
@@ -90,10 +86,7 @@ const data = {
     },
     {
       title: "Proposal",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
         {
@@ -108,10 +101,7 @@ const data = {
     },
     {
       title: "Prompts",
-      icon: (
-        <FileTextIcon
-        />
-      ),
+      icon: <FileTextIcon />,
       url: "#",
       items: [
         {
@@ -129,52 +119,34 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: (
-        <GearIcon
-        />
-      ),
+      icon: <GearIcon />,
     },
     {
       title: "Get Help",
       url: "#",
-      icon: (
-        <QuestionIcon
-        />
-      ),
+      icon: <QuestionIcon />,
     },
     {
       title: "Search",
       url: "#",
-      icon: (
-        <MagnifyingGlassIcon
-        />
-      ),
+      icon: <MagnifyingGlassIcon />,
     },
   ],
   documents: [
     {
       name: "Data Library",
       url: "#",
-      icon: (
-        <DatabaseIcon
-        />
-      ),
+      icon: <DatabaseIcon />,
     },
     {
       name: "Reports",
       url: "#",
-      icon: (
-        <ChartLineIcon
-        />
-      ),
+      icon: <ChartLineIcon />,
     },
     {
       name: "Word Assistant",
       url: "#",
-      icon: (
-        <FileIcon
-        />
-      ),
+      icon: <FileIcon />,
     },
   ],
 }

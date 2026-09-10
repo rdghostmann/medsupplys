@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
+import React, { useState } from "react"
 import { AnimatePresence, motion } from "framer-motion"
 
 import {
@@ -27,13 +27,13 @@ import {
   Check,
   Plus,
   Package,
-  Boxes
-} from "lucide-react";
-import { Order, PharmacistVerificationRecord } from "@/types";
-import { INITIAL_VERIFICATION_HISTORY } from "./components/PharmacistVerificationTable/PharmacistVerificationTable";
-import PharmacistVerifyModal, { OrderStatusBadge } from "./components/PharmacistVerifyModal/PharmacistVerifyModal";
-
-
+  Boxes,
+} from "lucide-react"
+import { Order, PharmacistVerificationRecord } from "@/types"
+import { INITIAL_VERIFICATION_HISTORY } from "./components/PharmacistVerificationTable/PharmacistVerificationTable"
+import PharmacistVerifyModal, {
+  OrderStatusBadge,
+} from "./components/PharmacistVerifyModal/PharmacistVerifyModal"
 
 export const INITIAL_ORDERS: Order[] = [
   {
@@ -120,21 +120,22 @@ export const INITIAL_ORDERS: Order[] = [
     batchNo: "BATCH-CIP-2024-4419",
     barcode: "NG-CIP-2024-4419",
   },
-];
+]
 
 const PharmacistDashboard: React.FC = () => {
-  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
-  const [verificationHistory, setVerificationHistory] = useState<PharmacistVerificationRecord[]>(
-    INITIAL_VERIFICATION_HISTORY
-  );
-  const [selectedOrderToVerify, setSelectedOrderToVerify] = useState<Order | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [queueFilter, setQueueFilter] = useState<"pending" | "all">("pending");
+  const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS)
+  const [verificationHistory, setVerificationHistory] = useState<
+    PharmacistVerificationRecord[]
+  >(INITIAL_VERIFICATION_HISTORY)
+  const [selectedOrderToVerify, setSelectedOrderToVerify] =
+    useState<Order | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [queueFilter, setQueueFilter] = useState<"pending" | "all">("pending")
   const [toastMessage, setToastMessage] = useState<{
-    title: string;
-    description: string;
-    type: "success" | "danger";
-  } | null>(null);
+    title: string
+    description: string
+    type: "success" | "danger"
+  } | null>(null)
 
   // Filter incoming queue: items awaiting pharmacist processing
   const incomingQueue = orders.filter((o) => {
@@ -144,10 +145,10 @@ const PharmacistDashboard: React.FC = () => {
         o.status === "In Transit to Office" ||
         o.status === "Pending" ||
         o.status === "Supplier Confirmed"
-      );
+      )
     }
-    return true;
-  });
+    return true
+  })
 
   const handleOpenVerifyModal = (order?: Order) => {
     // If specific order provided, use it; otherwise find first Under Verification or first item
@@ -155,26 +156,27 @@ const PharmacistDashboard: React.FC = () => {
       order ||
       orders.find((x) => x.status === "Under Verification") ||
       incomingQueue[0] ||
-      orders[0];
+      orders[0]
 
-    setSelectedOrderToVerify(targetOrder);
-    setIsModalOpen(true);
-  };
+    setSelectedOrderToVerify(targetOrder)
+    setIsModalOpen(true)
+  }
 
   const handleVerifySubmit = (
     orderId: string,
     result: "Verified" | "Rejected",
     verificationData: {
-      batchNo: string;
-      mfgDate: string;
-      expiryDate: string;
-      condition: string;
-      notes: string;
-      barcode: string;
+      batchNo: string
+      mfgDate: string
+      expiryDate: string
+      condition: string
+      notes: string
+      barcode: string
     }
   ) => {
     // 1. Update the order in the orders list
-    const nextStatus: Order["status"] = result === "Verified" ? "Verified" : "Rejected";
+    const nextStatus: Order["status"] =
+      result === "Verified" ? "Verified" : "Rejected"
     const updatedOrders = orders.map((o) => {
       if (o.id === orderId) {
         return {
@@ -185,22 +187,28 @@ const PharmacistDashboard: React.FC = () => {
           mfgDate: verificationData.mfgDate,
           condition: verificationData.condition,
           notes: verificationData.notes,
-        };
+        }
       }
-      return o;
-    });
-    setOrders(updatedOrders);
+      return o
+    })
+    setOrders(updatedOrders)
 
-    const targetOrder = orders.find((o) => o.id === orderId);
-    const productName = targetOrder ? targetOrder.product : "Pharmaceutical Consignment";
-    const buyerName = targetOrder ? targetOrder.buyer : "Hospital Central Pharmacy";
+    const targetOrder = orders.find((o) => o.id === orderId)
+    const productName = targetOrder
+      ? targetOrder.product
+      : "Pharmaceutical Consignment"
+    const buyerName = targetOrder
+      ? targetOrder.buyer
+      : "Hospital Central Pharmacy"
 
     // 2. Prepend a new record to the Pharmacist Verification History
     const newHistoryRecord: PharmacistVerificationRecord = {
       id: `rec-${Date.now()}`,
       orderId: orderId,
       product: productName,
-      dosage: targetOrder?.qty ? `${targetOrder.qty} units inspected` : "Standard Units",
+      dosage: targetOrder?.qty
+        ? `${targetOrder.qty} units inspected`
+        : "Standard Units",
       batchNo: verificationData.batchNo,
       result: result,
       pharmacist: "Dr. Amaka Obi",
@@ -212,36 +220,40 @@ const PharmacistDashboard: React.FC = () => {
       expiryDate: verificationData.expiryDate,
       quantity: targetOrder?.qty,
       facility: buyerName,
-    };
+    }
 
-    setVerificationHistory((prev) => [newHistoryRecord, ...prev]);
+    setVerificationHistory((prev) => [newHistoryRecord, ...prev])
 
     // 3. Show Toast notification
     setToastMessage({
-      title: result === "Verified" ? `Batch ${verificationData.batchNo} Verified & Released!` : `Batch ${verificationData.batchNo} Flagged as Rejected!`,
-      description: result === "Verified"
-        ? `Order ${orderId} (${productName}) has passed clinical inspection and logged to NAFDAC register.`
-        : `Order ${orderId} quarantined due to inspection findings. Supplier notified.`,
+      title:
+        result === "Verified"
+          ? `Batch ${verificationData.batchNo} Verified & Released!`
+          : `Batch ${verificationData.batchNo} Flagged as Rejected!`,
+      description:
+        result === "Verified"
+          ? `Order ${orderId} (${productName}) has passed clinical inspection and logged to NAFDAC register.`
+          : `Order ${orderId} quarantined due to inspection findings. Supplier notified.`,
       type: result === "Verified" ? "success" : "danger",
-    });
+    })
 
     setTimeout(() => {
-      setToastMessage(null);
-    }, 5000);
-  };
+      setToastMessage(null)
+    }, 5000)
+  }
 
   const handleResetQueue = () => {
-    setOrders(INITIAL_ORDERS);
+    setOrders(INITIAL_ORDERS)
     setToastMessage({
       title: "Queue Reset Successfully",
       description: "Original incoming consignments restored for verification.",
       type: "success",
-    });
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+    })
+    setTimeout(() => setToastMessage(null), 3000)
+  }
 
   return (
-    <div className="min-h-screen  text-slate-900 pb-24 font-sans">
+    <div className="min-h-screen pb-24 font-sans text-slate-900">
       {/* Toast Notification Banner */}
       <AnimatePresence>
         {toastMessage && (
@@ -249,31 +261,37 @@ const PharmacistDashboard: React.FC = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-20 right-4 z-50 max-w-md w-full"
+            className="fixed top-20 right-4 z-50 w-full max-w-md"
           >
             <div
-              className={`p-4 rounded-2xl shadow-xl border flex items-start gap-3 backdrop-blur-md ${toastMessage.type === "success"
-                ? "bg-emerald-900/90 text-white border-emerald-700/60"
-                : "bg-rose-900/90 text-white border-rose-700/60"
-                }`}
+              className={`flex items-start gap-3 rounded-2xl border p-4 shadow-xl backdrop-blur-md ${
+                toastMessage.type === "success"
+                  ? "border-emerald-700/60 bg-emerald-900/90 text-white"
+                  : "border-rose-700/60 bg-rose-900/90 text-white"
+              }`}
             >
               <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${toastMessage.type === "success" ? "bg-emerald-600" : "bg-rose-600"
-                  }`}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                  toastMessage.type === "success"
+                    ? "bg-emerald-600"
+                    : "bg-rose-600"
+                }`}
               >
                 {toastMessage.type === "success" ? (
-                  <CheckCircle2 className="w-5 h-5" />
+                  <CheckCircle2 className="h-5 w-5" />
                 ) : (
-                  <AlertOctagon className="w-5 h-5" />
+                  <AlertOctagon className="h-5 w-5" />
                 )}
               </div>
               <div className="flex-1 text-xs">
-                <p className="font-bold text-sm">{toastMessage.title}</p>
-                <p className="text-slate-200 mt-0.5">{toastMessage.description}</p>
+                <p className="text-sm font-bold">{toastMessage.title}</p>
+                <p className="mt-0.5 text-slate-200">
+                  {toastMessage.description}
+                </p>
               </div>
               <button
                 onClick={() => setToastMessage(null)}
-                className="text-slate-300 hover:text-white font-bold"
+                className="font-bold text-slate-300 hover:text-white"
               >
                 ✕
               </button>
@@ -283,48 +301,59 @@ const PharmacistDashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* Top Header */}
-      <header className="bg-white mb-4 border-b border-slate-200/80">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <header className="mb-4 border-b border-slate-200/80 bg-white">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <div className="">
-              <h1 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">
-                Licensed Pharmacist Quality Assurance Station
-              </h1>
-            
-            <p className="text-xs text-slate-400">Physical batch inspection, NAFDAC chemical seal verification, and cold-chain compliance clearance</p>
+            <h1 className="text-base font-black tracking-tight text-slate-900 sm:text-lg">
+              Licensed Pharmacist Quality Assurance Station
+            </h1>
+
+            <p className="text-xs text-slate-400">
+              Physical batch inspection, NAFDAC chemical seal verification, and
+              cold-chain compliance clearance
+            </p>
           </div>
-
-
         </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto space-y-8">
+      <main className="mx-auto max-w-7xl space-y-8">
         {/* Banner / Welcome */}
-        <div className=" lg:block rounded-3xl bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
-          <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl bg-linear-to-r from-slate-900 via-blue-950 to-slate-900 p-6 text-white shadow-xl sm:p-8 lg:block">
+          <div className="pointer-events-none absolute top-0 right-0 bottom-0 w-1/3 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-500/20 via-transparent to-transparent" />
 
-          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-            <div className="space-y-2 max-w-2xl">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/20 border border-blue-400/30 text-blue-300 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+          <div className="relative z-10 flex flex-col justify-between gap-6 md:flex-row md:items-center">
+            <div className="max-w-2xl space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-blue-400/30 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-300">
+                <Sparkles className="h-3.5 w-3.5 text-blue-400" />
                 Verified Supply Chain Audit Ledger
               </div>
-              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
+              <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">
                 Batch Verification & Audit History
               </h2>
-              <p className="text-slate-300 text-sm leading-relaxed">
-                Review incoming consignments, perform barcode & spectral verification against the NAFDAC database, and sign digital batch release certificates.
+              <p className="text-sm leading-relaxed text-slate-300">
+                Review incoming consignments, perform barcode & spectral
+                verification against the NAFDAC database, and sign digital batch
+                release certificates.
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-2xl text-center min-w-[110px]">
-                <span className="text-[10px] uppercase font-bold text-blue-200 block">Queue Items</span>
-                <span className="text-2xl font-black text-white">{incomingQueue.length}</span>
+              <div className="min-w-[110px] rounded-2xl border border-white/10 bg-white/10 p-3.5 text-center backdrop-blur-md">
+                <span className="block text-[10px] font-bold text-blue-200 uppercase">
+                  Queue Items
+                </span>
+                <span className="text-2xl font-black text-white">
+                  {incomingQueue.length}
+                </span>
               </div>
-              <div className="bg-white/10 backdrop-blur-md border border-white/10 p-3.5 rounded-2xl text-center min-w-[110px]">
-                <span className="text-[10px] uppercase font-bold text-emerald-300 block">Pass Rate</span>
-                <span className="text-2xl font-black text-emerald-400">96.8%</span>
+              <div className="min-w-[110px] rounded-2xl border border-white/10 bg-white/10 p-3.5 text-center backdrop-blur-md">
+                <span className="block text-[10px] font-bold text-emerald-300 uppercase">
+                  Pass Rate
+                </span>
+                <span className="text-2xl font-black text-emerald-400">
+                  96.8%
+                </span>
               </div>
             </div>
           </div>
@@ -341,36 +370,50 @@ const PharmacistDashboard: React.FC = () => {
             SECTION: INCOMING PRODUCTS (Requested by user)
         ========================================================= */}
         <section className="space-y-4">
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+          <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
-                <Boxes className="w-4 h-4" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-100 font-bold text-blue-600">
+                <Boxes className="h-4 w-4" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">Verification Queue</h3>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Verification Queue
+                </h3>
                 <p className="text-xs text-slate-500">
-                  Consignments arriving at central dispatch awaiting pharmacist verification
+                  Consignments arriving at central dispatch awaiting pharmacist
+                  verification
                 </p>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              <div className="inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200/60 text-xs font-semibold">
+              <div className="inline-flex rounded-xl border border-slate-200/60 bg-slate-100 p-1 text-xs font-semibold">
                 <button
                   onClick={() => setQueueFilter("pending")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${queueFilter === "pending"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`rounded-lg px-3 py-1.5 transition-all ${
+                    queueFilter === "pending"
+                      ? "bg-white font-bold text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
-                  Pending Queue ({orders.filter((o) => o.status !== "Verified" && o.status !== "Delivered" && o.status !== "Rejected").length})
+                  Pending Queue (
+                  {
+                    orders.filter(
+                      (o) =>
+                        o.status !== "Verified" &&
+                        o.status !== "Delivered" &&
+                        o.status !== "Rejected"
+                    ).length
+                  }
+                  )
                 </button>
                 <button
                   onClick={() => setQueueFilter("all")}
-                  className={`px-3 py-1.5 rounded-lg transition-all ${queueFilter === "all"
-                    ? "bg-white text-slate-900 shadow-xs font-bold"
-                    : "text-slate-600 hover:text-slate-900"
-                    }`}
+                  className={`rounded-lg px-3 py-1.5 transition-all ${
+                    queueFilter === "all"
+                      ? "bg-white font-bold text-slate-900 shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
                 >
                   All Orders ({orders.length})
                 </button>
@@ -379,9 +422,9 @@ const PharmacistDashboard: React.FC = () => {
               {incomingQueue.length === 0 && (
                 <button
                   onClick={handleResetQueue}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-xs transition-colors"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-xs transition-colors hover:bg-slate-50"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="h-3.5 w-3.5" />
                   Reset Queue
                 </button>
               )}
@@ -390,19 +433,22 @@ const PharmacistDashboard: React.FC = () => {
 
           {/* Queue Content Rendering */}
           {incomingQueue.length === 0 ? (
-            <div className="rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs flex flex-col items-center justify-center">
-              <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-2xl mb-3 shadow-xs">
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-xs">
+              <div className="mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-50 text-2xl text-emerald-600 shadow-xs">
                 ✅
               </div>
-              <h4 className="text-base font-bold text-slate-900 mb-1">Queue is clear</h4>
-              <p className="text-xs text-slate-500 mb-4 max-w-sm">
-                All products have been processed and released to hospital pharmacies.
+              <h4 className="mb-1 text-base font-bold text-slate-900">
+                Queue is clear
+              </h4>
+              <p className="mb-4 max-w-sm text-xs text-slate-500">
+                All products have been processed and released to hospital
+                pharmacies.
               </p>
               <button
                 onClick={handleResetQueue}
-                className="px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-xl font-bold text-xs transition-colors flex items-center gap-1.5 border border-blue-200/60"
+                className="flex items-center gap-1.5 rounded-xl border border-blue-200/60 bg-blue-50 px-4 py-2 text-xs font-bold text-blue-700 transition-colors hover:bg-blue-100"
               >
-                <RotateCcw className="w-3.5 h-3.5" />
+                <RotateCcw className="h-3.5 w-3.5" />
                 Restore Demo Queue Orders
               </button>
             </div>
@@ -411,31 +457,33 @@ const PharmacistDashboard: React.FC = () => {
               {incomingQueue.map((o) => (
                 <div
                   key={o.id}
-                  className="rounded-2xl border border-slate-200/90 bg-white p-4.5 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all"
+                  className="rounded-2xl border border-slate-200/90 bg-white p-4.5 shadow-xs transition-all hover:border-slate-300 hover:shadow-sm"
                 >
-                  <div className="flex items-center gap-4 flex-wrap justify-between">
-                    <div className="flex-1 min-w-[220px]">
-                      <div className="text-[15px] font-bold text-slate-900 flex items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div className="min-w-[220px] flex-1">
+                      <div className="flex items-center gap-2 text-[15px] font-bold text-slate-900">
                         <span>{o.product}</span>
                         {o.batchNo && (
-                          <span className="font-mono text-[11px] font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                          <span className="rounded bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-normal text-slate-500">
                             {o.batchNo}
                           </span>
                         )}
                       </div>
-                      <div className="text-[13px] text-slate-500 mt-0.5">
-                        <strong className="text-slate-700 font-semibold">{o.id}</strong> · Qty:{" "}
-                        {o.qty.toLocaleString()} · {o.buyer}
+                      <div className="mt-0.5 text-[13px] text-slate-500">
+                        <strong className="font-semibold text-slate-700">
+                          {o.id}
+                        </strong>{" "}
+                        · Qty: {o.qty.toLocaleString()} · {o.buyer}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4 flex-wrap">
+                    <div className="flex flex-wrap items-center gap-4">
                       <OrderStatusBadge status={o.status} />
 
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleOpenVerifyModal(o)}
-                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm shadow-blue-500/20 active:scale-98"
+                          className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2 text-xs font-bold text-white shadow-sm shadow-blue-500/20 transition-all hover:bg-blue-700 active:scale-98"
                         >
                           <span>🔬</span> Verify Now
                         </button>
@@ -447,8 +495,6 @@ const PharmacistDashboard: React.FC = () => {
             </div>
           )}
         </section>
-
-
       </main>
 
       {/* =========================================================
@@ -458,12 +504,12 @@ const PharmacistDashboard: React.FC = () => {
         order={selectedOrderToVerify}
         isOpen={isModalOpen}
         onClose={() => {
-          setIsModalOpen(false);
-          setSelectedOrderToVerify(null);
+          setIsModalOpen(false)
+          setSelectedOrderToVerify(null)
         }}
         onVerify={handleVerifySubmit}
       />
     </div>
-  );
+  )
 }
-export default PharmacistDashboard;
+export default PharmacistDashboard

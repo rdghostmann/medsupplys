@@ -401,4 +401,4 @@ export const PRODUCT_CATEGORY_SEED_DATA = [
     code: "OTHERS",
     slug: "other-formulations",
   },
-];
+]

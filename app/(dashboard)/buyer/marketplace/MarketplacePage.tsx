@@ -1,6 +1,6 @@
 // app/(dashboard)/buyer/marketplace/MarketplacePage.tsx
 
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -9,35 +9,28 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
-
-import type { MarketplaceProduct } from "@/types";
-import ProductCatalogue from "./ProductCatalogue";
+import type { MarketplaceProduct } from "@/types"
+import ProductCatalogue from "./ProductCatalogue"
 
 interface MarketplacePageProps {
-  products: MarketplaceProduct[];
+  products: MarketplaceProduct[]
 }
 
-export default function MarketplacePage({
-  products,
-}: MarketplacePageProps) {
+export default function MarketplacePage({ products }: MarketplacePageProps) {
   return (
     <div className="flex flex-1 flex-col">
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/buyer">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/buyer">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Browse Products
-            </BreadcrumbPage>
+            <BreadcrumbPage>Browse Products</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -50,5 +43,5 @@ export default function MarketplacePage({
         </div>
       </div>
     </div>
-  );
+  )
 }

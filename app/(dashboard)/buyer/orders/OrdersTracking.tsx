@@ -1,5 +1,5 @@
 // app/(dashboard)/OrdersTracking.tsx
-"use client";
+"use client"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,22 +8,24 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import { BuyerOrders } from "./BuyerOrder";
-import type { BuyerOrder } from "./BuyerOrder";
-import type { Order } from "@/types";
+import { BuyerOrders } from "./BuyerOrder"
+import type { BuyerOrder } from "./BuyerOrder"
+import type { Order } from "@/types"
 
 interface OrdersTrackingProps {
-  orders: Order[];
+  orders: Order[]
 }
 
 const toBuyerOrder = (order: Order): BuyerOrder => {
-  const firstItem = order.items?.[0];
-  const supplierType = order.supplierType?.toLowerCase();
+  const firstItem = order.items?.[0]
+  const supplierType = order.supplierType?.toLowerCase()
 
   return {
     id: order.id,
     orderNumber: order.orderNumber || order.id,
-    status: order.status.toUpperCase().replace(/ /g, "_") as BuyerOrder["status"],
+    status: order.status
+      .toUpperCase()
+      .replace(/ /g, "_") as BuyerOrder["status"],
     supplierId: order.supplierId || "",
     supplierName: order.supplierName || order.supplier,
     supplierType:
@@ -44,32 +46,23 @@ const toBuyerOrder = (order: Order): BuyerOrder => {
     subtotal: order.subtotal || 0,
     deliveryFee: 0,
     total: order.total || 0,
-    batchNumber:
-      order.batchNo || firstItem?.batchNumber || "-",
+    batchNumber: order.batchNo || firstItem?.batchNumber || "-",
     manufacturingDate: order.mfgDate,
-    expiryDate:
-      order.expiryDate || firstItem?.expiryDate || "",
+    expiryDate: order.expiryDate || firstItem?.expiryDate || "",
     deliveryAddress: order.deliveryAddress || "-",
     coldChainRequired: false,
-    trackingUpdates: (order.trackingUpdates || []).map(
-      (update) => ({
-        title: update.title,
-        description: update.description,
-        timestamp: update.timestamp,
-        completed: true,
-      })
-    ),
+    trackingUpdates: (order.trackingUpdates || []).map((update) => ({
+      title: update.title,
+      description: update.description,
+      timestamp: update.timestamp,
+      completed: true,
+    })),
     createdAt: order.createdAt || order.date,
     updatedAt: order.updatedAt || order.date,
-  };
-};
+  }
+}
 
-export default function OrdersTracking({
-  orders,
-}: OrdersTrackingProps) {
-
-
-
+export default function OrdersTracking({ orders }: OrdersTrackingProps) {
   return (
     <div className="flex flex-1 flex-col">
       <Breadcrumb className="p-4 lg:px-6">
@@ -86,16 +79,11 @@ export default function OrdersTracking({
 
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
-
           <div className="px-4 lg:px-6">
             <BuyerOrders orders={orders.map(toBuyerOrder)} />
-
           </div>
         </div>
       </div>
     </div>
-
   )
 }
-
-

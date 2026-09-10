@@ -1,68 +1,45 @@
 // /models/User.ts
 
-import {
-  Schema,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, model, models, Document, Model } from "mongoose"
 
 /* =========================================================
    ENUM TYPES
 ========================================================= */
 
-export type UserRole =
-  | "buyer"
-  | "supplier"
-  | "admin"
-  | "pharmacist";
+export type UserRole = "buyer" | "supplier" | "admin" | "pharmacist"
 
-export type SupplierType =
-  | "importer"
-  | "distributor"
-  | "retailer";
+export type SupplierType = "importer" | "distributor" | "retailer"
 
 export type OrganizationType =
   | "manufacturer"
   | "distributor"
   | "wholesaler"
-  | "pharmacy";
+  | "pharmacy"
 
-export type SupplierStatus =
-  | "pending"
-  | "approved"
-  | "rejected";
+export type SupplierStatus = "pending" | "approved" | "rejected"
 
-export type UserStatus =
-  | "active"
-  | "suspended"
-  | "pending";
+export type UserStatus = "active" | "suspended" | "pending"
 
 export type SupplierApprovalStatus =
   | "pending"
   | "approved"
   | "rejected"
-  | "suspended";
+  | "suspended"
 
-export type CreditRatingTier =
-  | "A"
-  | "B"
-  | "C"
-  | "UNRATED";
+export type CreditRatingTier = "A" | "B" | "C" | "UNRATED"
 
 /* =========================================================
    NOTIFICATION PREFERENCES
 ========================================================= */
 
 export interface IUserNotificationPreferences {
-  email?: boolean;
-  sms?: boolean;
-  orderUpdates?: boolean;
-  paymentAlerts?: boolean;
-  inventoryAlerts?: boolean;
-  kycUpdates?: boolean;
-  promotional?: boolean;
+  email?: boolean
+  sms?: boolean
+  orderUpdates?: boolean
+  paymentAlerts?: boolean
+  inventoryAlerts?: boolean
+  kycUpdates?: boolean
+  promotional?: boolean
 }
 
 /* =========================================================
@@ -70,33 +47,33 @@ export interface IUserNotificationPreferences {
 ========================================================= */
 
 export interface ISupplierProfile {
-  businessName?: string;
+  businessName?: string
 
-  supplierType?: SupplierType;
+  supplierType?: SupplierType
 
-  organizationType?: OrganizationType;
+  organizationType?: OrganizationType
 
-  roleInOrganization?: string;
+  roleInOrganization?: string
 
-  phone?: string;
+  phone?: string
 
-  address?: string;
+  address?: string
 
-  country?: string;
+  country?: string
 
-  state?: string;
+  state?: string
 
-  city?: string;
+  city?: string
 
-  postalCode?: string;
+  postalCode?: string
 
-  licenseNumber?: string;
+  licenseNumber?: string
 
-  licenseDocument?: string;
+  licenseDocument?: string
 
-  logo?: string;
+  logo?: string
 
-  status?: SupplierStatus;
+  status?: SupplierStatus
 }
 
 /* =========================================================
@@ -108,309 +85,294 @@ export interface IUser extends Document {
      Identity
   ------------------------------------------------------- */
 
-  firstName: string;
+  firstName: string
 
-  lastName: string;
+  lastName: string
 
-  username?: string;
+  username?: string
 
-  email: string;
+  email: string
 
-  phone?: string;
+  phone?: string
 
-  password: string;
+  password: string
 
-  role: UserRole;
+  role: UserRole
 
-  status: UserStatus;
+  status: UserStatus
 
-  avatar?: string;
+  avatar?: string
 
   /* -------------------------------------------------------
      Organization
   ------------------------------------------------------- */
 
-  organizationName?: string;
+  organizationName?: string
 
-  organizationType?: OrganizationType;
+  organizationType?: OrganizationType
 
-  roleInOrganization?: string;
+  roleInOrganization?: string
 
-  designation?: string;
+  designation?: string
 
   /* -------------------------------------------------------
      General Location
   ------------------------------------------------------- */
 
-  country?: string;
+  country?: string
 
-  state?: string;
+  state?: string
 
-  lga?: string;
+  lga?: string
 
-  address?: string;
+  address?: string
 
   /* -------------------------------------------------------
      Account / Legal Consent
   ------------------------------------------------------- */
 
-  termsAccepted: boolean;
+  termsAccepted: boolean
 
-  privacyAccepted: boolean;
+  privacyAccepted: boolean
 
-  verified: boolean;
+  verified: boolean
 
   /* -------------------------------------------------------
      Supplier
   ------------------------------------------------------- */
 
-  supplierType?: SupplierType;
+  supplierType?: SupplierType
 
-  supplierApprovalStatus?: SupplierApprovalStatus;
+  supplierApprovalStatus?: SupplierApprovalStatus
 
-  supplierProfile?: ISupplierProfile;
+  supplierProfile?: ISupplierProfile
 
-  licenseNumber?: string;
+  licenseNumber?: string
 
   /* -------------------------------------------------------
      Facility / Buyer Profile
   ------------------------------------------------------- */
 
-  facilityType?: string;
+  facilityType?: string
 
-  bedCapacity?: number;
+  bedCapacity?: number
 
-  emergencyContact?: string;
+  emergencyContact?: string
 
-  pcnPremisesLicense?: string;
+  pcnPremisesLicense?: string
 
-  nafdacGdpLicense?: string;
+  nafdacGdpLicense?: string
 
-  coldChainCapacityM3?: number;
+  coldChainCapacityM3?: number
 
-  backupPowerSpec?: string;
+  backupPowerSpec?: string
 
-  receivingHours?: string;
+  receivingHours?: string
 
   /* -------------------------------------------------------
      Settlement & Financial
   ------------------------------------------------------- */
 
-  settlementBankName?: string;
+  settlementBankName?: string
 
-  settlementAccountNumber?: string;
+  settlementAccountNumber?: string
 
-  settlementAccountName?: string;
+  settlementAccountName?: string
 
-  settlementSortCode?: string;
+  settlementSortCode?: string
 
-  taxIdentificationNumber?: string;
+  taxIdentificationNumber?: string
 
   /* -------------------------------------------------------
      Pharmacist / QA
   ------------------------------------------------------- */
 
-  pharmacistLicense?: string;
+  pharmacistLicense?: string
 
-  pharmacistCadre?: string;
+  pharmacistCadre?: string
 
-  annualPracticingLicenseNo?: string;
+  annualPracticingLicenseNo?: string
 
-  qaStampVerified?: boolean;
+  qaStampVerified?: boolean
 
   /* -------------------------------------------------------
      Admin & Security
   ------------------------------------------------------- */
 
-  adminClearanceTier?: string;
+  adminClearanceTier?: string
 
-  twoFactorEnabled?: boolean;
+  twoFactorEnabled?: boolean
 
-  notificationPreferences?: IUserNotificationPreferences;
+  notificationPreferences?: IUserNotificationPreferences
 
   /* -------------------------------------------------------
      Supplier KYC
   ------------------------------------------------------- */
 
-  kycSubmittedAt?: Date;
+  kycSubmittedAt?: Date
 
-  kycApprovedAt?: Date;
+  kycApprovedAt?: Date
 
-  kycReviewNotes?: string;
+  kycReviewNotes?: string
 
-  kycRejectionReason?: string;
+  kycRejectionReason?: string
 
-  kycSuspensionReason?: string;
+  kycSuspensionReason?: string
 
   /* -------------------------------------------------------
      Credit Facility
   ------------------------------------------------------- */
 
-  creditRatingTier?: CreditRatingTier;
+  creditRatingTier?: CreditRatingTier
 
-  assignedCreditLimit?: number;
+  assignedCreditLimit?: number
 
   /* -------------------------------------------------------
      Compliance / Cold Chain
   ------------------------------------------------------- */
 
-  isColdChainCertified?: boolean;
+  isColdChainCertified?: boolean
 
-  gdpAuditDate?: Date;
+  gdpAuditDate?: Date
 
-  pcnInspectionDate?: Date;
+  pcnInspectionDate?: Date
 
   /* -------------------------------------------------------
      System
   ------------------------------------------------------- */
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 }
 
 /* =========================================================
    NOTIFICATION PREFERENCES SCHEMA
 ========================================================= */
 
-const NotificationPreferencesSchema =
-  new Schema<IUserNotificationPreferences>(
-    {
-      email: {
-        type: Boolean,
-        default: true,
-      },
-
-      sms: {
-        type: Boolean,
-        default: true,
-      },
-
-      orderUpdates: {
-        type: Boolean,
-        default: true,
-      },
-
-      paymentAlerts: {
-        type: Boolean,
-        default: true,
-      },
-
-      inventoryAlerts: {
-        type: Boolean,
-        default: true,
-      },
-
-      kycUpdates: {
-        type: Boolean,
-        default: true,
-      },
-
-      promotional: {
-        type: Boolean,
-        default: false,
-      },
+const NotificationPreferencesSchema = new Schema<IUserNotificationPreferences>(
+  {
+    email: {
+      type: Boolean,
+      default: true,
     },
-    {
-      _id: false,
-    }
-  );
+
+    sms: {
+      type: Boolean,
+      default: true,
+    },
+
+    orderUpdates: {
+      type: Boolean,
+      default: true,
+    },
+
+    paymentAlerts: {
+      type: Boolean,
+      default: true,
+    },
+
+    inventoryAlerts: {
+      type: Boolean,
+      default: true,
+    },
+
+    kycUpdates: {
+      type: Boolean,
+      default: true,
+    },
+
+    promotional: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    SUPPLIER PROFILE SCHEMA
 ========================================================= */
 
-const SupplierProfileSchema =
-  new Schema<ISupplierProfile>(
-    {
-      businessName: {
-        type: String,
-        trim: true,
-      },
-
-      supplierType: {
-        type: String,
-        enum: [
-          "importer",
-          "distributor",
-          "retailer",
-        ],
-      },
-
-      organizationType: {
-        type: String,
-        enum: [
-          "manufacturer",
-          "distributor",
-          "wholesaler",
-          "pharmacy",
-        ],
-      },
-
-      roleInOrganization: {
-        type: String,
-        trim: true,
-      },
-
-      phone: {
-        type: String,
-        trim: true,
-      },
-
-      address: {
-        type: String,
-        trim: true,
-      },
-
-      country: {
-        type: String,
-        trim: true,
-      },
-
-      state: {
-        type: String,
-        trim: true,
-      },
-
-      city: {
-        type: String,
-        trim: true,
-      },
-
-      postalCode: {
-        type: String,
-        trim: true,
-      },
-
-      licenseNumber: {
-        type: String,
-        trim: true,
-      },
-
-      licenseDocument: {
-        type: String,
-        trim: true,
-      },
-
-      logo: {
-        type: String,
-        trim: true,
-      },
-
-      status: {
-        type: String,
-        enum: [
-          "pending",
-          "approved",
-          "rejected",
-        ],
-        default: "pending",
-      },
+const SupplierProfileSchema = new Schema<ISupplierProfile>(
+  {
+    businessName: {
+      type: String,
+      trim: true,
     },
-    {
-      _id: false,
-    }
-  );
+
+    supplierType: {
+      type: String,
+      enum: ["importer", "distributor", "retailer"],
+    },
+
+    organizationType: {
+      type: String,
+      enum: ["manufacturer", "distributor", "wholesaler", "pharmacy"],
+    },
+
+    roleInOrganization: {
+      type: String,
+      trim: true,
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+    },
+
+    address: {
+      type: String,
+      trim: true,
+    },
+
+    country: {
+      type: String,
+      trim: true,
+    },
+
+    state: {
+      type: String,
+      trim: true,
+    },
+
+    city: {
+      type: String,
+      trim: true,
+    },
+
+    postalCode: {
+      type: String,
+      trim: true,
+    },
+
+    licenseNumber: {
+      type: String,
+      trim: true,
+    },
+
+    licenseDocument: {
+      type: String,
+      trim: true,
+    },
+
+    logo: {
+      type: String,
+      trim: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+    },
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    USER SCHEMA
@@ -468,12 +430,7 @@ const UserSchema = new Schema<IUser>(
 
     role: {
       type: String,
-      enum: [
-        "buyer",
-        "supplier",
-        "admin",
-        "pharmacist",
-      ],
+      enum: ["buyer", "supplier", "admin", "pharmacist"],
       required: true,
       default: "buyer",
       index: true,
@@ -502,12 +459,7 @@ const UserSchema = new Schema<IUser>(
 
     organizationType: {
       type: String,
-      enum: [
-        "manufacturer",
-        "distributor",
-        "wholesaler",
-        "pharmacy",
-      ],
+      enum: ["manufacturer", "distributor", "wholesaler", "pharmacy"],
     },
 
     roleInOrganization: {
@@ -571,22 +523,13 @@ const UserSchema = new Schema<IUser>(
 
     supplierType: {
       type: String,
-      enum: [
-        "importer",
-        "distributor",
-        "retailer",
-      ],
+      enum: ["importer", "distributor", "retailer"],
       index: true,
     },
 
     supplierApprovalStatus: {
       type: String,
-      enum: [
-        "pending",
-        "approved",
-        "rejected",
-        "suspended",
-      ],
+      enum: ["pending", "approved", "rejected", "suspended"],
       default: "pending",
       index: true,
     },
@@ -750,12 +693,7 @@ const UserSchema = new Schema<IUser>(
 
     creditRatingTier: {
       type: String,
-      enum: [
-        "A",
-        "B",
-        "C",
-        "UNRATED",
-      ],
+      enum: ["A", "B", "C", "UNRATED"],
       default: "UNRATED",
     },
 
@@ -786,7 +724,7 @@ const UserSchema = new Schema<IUser>(
     timestamps: true,
     versionKey: false,
   }
-);
+)
 
 /* =========================================================
    INDEXES
@@ -795,25 +733,24 @@ const UserSchema = new Schema<IUser>(
 UserSchema.index({
   role: 1,
   supplierApprovalStatus: 1,
-});
+})
 
 UserSchema.index({
   supplierType: 1,
   supplierApprovalStatus: 1,
-});
+})
 
 UserSchema.index({
   organizationName: 1,
-});
+})
 
 UserSchema.index({
   "supplierProfile.businessName": 1,
-});
+})
 
 /* =========================================================
    MODEL
 ========================================================= */
 
 export const User: Model<IUser> =
-  models?.User ||
-  model<IUser>("User", UserSchema);
+  models?.User || model<IUser>("User", UserSchema)

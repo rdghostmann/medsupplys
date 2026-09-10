@@ -1,7 +1,7 @@
 // TopUpModal.tsx
-"use client";
+"use client"
 
-import React, { useState } from "react";
+import React, { useState } from "react"
 import {
   X,
   ArrowRight,
@@ -9,268 +9,200 @@ import {
   CreditCard,
   Radio,
   Loader2,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
-type PaymentMethod =
-  | "paystack"
-  | "flutterwave";
+type PaymentMethod = "paystack" | "flutterwave"
 
-type PaymentStep =
-  | "FORM"
-  | "PROCESSING";
+type PaymentStep = "FORM" | "PROCESSING"
 
 interface PaymentInitializeResponse {
-  success?: boolean;
-  message?: string;
-  reference?: string;
-  checkoutUrl?: string;
-  provider?: string;
-  providerReference?: string;
+  success?: boolean
+  message?: string
+  reference?: string
+  checkoutUrl?: string
+  provider?: string
+  providerReference?: string
 }
 
 interface TopUpModalProps {
-  isOpen: boolean;
-  onClose: () => void;
+  isOpen: boolean
+  onClose: () => void
 
   currentUser?: {
-    id: string;
-  } | null;
+    id: string
+  } | null
 
-  onSuccess?: () => Promise<void> | void;
+  onSuccess?: () => Promise<void> | void
 }
 
-export const TopUpModal: React.FC<
-  TopUpModalProps
-> = ({
+export const TopUpModal: React.FC<TopUpModalProps> = ({
   isOpen,
   onClose,
   currentUser,
   onSuccess,
 }) => {
-  const [amount, setAmount] =
-    useState<number>(100000);
+  const [amount, setAmount] = useState<number>(100000)
 
-  const [
-    paymentMethod,
-    setPaymentMethod,
-  ] = useState<PaymentMethod>(
-    "paystack"
-  );
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paystack")
 
-  const [step, setStep] =
-    useState<PaymentStep>("FORM");
+  const [step, setStep] = useState<PaymentStep>("FORM")
 
-  const [
-    isProcessing,
-    setIsProcessing,
-  ] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const [lastRef, setLastRef] =
-    useState("");
+  const [lastRef, setLastRef] = useState("")
 
   if (!isOpen) {
-    return null;
+    return null
   }
 
-  const quickAmounts = [
-    10000,
-    25000,
-    50000,
-    100000,
-  ];
+  const quickAmounts = [10000, 25000, 50000, 100000]
 
-  const formatAmount = (
-    value: number
-  ) =>
-    `₦${value.toLocaleString("en-NG")}`;
+  const formatAmount = (value: number) => `₦${value.toLocaleString("en-NG")}`
 
-  const handleAmountChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const value = Number(
-      event.target.value
-    );
+  const handleAmountChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = Number(event.target.value)
 
     if (Number.isNaN(value)) {
-      setAmount(0);
-      return;
+      setAmount(0)
+      return
     }
 
-    setAmount(value);
-  };
+    setAmount(value)
+  }
 
-  const handleContinuePayment =
-    async () => {
+  const handleContinuePayment = async () => {
+    /*
+     * ---------------------------------------------------------
+     * CLIENT-SIDE VALIDATION
+     * ---------------------------------------------------------
+     */
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error("Invalid amount", {
+        description: "Please enter an amount greater than ₦0.",
+      })
+
+      return
+    }
+
+    /*
+     * The server does the authoritative
+     * authentication and validation.
+     *
+     * We still check this client-side so
+     * the user gets an immediate message.
+     */
+    if (!currentUser?.id) {
+      toast.error("Authentication required", {
+        description: "Unable to identify your wallet account.",
+      })
+
+      return
+    }
+
+    /*
+     * Prevent duplicate clicks while
+     * initialization is running.
+     */
+    if (isProcessing) {
+      return
+    }
+
+    setIsProcessing(true)
+    setStep("PROCESSING")
+
+    try {
       /*
-       * ---------------------------------------------------------
-       * CLIENT-SIDE VALIDATION
-       * ---------------------------------------------------------
-       */
-
-      if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-      ) {
-        toast.error(
-          "Invalid amount",
-          {
-            description:
-              "Please enter an amount greater than ₦0.",
-          }
-        );
-
-        return;
-      }
-
-      /*
-       * The server does the authoritative
-       * authentication and validation.
+       * -------------------------------------------------------
+       * INITIALIZE PAYMENT ON OUR SERVER
+       * -------------------------------------------------------
        *
-       * We still check this client-side so
-       * the user gets an immediate message.
+       * IMPORTANT:
+       *
+       * We intentionally send ONLY the amount.
+       *
+       * buyerId comes from the authenticated
+       * NextAuth session on the server.
+       *
+       * The client must never be trusted to
+       * choose which buyer wallet gets credited.
        */
-      if (!currentUser?.id) {
-        toast.error(
-          "Authentication required",
-          {
-            description:
-              "Unable to identify your wallet account.",
-          }
-        );
+      const endpoint =
+        paymentMethod === "paystack"
+          ? "/api/payments/paystack/initialize"
+          : "/api/payments/flutterwave/initialize"
 
-        return;
-      }
+      const response = await fetch(endpoint, {
+        method: "POST",
+
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        body: JSON.stringify({
+          amount,
+        }),
+      })
 
       /*
-       * Prevent duplicate clicks while
-       * initialization is running.
+       * Safely parse the response.
        */
-      if (isProcessing) {
-        return;
-      }
-
-      setIsProcessing(true);
-      setStep("PROCESSING");
+      let data: PaymentInitializeResponse
 
       try {
-        /*
-         * -------------------------------------------------------
-         * INITIALIZE PAYMENT ON OUR SERVER
-         * -------------------------------------------------------
-         *
-         * IMPORTANT:
-         *
-         * We intentionally send ONLY the amount.
-         *
-         * buyerId comes from the authenticated
-         * NextAuth session on the server.
-         *
-         * The client must never be trusted to
-         * choose which buyer wallet gets credited.
-         */
-        const endpoint =
-          paymentMethod === "paystack"
-            ? "/api/payments/paystack/initialize"
-            : "/api/payments/flutterwave/initialize";
-
-        const response =
-          await fetch(
-            endpoint,
-            {
-              method: "POST",
-
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
-
-              body: JSON.stringify({
-                amount,
-              }),
-            }
-          );
-
-        /*
-         * Safely parse the response.
-         */
-        let data: PaymentInitializeResponse;
-
-        try {
-          data =
-            (await response.json()) as PaymentInitializeResponse;
-        } catch {
-          throw new Error(
-            "Invalid response from payment service."
-          );
-        }
-
-        /*
-         * -------------------------------------------------------
-         * INITIALIZATION FAILED
-         * -------------------------------------------------------
-         */
-        if (
-          !response.ok ||
-          !data?.success ||
-          !data?.checkoutUrl
-        ) {
-          throw new Error(
-            data?.message ||
-              "Unable to initialize payment."
-          );
-        }
-
-        /*
-         * Store our INTERNAL payment reference.
-         *
-         * This is useful for displaying the transaction
-         * while the browser is redirected.
-         */
-        if (data.reference) {
-          setLastRef(
-            data.reference
-          );
-        }
-
-        /*
-         * -------------------------------------------------------
-         * GATEWAY REDIRECT
-         * -------------------------------------------------------
-         *
-         * Do NOT:
-         *
-         * - credit wallet here
-         * - mark payment successful here
-         * - trust checkout success here
-         * - create WalletTransaction here
-         *
-         * The payment callback + server-side gateway
-         * verification handles that.
-         */
-        window.location.assign(
-          data.checkoutUrl
-        );
-      } catch (error: unknown) {
-        console.error(
-          "[WALLET_TOPUP_INITIALIZE]",
-          error
-        );
-
-        setIsProcessing(false);
-        setStep("FORM");
-
-        toast.error(
-          "Unable to start payment",
-          {
-            description:
-              error instanceof Error
-                ? error.message
-                : "Please try again.",
-          }
-        );
+        data = (await response.json()) as PaymentInitializeResponse
+      } catch {
+        throw new Error("Invalid response from payment service.")
       }
-    };
+
+      /*
+       * -------------------------------------------------------
+       * INITIALIZATION FAILED
+       * -------------------------------------------------------
+       */
+      if (!response.ok || !data?.success || !data?.checkoutUrl) {
+        throw new Error(data?.message || "Unable to initialize payment.")
+      }
+
+      /*
+       * Store our INTERNAL payment reference.
+       *
+       * This is useful for displaying the transaction
+       * while the browser is redirected.
+       */
+      if (data.reference) {
+        setLastRef(data.reference)
+      }
+
+      /*
+       * -------------------------------------------------------
+       * GATEWAY REDIRECT
+       * -------------------------------------------------------
+       *
+       * Do NOT:
+       *
+       * - credit wallet here
+       * - mark payment successful here
+       * - trust checkout success here
+       * - create WalletTransaction here
+       *
+       * The payment callback + server-side gateway
+       * verification handles that.
+       */
+      window.location.assign(data.checkoutUrl)
+    } catch (error: unknown) {
+      console.error("[WALLET_TOPUP_INITIALIZE]", error)
+
+      setIsProcessing(false)
+      setStep("FORM")
+
+      toast.error("Unable to start payment", {
+        description:
+          error instanceof Error ? error.message : "Please try again.",
+      })
+    }
+  }
 
   const handleClose = () => {
     /*
@@ -278,41 +210,19 @@ export const TopUpModal: React.FC<
      * initialization request is active.
      */
     if (isProcessing) {
-      return;
+      return
     }
 
-    setStep("FORM");
-    setIsProcessing(false);
-    setLastRef("");
+    setStep("FORM")
+    setIsProcessing(false)
+    setLastRef("")
 
-    onClose();
-  };
+    onClose()
+  }
 
   return (
-    <div
-      className="
-        fixed inset-0 z-50
-        flex items-center justify-center
-        bg-slate-950/50
-        backdrop-blur-sm
-        p-4
-        animate-in fade-in duration-200
-      "
-    >
-      <div
-        className="
-          relative
-          w-full max-w-md
-          overflow-hidden
-          rounded-2xl
-          border border-slate-200
-          bg-white
-          shadow-2xl
-          animate-in
-          zoom-in-95
-          duration-200
-        "
-      >
+    <div className="fixed inset-0 z-50 flex animate-in items-center justify-center bg-slate-950/50 p-4 backdrop-blur-sm duration-200 fade-in">
+      <div className="relative w-full max-w-md animate-in overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl duration-200 zoom-in-95">
         {/* =========================================================
             FORM
         ========================================================= */}
@@ -332,16 +242,7 @@ export const TopUpModal: React.FC<
               <button
                 type="button"
                 onClick={handleClose}
-                className="
-                  flex h-8 w-8
-                  cursor-pointer
-                  items-center justify-center
-                  rounded-lg
-                  text-slate-400
-                  transition
-                  hover:bg-slate-100
-                  hover:text-slate-700
-                "
+                className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
                 aria-label="Close top up modal"
               >
                 <X className="h-4 w-4" />
@@ -361,7 +262,7 @@ export const TopUpModal: React.FC<
                 </label>
 
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">
+                  <span className="absolute top-1/2 left-4 -translate-y-1/2 text-sm font-bold text-slate-500">
                     ₦
                   </span>
 
@@ -371,30 +272,11 @@ export const TopUpModal: React.FC<
                     min="100"
                     step="1"
                     inputMode="numeric"
-                    value={
-                      amount || ""
-                    }
-                    onChange={
-                      handleAmountChange
-                    }
+                    value={amount || ""}
+                    onChange={handleAmountChange}
                     placeholder="100,000"
-                    disabled={
-                      isProcessing
-                    }
-                    className="
-                      w-full rounded-xl
-                      border border-slate-200
-                      bg-white
-                      py-3 pl-9 pr-4
-                      text-base font-semibold text-slate-900
-                      outline-none transition
-                      focus:border-emerald-500
-                      focus:ring-4
-                      focus:ring-emerald-500/10
-                      placeholder:text-slate-300
-                      disabled:cursor-not-allowed
-                      disabled:bg-slate-50
-                    "
+                    disabled={isProcessing}
+                    className="w-full rounded-xl border border-slate-200 bg-white py-3 pr-4 pl-9 text-base font-semibold text-slate-900 transition outline-none placeholder:text-slate-300 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 disabled:cursor-not-allowed disabled:bg-slate-50"
                   />
                 </div>
 
@@ -415,42 +297,21 @@ export const TopUpModal: React.FC<
                   {/* Paystack */}
                   <button
                     type="button"
-                    disabled={
-                      isProcessing
-                    }
-                    onClick={() =>
-                      setPaymentMethod(
-                        "paystack"
-                      )
-                    }
-                    className={`
-                      group flex w-full items-center justify-between
-                      rounded-xl border px-4 py-3
-                      text-left transition
-                      cursor-pointer
-                      disabled:cursor-not-allowed
-                      disabled:opacity-60
-                      ${
-                        paymentMethod ===
-                        "paystack"
-                          ? "border-emerald-500 bg-emerald-50/60"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                      }
-                    `}
+                    disabled={isProcessing}
+                    onClick={() => setPaymentMethod("paystack")}
+                    className={`group flex w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                      paymentMethod === "paystack"
+                        ? "border-emerald-500 bg-emerald-50/60"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    } `}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`
-                          flex h-9 w-9
-                          items-center justify-center
-                          rounded-lg
-                          ${
-                            paymentMethod ===
-                            "paystack"
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-slate-100 text-slate-500"
-                          }
-                        `}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                          paymentMethod === "paystack"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-slate-100 text-slate-500"
+                        } `}
                       >
                         <CreditCard className="h-4 w-4" />
                       </div>
@@ -467,20 +328,13 @@ export const TopUpModal: React.FC<
                     </div>
 
                     <span
-                      className={`
-                        flex h-5 w-5
-                        items-center justify-center
-                        rounded-full border-2
-                        ${
-                          paymentMethod ===
-                          "paystack"
-                            ? "border-emerald-600"
-                            : "border-slate-300"
-                        }
-                      `}
+                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                        paymentMethod === "paystack"
+                          ? "border-emerald-600"
+                          : "border-slate-300"
+                      } `}
                     >
-                      {paymentMethod ===
-                        "paystack" && (
+                      {paymentMethod === "paystack" && (
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
                       )}
                     </span>
@@ -489,42 +343,21 @@ export const TopUpModal: React.FC<
                   {/* Flutterwave */}
                   <button
                     type="button"
-                    disabled={
-                      isProcessing
-                    }
-                    onClick={() =>
-                      setPaymentMethod(
-                        "flutterwave"
-                      )
-                    }
-                    className={`
-                      group flex w-full items-center justify-between
-                      rounded-xl border px-4 py-3
-                      text-left transition
-                      cursor-pointer
-                      disabled:cursor-not-allowed
-                      disabled:opacity-60
-                      ${
-                        paymentMethod ===
-                        "flutterwave"
-                          ? "border-emerald-500 bg-emerald-50/60"
-                          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-                      }
-                    `}
+                    disabled={isProcessing}
+                    onClick={() => setPaymentMethod("flutterwave")}
+                    className={`group flex w-full cursor-pointer items-center justify-between rounded-xl border px-4 py-3 text-left transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                      paymentMethod === "flutterwave"
+                        ? "border-emerald-500 bg-emerald-50/60"
+                        : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+                    } `}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`
-                          flex h-9 w-9
-                          items-center justify-center
-                          rounded-lg
-                          ${
-                            paymentMethod ===
-                            "flutterwave"
-                              ? "bg-emerald-100 text-emerald-600"
-                              : "bg-slate-100 text-slate-500"
-                          }
-                        `}
+                        className={`flex h-9 w-9 items-center justify-center rounded-lg ${
+                          paymentMethod === "flutterwave"
+                            ? "bg-emerald-100 text-emerald-600"
+                            : "bg-slate-100 text-slate-500"
+                        } `}
                       >
                         <Radio className="h-4 w-4" />
                       </div>
@@ -541,20 +374,13 @@ export const TopUpModal: React.FC<
                     </div>
 
                     <span
-                      className={`
-                        flex h-5 w-5
-                        items-center justify-center
-                        rounded-full border-2
-                        ${
-                          paymentMethod ===
-                          "flutterwave"
-                            ? "border-emerald-600"
-                            : "border-slate-300"
-                        }
-                      `}
+                      className={`flex h-5 w-5 items-center justify-center rounded-full border-2 ${
+                        paymentMethod === "flutterwave"
+                          ? "border-emerald-600"
+                          : "border-slate-300"
+                      } `}
                     >
-                      {paymentMethod ===
-                        "flutterwave" && (
+                      {paymentMethod === "flutterwave" && (
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
                       )}
                     </span>
@@ -571,50 +397,25 @@ export const TopUpModal: React.FC<
                 </span>
 
                 <div className="grid grid-cols-4 gap-2">
-                  {quickAmounts.map(
-                    (quickAmount) => {
-                      const isSelected =
-                        amount ===
-                        quickAmount;
+                  {quickAmounts.map((quickAmount) => {
+                    const isSelected = amount === quickAmount
 
-                      return (
-                        <button
-                          key={
-                            quickAmount
-                          }
-                          type="button"
-                          disabled={
-                            isProcessing
-                          }
-                          onClick={() =>
-                            setAmount(
-                              quickAmount
-                            )
-                          }
-                          className={`
-                            rounded-lg border px-2 py-2
-                            text-[11px] font-semibold
-                            transition
-                            cursor-pointer
-                            disabled:cursor-not-allowed
-                            disabled:opacity-60
-                            ${
-                              isSelected
-                                ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                                : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
-                            }
-                          `}
-                        >
-                          ₦
-                          {(
-                            quickAmount /
-                            1000
-                          ).toLocaleString()}
-                          k
-                        </button>
-                      );
-                    }
-                  )}
+                    return (
+                      <button
+                        key={quickAmount}
+                        type="button"
+                        disabled={isProcessing}
+                        onClick={() => setAmount(quickAmount)}
+                        className={`cursor-pointer rounded-lg border px-2 py-2 text-[11px] font-semibold transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                          isSelected
+                            ? "border-emerald-500 bg-emerald-50 text-emerald-700"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50"
+                        } `}
+                      >
+                        ₦{(quickAmount / 1000).toLocaleString()}k
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
@@ -625,11 +426,9 @@ export const TopUpModal: React.FC<
                 <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
 
                 <p className="text-[10px] leading-relaxed text-slate-500">
-                  Payments are securely processed
-                  through your selected payment gateway.
-                  Your wallet is credited only after
-                  successful server-side payment
-                  verification.
+                  Payments are securely processed through your selected payment
+                  gateway. Your wallet is credited only after successful
+                  server-side payment verification.
                 </p>
               </div>
 
@@ -638,34 +437,13 @@ export const TopUpModal: React.FC<
               ===================================================== */}
               <button
                 type="button"
-                onClick={
-                  handleContinuePayment
-                }
+                onClick={handleContinuePayment}
                 disabled={
-                  isProcessing ||
-                  !Number.isFinite(
-                    amount
-                  ) ||
-                  amount <= 0
+                  isProcessing || !Number.isFinite(amount) || amount <= 0
                 }
-                className="
-                  flex w-full
-                  items-center justify-center gap-2
-                  rounded-xl
-                  bg-emerald-600
-                  px-4 py-3
-                  text-sm font-bold text-white
-                  shadow-lg shadow-emerald-600/20
-                  transition
-                  hover:bg-emerald-700
-                  active:scale-[0.99]
-                  disabled:cursor-not-allowed
-                  disabled:opacity-50
-                "
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-bold text-white shadow-lg shadow-emerald-600/20 transition hover:bg-emerald-700 active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span>
-                  Continue Payment
-                </span>
+                <span>Continue Payment</span>
 
                 <ArrowRight className="h-4 w-4" />
               </button>
@@ -673,10 +451,7 @@ export const TopUpModal: React.FC<
               <p className="text-center text-[10px] text-slate-400">
                 You will be redirected to{" "}
                 <span className="font-semibold text-slate-600">
-                  {paymentMethod ===
-                  "paystack"
-                    ? "Paystack"
-                    : "Flutterwave"}
+                  {paymentMethod === "paystack" ? "Paystack" : "Flutterwave"}
                 </span>{" "}
                 to complete payment.
               </p>
@@ -699,21 +474,17 @@ export const TopUpModal: React.FC<
 
             <p className="mt-1 text-xs leading-relaxed text-slate-500">
               Connecting to{" "}
-              <span className="font-semibold capitalize text-slate-700">
+              <span className="font-semibold text-slate-700 capitalize">
                 {paymentMethod}
               </span>
               ...
             </p>
 
             <div className="mt-4 rounded-lg bg-slate-50 px-3 py-2">
-              <p className="text-[10px] text-slate-400">
-                Amount
-              </p>
+              <p className="text-[10px] text-slate-400">Amount</p>
 
               <p className="mt-0.5 font-mono text-sm font-bold text-slate-700">
-                {formatAmount(
-                  amount
-                )}
+                {formatAmount(amount)}
               </p>
             </div>
 
@@ -723,21 +494,20 @@ export const TopUpModal: React.FC<
                   Transaction Reference
                 </p>
 
-                <p className="mt-0.5 break-all font-mono text-[10px] text-slate-600">
+                <p className="mt-0.5 font-mono text-[10px] break-all text-slate-600">
                   {lastRef}
                 </p>
               </div>
             )}
 
             <p className="mt-4 text-[10px] text-emerald-600">
-              Redirecting you to the secure
-              payment gateway...
+              Redirecting you to the secure payment gateway...
             </p>
           </div>
         )}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default TopUpModal;
+export default TopUpModal

@@ -17,23 +17,19 @@ export function SiteHeader() {
   const lastName = user?.lastName?.trim() || ""
 
   const fullName =
-    `${firstName} ${lastName}`.trim() ||
-    user?.name?.trim() ||
-    "MedSupply User"
+    `${firstName} ${lastName}`.trim() || user?.name?.trim() || "MedSupply User"
 
   const email = user?.email || "user@medsupply.com"
 
   return (
-    <header className="flex h-16 shrink-0 items-center border-b px-4 lg:px-6 bg-background">
+    <header className="flex h-16 shrink-0 items-center border-b bg-background px-4 lg:px-6">
       {/* LEFT SECTION */}
       <div className="flex items-center gap-2">
         <SidebarTrigger className="-ml-1" />
 
         <Separator orientation="vertical" className="mx-2 h-4" />
 
-        <h1 className="hidden sm:block text-base font-medium">
-          Dashboard
-        </h1>
+        <h1 className="hidden text-base font-medium sm:block">Dashboard</h1>
       </div>
 
       {/* RIGHT SECTION */}
@@ -47,7 +43,7 @@ export function SiteHeader() {
 
           <svg
             xmlns="http://www.w3.org/2000/svg"
-            className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground"
+            className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -66,24 +62,24 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-2">
             {/* USER TEXT */}
-            <div className="hidden sm:flex flex-col text-right">
+            <div className="hidden flex-col text-right sm:flex">
               {status === "loading" ? (
                 <>
-                  <span className="text-xs font-bold text-slate-400 leading-tight animate-pulse">
+                  <span className="animate-pulse text-xs leading-tight font-bold text-slate-400">
                     Loading...
                   </span>
 
-                  <span className="text-[10px] font-medium text-slate-300 font-mono animate-pulse">
+                  <span className="animate-pulse font-mono text-[10px] font-medium text-slate-300">
                     loading...
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-xs font-bold text-slate-800 leading-tight">
+                  <span className="text-xs leading-tight font-bold text-slate-800">
                     {fullName}
                   </span>
 
-                  <span className="text-[10px] font-medium text-slate-400 font-mono">
+                  <span className="font-mono text-[10px] font-medium text-slate-400">
                     {email}
                   </span>
                 </>

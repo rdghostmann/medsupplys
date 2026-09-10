@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react"
 import {
   CreditCard,
   Building2,
@@ -19,98 +19,87 @@ import {
   Lock,
   X,
   Check,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
 /* -------------------------------------------------------------------------- */
 /* TYPES                                                                      */
 /* -------------------------------------------------------------------------- */
 
-type CreditStatus =
-  | "ACTIVE"
-  | "APPROVED"
-  | "FROZEN"
-  | "SUSPENDED"
-  | "PENDING";
+type CreditStatus = "ACTIVE" | "APPROVED" | "FROZEN" | "SUSPENDED" | "PENDING"
 
-type CreditRatingTier =
-  | "AAA"
-  | "AA"
-  | "A"
-  | "B"
-  | "C"
-  | "UNRATED";
+type CreditRatingTier = "AAA" | "AA" | "A" | "B" | "C" | "UNRATED"
 
 type CreditTransactionType =
   | "CREDIT_PURCHASE"
   | "CREDIT_TOP_UP"
   | "LIMIT_ADJUSTMENT"
-  | "CREDIT_REPAYMENT";
+  | "CREDIT_REPAYMENT"
 
-type CreditTransactionDirection = "CHARGE" | "CREDIT";
+type CreditTransactionDirection = "CHARGE" | "CREDIT"
 
 interface CreditTransaction {
-  id: string;
-  type: CreditTransactionType;
-  direction: CreditTransactionDirection;
-  description: string;
-  reference: string;
-  amount: number;
-  balanceAfter: number;
-  createdAt: string;
+  id: string
+  type: CreditTransactionType
+  direction: CreditTransactionDirection
+  description: string
+  reference: string
+  amount: number
+  balanceAfter: number
+  createdAt: string
 }
 
 interface CreditUser {
-  id: string;
-  name: string;
-  organization?: string;
-  role: string;
-  creditRatingTier?: CreditRatingTier;
+  id: string
+  name: string
+  organization?: string
+  role: string
+  creditRatingTier?: CreditRatingTier
 }
 
 interface CreditAccount {
-  creditLimit: number;
-  availableCredit: number;
-  creditUsed: number;
-  outstandingBalance: number;
-  status: CreditStatus;
-  creditRatingTier?: CreditRatingTier;
-  terms: string;
-  interestRatePercent: number;
-  dueDate: string;
+  creditLimit: number
+  availableCredit: number
+  creditUsed: number
+  outstandingBalance: number
+  status: CreditStatus
+  creditRatingTier?: CreditRatingTier
+  terms: string
+  interestRatePercent: number
+  dueDate: string
 }
 
 interface CreditAccountWithUser {
-  user: CreditUser;
-  account: CreditAccount;
+  user: CreditUser
+  account: CreditAccount
 }
 
 interface PlatformConfig {
-  defaultCommissionPercent: number;
+  defaultCommissionPercent: number
   matchingWeights: {
-    availabilityWeight: number;
-    priceWeight: number;
-    supplierTypeWeight: number;
-    fulfillmentWeight: number;
-    reliabilityWeight: number;
-  };
-  minCreditApprovalLimit: number;
-  maxCreditApprovalLimit: number;
-  totalCreditPoolLimit: number;
-  defaultCreditTerms: string;
-  autoAdvanceSupplierTimeoutSeconds: number;
+    availabilityWeight: number
+    priceWeight: number
+    supplierTypeWeight: number
+    fulfillmentWeight: number
+    reliabilityWeight: number
+  }
+  minCreditApprovalLimit: number
+  maxCreditApprovalLimit: number
+  totalCreditPoolLimit: number
+  defaultCreditTerms: string
+  autoAdvanceSupplierTimeoutSeconds: number
 }
 
 interface Portfolio {
-  totalCreditLimit: number;
-  totalCreditExposure: number;
-  totalAvailableCredit: number;
-  totalCreditUsed: number;
-  activeFacilitiesCount: number;
-  totalAccountsCount: number;
-  utilizationRate: number;
-  poolLimit: number;
-  poolHeadroom: number;
+  totalCreditLimit: number
+  totalCreditExposure: number
+  totalAvailableCredit: number
+  totalCreditUsed: number
+  activeFacilitiesCount: number
+  totalAccountsCount: number
+  utilizationRate: number
+  poolLimit: number
+  poolHeadroom: number
 }
 
 /* -------------------------------------------------------------------------- */
@@ -131,7 +120,7 @@ const mockConfig: PlatformConfig = {
   totalCreditPoolLimit: 50000000,
   defaultCreditTerms: "Net 30 Days Revolving Healthcare Facility",
   autoAdvanceSupplierTimeoutSeconds: 300,
-};
+}
 
 const mockAccounts: CreditAccountWithUser[] = [
   {
@@ -294,7 +283,7 @@ const mockAccounts: CreditAccountWithUser[] = [
       dueDate: "2026-09-15",
     },
   },
-];
+]
 
 const mockTransactions: Record<string, CreditTransaction[]> = {
   usr_001: [
@@ -353,20 +342,20 @@ const mockTransactions: Record<string, CreditTransaction[]> = {
       createdAt: "2026-09-03T11:10:00",
     },
   ],
-};
+}
 
 /* -------------------------------------------------------------------------- */
 /* COMPONENT                                                                  */
 /* -------------------------------------------------------------------------- */
 
 export const CreditFacilitiesManagement: React.FC = () => {
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
 
   const [accounts, setAccounts] =
-    useState<CreditAccountWithUser[]>(mockAccounts);
+    useState<CreditAccountWithUser[]>(mockAccounts)
 
-  const [config, setConfig] = useState<PlatformConfig>(mockConfig);
+  const [config, setConfig] = useState<PlatformConfig>(mockConfig)
 
   const [portfolio, setPortfolio] = useState<Portfolio>({
     totalCreditLimit: 0,
@@ -378,20 +367,17 @@ export const CreditFacilitiesManagement: React.FC = () => {
     utilizationRate: 0,
     poolLimit: mockConfig.totalCreditPoolLimit,
     poolHeadroom: mockConfig.totalCreditPoolLimit,
-  });
+  })
 
   /* ------------------------------------------------------------------------ */
   /* FILTERS                                                                  */
   /* ------------------------------------------------------------------------ */
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState("")
 
-  const [tierFilter, setTierFilter] = useState<
-    "ALL" | CreditRatingTier
-  >("ALL");
+  const [tierFilter, setTierFilter] = useState<"ALL" | CreditRatingTier>("ALL")
 
-  const [statusFilter, setStatusFilter] =
-    useState<"ALL" | CreditStatus>("ALL");
+  const [statusFilter, setStatusFilter] = useState<"ALL" | CreditStatus>("ALL")
 
   /* ------------------------------------------------------------------------ */
   /* PLATFORM LIMITS                                                          */
@@ -399,124 +385,113 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
   const [minLimitInput, setMinLimitInput] = useState(
     mockConfig.minCreditApprovalLimit
-  );
+  )
 
   const [maxLimitInput, setMaxLimitInput] = useState(
     mockConfig.maxCreditApprovalLimit
-  );
+  )
 
   const [poolLimitInput, setPoolLimitInput] = useState(
     mockConfig.totalCreditPoolLimit
-  );
+  )
 
   const [defaultTermsInput, setDefaultTermsInput] = useState(
     mockConfig.defaultCreditTerms
-  );
+  )
 
-  const [isSavingLimits, setIsSavingLimits] = useState(false);
+  const [isSavingLimits, setIsSavingLimits] = useState(false)
 
   /* ------------------------------------------------------------------------ */
   /* CONFIG MODAL                                                             */
   /* ------------------------------------------------------------------------ */
 
   const [selectedForConfig, setSelectedForConfig] =
-    useState<CreditAccountWithUser | null>(null);
+    useState<CreditAccountWithUser | null>(null)
 
-  const [editTier, setEditTier] =
-    useState<CreditRatingTier>("B");
+  const [editTier, setEditTier] = useState<CreditRatingTier>("B")
 
-  const [editLimit, setEditLimit] = useState(5000000);
+  const [editLimit, setEditLimit] = useState(5000000)
 
-  const [autoCalibrateLimit, setAutoCalibrateLimit] =
-    useState(true);
+  const [autoCalibrateLimit, setAutoCalibrateLimit] = useState(true)
 
-  const [editStatus, setEditStatus] =
-    useState<CreditStatus>("ACTIVE");
+  const [editStatus, setEditStatus] = useState<CreditStatus>("ACTIVE")
 
-  const [editTerms, setEditTerms] = useState(
-    "Net 30 Days Revolving Facility"
-  );
+  const [editTerms, setEditTerms] = useState("Net 30 Days Revolving Facility")
 
-  const [editInterest, setEditInterest] = useState(0);
+  const [editInterest, setEditInterest] = useState(0)
 
-  const [isSavingAccount, setIsSavingAccount] =
-    useState(false);
+  const [isSavingAccount, setIsSavingAccount] = useState(false)
 
   /* ------------------------------------------------------------------------ */
   /* TOP-UP MODAL                                                             */
   /* ------------------------------------------------------------------------ */
 
   const [selectedForTopUp, setSelectedForTopUp] =
-    useState<CreditAccountWithUser | null>(null);
+    useState<CreditAccountWithUser | null>(null)
 
-  const [topUpAmount, setTopUpAmount] = useState(1000000);
+  const [topUpAmount, setTopUpAmount] = useState(1000000)
 
-  const [topUpType, setTopUpType] = useState<
-    "HEADROOM_BOOST" | "SETTLEMENT"
-  >("HEADROOM_BOOST");
+  const [topUpType, setTopUpType] = useState<"HEADROOM_BOOST" | "SETTLEMENT">(
+    "HEADROOM_BOOST"
+  )
 
-  const [topUpNotes, setTopUpNotes] = useState("");
+  const [topUpNotes, setTopUpNotes] = useState("")
 
-  const [isToppingUp, setIsToppingUp] = useState(false);
+  const [isToppingUp, setIsToppingUp] = useState(false)
 
   /* ------------------------------------------------------------------------ */
   /* LEDGER MODAL                                                             */
   /* ------------------------------------------------------------------------ */
 
   const [selectedForLedger, setSelectedForLedger] =
-    useState<CreditAccountWithUser | null>(null);
+    useState<CreditAccountWithUser | null>(null)
 
-  const [userTransactions, setUserTransactions] =
-    useState<CreditTransaction[]>([]);
+  const [userTransactions, setUserTransactions] = useState<CreditTransaction[]>(
+    []
+  )
 
-  const [loadingLedger, setLoadingLedger] = useState(false);
+  const [loadingLedger, setLoadingLedger] = useState(false)
 
   /* ------------------------------------------------------------------------ */
   /* HELPERS                                                                  */
   /* ------------------------------------------------------------------------ */
 
   const formatCurrency = (amount: number) =>
-    `₦${amount.toLocaleString("en-NG")}`;
+    `₦${amount.toLocaleString("en-NG")}`
 
-  const calculatePortfolio = (
-    data: CreditAccountWithUser[]
-  ): Portfolio => {
+  const calculatePortfolio = (data: CreditAccountWithUser[]): Portfolio => {
     const totalCreditLimit = data.reduce(
       (sum, item) => sum + (item.account.creditLimit || 0),
       0
-    );
+    )
 
     const totalAvailableCredit = data.reduce(
       (sum, item) => sum + (item.account.availableCredit || 0),
       0
-    );
+    )
 
     const totalCreditUsed = data.reduce(
       (sum, item) => sum + (item.account.creditUsed || 0),
       0
-    );
+    )
 
     const activeFacilitiesCount = data.filter(
       (item) =>
-        item.account.status === "ACTIVE" ||
-        item.account.status === "APPROVED"
-    ).length;
+        item.account.status === "ACTIVE" || item.account.status === "APPROVED"
+    ).length
 
-    const totalAccountsCount = data.length;
+    const totalAccountsCount = data.length
 
     const utilizationRate =
       totalCreditLimit > 0
         ? Math.round((totalCreditUsed / totalCreditLimit) * 100)
-        : 0;
+        : 0
 
-    const poolLimit = config.totalCreditPoolLimit;
+    const poolLimit = config.totalCreditPoolLimit
 
-    const totalCreditExposure = totalCreditUsed;
+    const totalCreditExposure = totalCreditUsed
 
-    const poolHeadroom = Math.max(
-      0,
-      poolLimit - totalCreditExposure
-    );
+    const poolHeadroom = Math.max(0, poolLimit - totalCreditExposure)
 
     return {
       totalCreditLimit,
@@ -528,8 +503,8 @@ export const CreditFacilitiesManagement: React.FC = () => {
       utilizationRate,
       poolLimit,
       poolHeadroom,
-    };
-  };
+    }
+  }
 
   /* ------------------------------------------------------------------------ */
   /* INITIAL LOAD                                                             */
@@ -537,12 +512,12 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setPortfolio(calculatePortfolio(accounts));
-      setLoading(false);
-    }, 500);
+      setPortfolio(calculatePortfolio(accounts))
+      setLoading(false)
+    }, 500)
 
-    return () => clearTimeout(timer);
-  }, []);
+    return () => clearTimeout(timer)
+  }, [])
 
   /* ------------------------------------------------------------------------ */
   /* REFRESH MOCK DATA                                                        */
@@ -550,33 +525,30 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
   const fetchData = async (silent = false) => {
     if (!silent) {
-      setLoading(true);
+      setLoading(true)
     } else {
-      setRefreshing(true);
+      setRefreshing(true)
     }
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 500)
-    );
+    await new Promise((resolve) => setTimeout(resolve, 500))
 
-    setAccounts([...mockAccounts]);
-    setConfig({ ...mockConfig });
+    setAccounts([...mockAccounts])
+    setConfig({ ...mockConfig })
 
-    setMinLimitInput(mockConfig.minCreditApprovalLimit);
-    setMaxLimitInput(mockConfig.maxCreditApprovalLimit);
-    setPoolLimitInput(mockConfig.totalCreditPoolLimit);
-    setDefaultTermsInput(mockConfig.defaultCreditTerms);
+    setMinLimitInput(mockConfig.minCreditApprovalLimit)
+    setMaxLimitInput(mockConfig.maxCreditApprovalLimit)
+    setPoolLimitInput(mockConfig.totalCreditPoolLimit)
+    setDefaultTermsInput(mockConfig.defaultCreditTerms)
 
-    setPortfolio(calculatePortfolio(mockAccounts));
+    setPortfolio(calculatePortfolio(mockAccounts))
 
-    setLoading(false);
-    setRefreshing(false);
+    setLoading(false)
+    setRefreshing(false)
 
     toast.success("Credit facilities synchronized", {
-      description:
-        "Mock facility portfolio data has been refreshed.",
-    });
-  };
+      description: "Mock facility portfolio data has been refreshed.",
+    })
+  }
 
   /* ------------------------------------------------------------------------ */
   /* TIER RECOMMENDED LIMIT                                                   */
@@ -587,44 +559,42 @@ export const CreditFacilitiesManagement: React.FC = () => {
     min = minLimitInput,
     max = maxLimitInput
   ) => {
-    let limit = min;
+    let limit = min
 
     switch (tier) {
       case "AAA":
-        limit = max;
-        break;
+        limit = max
+        break
 
       case "AA":
-        limit = Math.round(min + (max - min) * 0.85);
-        break;
+        limit = Math.round(min + (max - min) * 0.85)
+        break
 
       case "A":
-        limit = Math.round(min + (max - min) * 0.6);
-        break;
+        limit = Math.round(min + (max - min) * 0.6)
+        break
 
       case "B":
-        limit = Math.round(min + (max - min) * 0.35);
-        break;
+        limit = Math.round(min + (max - min) * 0.35)
+        break
 
       case "C":
-        limit = Math.round(min + (max - min) * 0.15);
-        break;
+        limit = Math.round(min + (max - min) * 0.15)
+        break
 
       case "UNRATED":
       default:
-        limit = min;
-        break;
+        limit = min
+        break
     }
 
-    limit = Math.round(limit / 100000) * 100000;
+    limit = Math.round(limit / 100000) * 100000
 
-    return Math.max(min, Math.min(max, limit));
-  };
+    return Math.max(min, Math.min(max, limit))
+  }
 
-  const handleTierSelection = (
-    tier: CreditRatingTier
-  ) => {
-    setEditTier(tier);
+  const handleTierSelection = (tier: CreditRatingTier) => {
+    setEditTier(tier)
 
     if (autoCalibrateLimit) {
       setEditLimit(
@@ -633,9 +603,9 @@ export const CreditFacilitiesManagement: React.FC = () => {
           config.minCreditApprovalLimit,
           config.maxCreditApprovalLimit
         )
-      );
+      )
     }
-  };
+  }
 
   /* ------------------------------------------------------------------------ */
   /* SAVE PLATFORM LIMITS                                                    */
@@ -644,33 +614,29 @@ export const CreditFacilitiesManagement: React.FC = () => {
   const handleSavePlatformLimits = async () => {
     if (minLimitInput <= 0 || maxLimitInput <= 0) {
       toast.error("Invalid Limits", {
-        description:
-          "Minimum and Maximum limits must be greater than ₦0.",
-      });
-      return;
+        description: "Minimum and Maximum limits must be greater than ₦0.",
+      })
+      return
     }
 
     if (minLimitInput > maxLimitInput) {
       toast.error("Invalid Range", {
         description:
           "Minimum Approval Limit cannot exceed Maximum Approval Limit.",
-      });
-      return;
+      })
+      return
     }
 
     if (poolLimitInput <= 0) {
       toast.error("Invalid Risk Pool", {
-        description:
-          "The total credit risk pool must be greater than ₦0.",
-      });
-      return;
+        description: "The total credit risk pool must be greater than ₦0.",
+      })
+      return
     }
 
-    setIsSavingLimits(true);
+    setIsSavingLimits(true)
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 700)
-    );
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     const nextConfig = {
       ...config,
@@ -678,92 +644,71 @@ export const CreditFacilitiesManagement: React.FC = () => {
       maxCreditApprovalLimit: maxLimitInput,
       totalCreditPoolLimit: poolLimitInput,
       defaultCreditTerms: defaultTermsInput,
-    };
+    }
 
-    setConfig(nextConfig);
+    setConfig(nextConfig)
 
-    setPortfolio(
-      calculatePortfolio(accounts)
-    );
+    setPortfolio(calculatePortfolio(accounts))
 
-    setIsSavingLimits(false);
+    setIsSavingLimits(false)
 
     toast.success("Platform Credit Policy Updated", {
       description: `Approved bounds: ${formatCurrency(
         minLimitInput
       )} – ${formatCurrency(maxLimitInput)}.`,
-    });
-  };
+    })
+  }
 
   /* ------------------------------------------------------------------------ */
   /* CONFIG ACCOUNT                                                           */
   /* ------------------------------------------------------------------------ */
 
-  const openConfigModal = (
-    item: CreditAccountWithUser
-  ) => {
-    setSelectedForConfig(item);
+  const openConfigModal = (item: CreditAccountWithUser) => {
+    setSelectedForConfig(item)
 
     const tier =
-      item.account.creditRatingTier ||
-      item.user.creditRatingTier ||
-      "B";
+      item.account.creditRatingTier || item.user.creditRatingTier || "B"
 
-    setEditTier(tier);
-    setEditLimit(item.account.creditLimit);
-    setAutoCalibrateLimit(false);
-    setEditStatus(item.account.status);
-    setEditTerms(
-      item.account.terms ||
-        "Net 30 Days Revolving Facility"
-    );
-    setEditInterest(
-      item.account.interestRatePercent || 0
-    );
-  };
+    setEditTier(tier)
+    setEditLimit(item.account.creditLimit)
+    setAutoCalibrateLimit(false)
+    setEditStatus(item.account.status)
+    setEditTerms(item.account.terms || "Net 30 Days Revolving Facility")
+    setEditInterest(item.account.interestRatePercent || 0)
+  }
 
   const handleSaveUserAccount = async () => {
-    if (!selectedForConfig) return;
+    if (!selectedForConfig) return
 
-    if (
-      editLimit < config.minCreditApprovalLimit
-    ) {
+    if (editLimit < config.minCreditApprovalLimit) {
       toast.error("Limit Below Platform Minimum", {
         description: `Limit must be at least ${formatCurrency(
           config.minCreditApprovalLimit
         )}.`,
-      });
-      return;
+      })
+      return
     }
 
-    if (
-      editLimit > config.maxCreditApprovalLimit
-    ) {
+    if (editLimit > config.maxCreditApprovalLimit) {
       toast.error("Limit Exceeds Platform Maximum", {
         description: `Limit cannot exceed ${formatCurrency(
           config.maxCreditApprovalLimit
         )}.`,
-      });
-      return;
+      })
+      return
     }
 
-    setIsSavingAccount(true);
+    setIsSavingAccount(true)
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 700)
-    );
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     setAccounts((current) =>
       current.map((item) => {
-        if (
-          item.user.id !==
-          selectedForConfig.user.id
-        ) {
-          return item;
+        if (item.user.id !== selectedForConfig.user.id) {
+          return item
         }
 
-        const creditUsed =
-          item.account.creditUsed;
+        const creditUsed = item.account.creditUsed
 
         return {
           ...item,
@@ -775,166 +720,133 @@ export const CreditFacilitiesManagement: React.FC = () => {
             ...item.account,
             creditRatingTier: editTier,
             creditLimit: editLimit,
-            availableCredit: Math.max(
-              0,
-              editLimit - creditUsed
-            ),
+            availableCredit: Math.max(0, editLimit - creditUsed),
             status: editStatus,
             terms: editTerms,
             interestRatePercent: editInterest,
           },
-        };
+        }
       })
-    );
+    )
 
-    setIsSavingAccount(false);
+    setIsSavingAccount(false)
 
     const organization =
-      selectedForConfig.user.organization ||
-      selectedForConfig.user.name;
+      selectedForConfig.user.organization || selectedForConfig.user.name
 
-    setSelectedForConfig(null);
+    setSelectedForConfig(null)
 
     toast.success("Credit Facility Configured", {
       description: `${organization}: Tier ${editTier}, Limit ${formatCurrency(
         editLimit
       )}.`,
-    });
-  };
+    })
+  }
 
   /* ------------------------------------------------------------------------ */
   /* TOP-UP                                                                    */
   /* ------------------------------------------------------------------------ */
 
-  const openTopUpModal = (
-    item: CreditAccountWithUser
-  ) => {
-    setSelectedForTopUp(item);
-    setTopUpAmount(1000000);
-    setTopUpType("HEADROOM_BOOST");
-    setTopUpNotes("");
-  };
+  const openTopUpModal = (item: CreditAccountWithUser) => {
+    setSelectedForTopUp(item)
+    setTopUpAmount(1000000)
+    setTopUpType("HEADROOM_BOOST")
+    setTopUpNotes("")
+  }
 
   const handleExecuteTopUp = async () => {
-    if (!selectedForTopUp) return;
+    if (!selectedForTopUp) return
 
     if (topUpAmount <= 0) {
       toast.error("Invalid Amount", {
-        description:
-          "Top-up amount must be strictly greater than ₦0.",
-      });
-      return;
+        description: "Top-up amount must be strictly greater than ₦0.",
+      })
+      return
     }
 
     if (
       topUpType === "SETTLEMENT" &&
-      topUpAmount >
-        selectedForTopUp.account.outstandingBalance
+      topUpAmount > selectedForTopUp.account.outstandingBalance
     ) {
       toast.error("Invalid Settlement Amount", {
-        description:
-          "Settlement amount cannot exceed the outstanding balance.",
-      });
-      return;
+        description: "Settlement amount cannot exceed the outstanding balance.",
+      })
+      return
     }
 
-    setIsToppingUp(true);
+    setIsToppingUp(true)
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 700)
-    );
+    await new Promise((resolve) => setTimeout(resolve, 700))
 
     setAccounts((current) =>
       current.map((item) => {
-        if (
-          item.user.id !==
-          selectedForTopUp.user.id
-        ) {
-          return item;
+        if (item.user.id !== selectedForTopUp.user.id) {
+          return item
         }
 
-        const currentAvailable =
-          item.account.availableCredit;
+        const currentAvailable = item.account.availableCredit
 
-        const currentOutstanding =
-          item.account.outstandingBalance;
+        const currentOutstanding = item.account.outstandingBalance
 
         if (topUpType === "SETTLEMENT") {
-          const settlementAmount = Math.min(
-            topUpAmount,
-            currentOutstanding
-          );
+          const settlementAmount = Math.min(topUpAmount, currentOutstanding)
 
           return {
             ...item,
             account: {
               ...item.account,
-              availableCredit:
-                currentAvailable +
-                settlementAmount,
+              availableCredit: currentAvailable + settlementAmount,
               creditUsed: Math.max(
                 0,
-                item.account.creditUsed -
-                  settlementAmount
+                item.account.creditUsed - settlementAmount
               ),
               outstandingBalance: Math.max(
                 0,
-                currentOutstanding -
-                  settlementAmount
+                currentOutstanding - settlementAmount
               ),
             },
-          };
+          }
         }
 
         return {
           ...item,
           account: {
             ...item.account,
-            availableCredit:
-              currentAvailable + topUpAmount,
-            creditLimit:
-              item.account.creditLimit +
-              topUpAmount,
+            availableCredit: currentAvailable + topUpAmount,
+            creditLimit: item.account.creditLimit + topUpAmount,
           },
-        };
+        }
       })
-    );
+    )
 
-    setIsToppingUp(false);
+    setIsToppingUp(false)
 
     const organization =
-      selectedForTopUp.user.organization ||
-      selectedForTopUp.user.name;
+      selectedForTopUp.user.organization || selectedForTopUp.user.name
 
-    setSelectedForTopUp(null);
+    setSelectedForTopUp(null)
 
     toast.success("Credit Account Topped Up", {
       description: `${formatCurrency(
         topUpAmount
       )} credited to ${organization}.`,
-    });
-  };
+    })
+  }
 
   /* ------------------------------------------------------------------------ */
   /* LEDGER                                                                    */
   /* ------------------------------------------------------------------------ */
 
-  const openLedgerModal = async (
-    item: CreditAccountWithUser
-  ) => {
-    setSelectedForLedger(item);
-    setLoadingLedger(true);
+  const openLedgerModal = async (item: CreditAccountWithUser) => {
+    setSelectedForLedger(item)
+    setLoadingLedger(true)
 
-    await new Promise((resolve) =>
-      setTimeout(resolve, 400)
-    );
+    await new Promise((resolve) => setTimeout(resolve, 400))
 
-    setUserTransactions(
-      mockTransactions[item.user.id] || []
-    );
+    setUserTransactions(mockTransactions[item.user.id] || [])
 
-    setLoadingLedger(false);
-  };
+    setLoadingLedger(false)
+  }
 
   /* ------------------------------------------------------------------------ */
   /* FILTERED ACCOUNTS                                                        */
@@ -942,139 +854,116 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
   const filteredAccounts = useMemo(() => {
     return accounts.filter((item) => {
-      const organization =
-        item.user.organization?.toLowerCase() || "";
+      const organization = item.user.organization?.toLowerCase() || ""
 
-      const userName =
-        item.user.name?.toLowerCase() || "";
+      const userName = item.user.name?.toLowerCase() || ""
 
-      const search =
-        searchTerm.toLowerCase().trim();
+      const search = searchTerm.toLowerCase().trim()
 
       const matchesSearch =
-        !search ||
-        organization.includes(search) ||
-        userName.includes(search);
+        !search || organization.includes(search) || userName.includes(search)
 
       const itemTier =
-        item.account.creditRatingTier ||
-        item.user.creditRatingTier ||
-        "UNRATED";
+        item.account.creditRatingTier || item.user.creditRatingTier || "UNRATED"
 
-      const matchesTier =
-        tierFilter === "ALL" ||
-        itemTier === tierFilter;
+      const matchesTier = tierFilter === "ALL" || itemTier === tierFilter
 
       const matchesStatus =
-        statusFilter === "ALL" ||
-        item.account.status === statusFilter;
+        statusFilter === "ALL" || item.account.status === statusFilter
 
-      return (
-        matchesSearch &&
-        matchesTier &&
-        matchesStatus
-      );
-    });
-  }, [
-    accounts,
-    searchTerm,
-    tierFilter,
-    statusFilter,
-  ]);
+      return matchesSearch && matchesTier && matchesStatus
+    })
+  }, [accounts, searchTerm, tierFilter, statusFilter])
 
   /* ------------------------------------------------------------------------ */
   /* BADGES                                                                    */
   /* ------------------------------------------------------------------------ */
 
-  const getTierBadge = (
-    tier?: CreditRatingTier
-  ) => {
+  const getTierBadge = (tier?: CreditRatingTier) => {
     switch (tier) {
       case "AAA":
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-purple-600" />
+          <span className="flex items-center gap-1 rounded-md border border-purple-200 bg-purple-50 px-2 py-0.5 font-mono text-[11px] font-bold text-purple-700">
+            <Sparkles className="h-3 w-3 text-purple-600" />
             Tier AAA (Prime)
           </span>
-        );
+        )
 
       case "AA":
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1">
-            <ShieldCheck className="w-3 h-3 text-blue-600" />
+          <span className="flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2 py-0.5 font-mono text-[11px] font-bold text-blue-700">
+            <ShieldCheck className="h-3 w-3 text-blue-600" />
             Tier AA (Major)
           </span>
-        );
+        )
 
       case "A":
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1">
-            <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+          <span className="flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[11px] font-bold text-emerald-700">
+            <CheckCircle2 className="h-3 w-3 text-emerald-600" />
             Tier A (Standard)
           </span>
-        );
+        )
 
       case "B":
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+          <span className="rounded-md border border-indigo-200 bg-indigo-50 px-2 py-0.5 font-mono text-[11px] font-bold text-indigo-700">
             Tier B (General)
           </span>
-        );
+        )
 
       case "C":
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+          <span className="rounded-md border border-amber-200 bg-amber-50 px-2 py-0.5 font-mono text-[11px] font-bold text-amber-700">
             Tier C (Restricted)
           </span>
-        );
+        )
 
       default:
         return (
-          <span className="px-2 py-0.5 rounded-md font-mono text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+          <span className="rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 font-mono text-[11px] font-semibold text-slate-600">
             UNRATED
           </span>
-        );
+        )
     }
-  };
+  }
 
-  const getStatusBadge = (
-    status: CreditStatus
-  ) => {
+  const getStatusBadge = (status: CreditStatus) => {
     switch (status) {
       case "ACTIVE":
       case "APPROVED":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10.5px] font-bold text-emerald-700">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" />
             ACTIVE
           </span>
-        );
+        )
 
       case "FROZEN":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-            <Lock className="w-2.5 h-2.5" />
+          <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10.5px] font-bold text-amber-700">
+            <Lock className="h-2.5 w-2.5" />
             FROZEN
           </span>
-        );
+        )
 
       case "SUSPENDED":
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-            <XCircle className="w-2.5 h-2.5" />
+          <span className="inline-flex items-center gap-1 rounded-full border border-rose-200 bg-rose-50 px-2 py-0.5 text-[10.5px] font-bold text-rose-700">
+            <XCircle className="h-2.5 w-2.5" />
             SUSPENDED
           </span>
-        );
+        )
 
       default:
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-            <Clock className="w-2.5 h-2.5" />
+          <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[10.5px] font-bold text-slate-700">
+            <Clock className="h-2.5 w-2.5" />
             PENDING
           </span>
-        );
+        )
     }
-  };
+  }
 
   /* ------------------------------------------------------------------------ */
   /* LOADING                                                                   */
@@ -1084,16 +973,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-7 h-7 animate-spin mx-auto mb-3 text-blue-600" />
+          <RefreshCw className="mx-auto mb-3 h-7 w-7 animate-spin text-blue-600" />
           <p className="text-sm font-semibold text-slate-700">
             Loading credit facilities...
           </p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="mt-1 text-xs text-slate-400">
             Initializing mock portfolio data
           </p>
         </div>
       </div>
-    );
+    )
   }
 
   /* ------------------------------------------------------------------------ */
@@ -1102,25 +991,23 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
   return (
     <div className="space-y-6">
-
       {/* HEADER */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="flex flex-col justify-between gap-4 lg:flex-row lg:items-center">
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                <CreditCard className="w-5 h-5" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                <CreditCard className="h-5 w-5" />
               </div>
 
               <div>
-                <h2 className="font-display font-bold text-slate-900 text-lg">
+                <h2 className="font-display text-lg font-bold text-slate-900">
                   Credit Facilities Governance & Risk Management
                 </h2>
 
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Configure platform regulatory limits,
-                  calibrate user Credit Rating Tiers,
-                  and manage facility headroom.
+                <p className="mt-0.5 text-xs text-slate-500">
+                  Configure platform regulatory limits, calibrate user Credit
+                  Rating Tiers, and manage facility headroom.
                 </p>
               </div>
             </div>
@@ -1129,121 +1016,105 @@ export const CreditFacilitiesManagement: React.FC = () => {
           <button
             onClick={() => fetchData(true)}
             disabled={refreshing}
-            className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-50"
+            className="flex items-center gap-1.5 rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
           >
             <RefreshCw
-              className={`w-3.5 h-3.5 ${
-                refreshing ? "animate-spin" : ""
-              }`}
+              className={`h-3.5 w-3.5 ${refreshing ? "animate-spin" : ""}`}
             />
 
-            {refreshing
-              ? "Refreshing..."
-              : "Sync Facilities"}
+            {refreshing ? "Refreshing..." : "Sync Facilities"}
           </button>
         </div>
 
         {/* PORTFOLIO */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 pt-5 border-t border-slate-100">
-
-          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-            <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+        <div className="mt-6 grid grid-cols-1 gap-4 border-t border-slate-100 pt-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-4">
+            <span className="block text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
               Total Approved Facility Lines
             </span>
 
-            <span className="font-mono text-xl font-bold text-slate-900 mt-1 block">
-              {formatCurrency(
-                portfolio.totalCreditLimit
-              )}
+            <span className="mt-1 block font-mono text-xl font-bold text-slate-900">
+              {formatCurrency(portfolio.totalCreditLimit)}
             </span>
 
-            <span className="text-[11px] text-slate-500 mt-1 block">
-              Across {portfolio.activeFacilitiesCount} active healthcare facilities
+            <span className="mt-1 block text-[11px] text-slate-500">
+              Across {portfolio.activeFacilitiesCount} active healthcare
+              facilities
             </span>
           </div>
 
-          <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100">
-            <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider block">
+          <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+            <span className="block text-[11px] font-semibold tracking-wider text-emerald-800 uppercase">
               Total Available Headroom
             </span>
 
-            <span className="font-mono text-xl font-bold text-emerald-900 mt-1 block">
-              {formatCurrency(
-                portfolio.totalAvailableCredit
-              )}
+            <span className="mt-1 block font-mono text-xl font-bold text-emerald-900">
+              {formatCurrency(portfolio.totalAvailableCredit)}
             </span>
 
-            <span className="text-[11px] text-emerald-700 mt-1 block font-medium">
+            <span className="mt-1 block text-[11px] font-medium text-emerald-700">
               Ready for medical procurement
             </span>
           </div>
 
-          <div className="p-4 bg-amber-50 rounded-xl border border-amber-100">
-            <span className="text-[11px] font-semibold text-amber-800 uppercase tracking-wider block">
+          <div className="rounded-xl border border-amber-100 bg-amber-50 p-4">
+            <span className="block text-[11px] font-semibold tracking-wider text-amber-800 uppercase">
               Active Exposure
             </span>
 
-            <span className="font-mono text-xl font-bold text-amber-900 mt-1 block">
-              {formatCurrency(
-                portfolio.totalCreditExposure
-              )}
+            <span className="mt-1 block font-mono text-xl font-bold text-amber-900">
+              {formatCurrency(portfolio.totalCreditExposure)}
             </span>
 
-            <span className="text-[11px] text-amber-700 mt-1 block font-semibold">
+            <span className="mt-1 block text-[11px] font-semibold text-amber-700">
               {portfolio.utilizationRate}% Portfolio Utilization
             </span>
           </div>
 
-          <div className="p-4 bg-blue-50 rounded-xl border border-blue-100">
-            <span className="text-[11px] font-semibold text-blue-800 uppercase tracking-wider block">
+          <div className="rounded-xl border border-blue-100 bg-blue-50 p-4">
+            <span className="block text-[11px] font-semibold tracking-wider text-blue-800 uppercase">
               Platform Risk Pool Ceiling
             </span>
 
-            <span className="font-mono text-xl font-bold text-blue-900 mt-1 block">
-              {formatCurrency(
-                config.totalCreditPoolLimit
-              )}
+            <span className="mt-1 block font-mono text-xl font-bold text-blue-900">
+              {formatCurrency(config.totalCreditPoolLimit)}
             </span>
 
-            <span className="text-[11px] text-blue-700 mt-1 block">
-              {formatCurrency(
-                portfolio.poolHeadroom
-              )} uncommitted reserve
+            <span className="mt-1 block text-[11px] text-blue-700">
+              {formatCurrency(portfolio.poolHeadroom)} uncommitted reserve
             </span>
           </div>
         </div>
       </div>
 
       {/* PLATFORM POLICY */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+      <div className="space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-xs">
+        <div className="flex flex-col justify-between gap-2 border-b border-slate-100 pb-3 sm:flex-row sm:items-center">
           <div>
-            <h3 className="font-display font-bold text-slate-900 text-sm flex items-center gap-2">
-              <Sliders className="w-4 h-4 text-blue-600" />
+            <h3 className="font-display flex items-center gap-2 text-sm font-bold text-slate-900">
+              <Sliders className="h-4 w-4 text-blue-600" />
               Platform Credit Approval Policy & Limits
             </h3>
 
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="mt-0.5 text-xs text-slate-500">
               Configure global credit approval bounds and facility policy.
             </p>
           </div>
 
-          <span className="text-[11px] px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-semibold border border-blue-200">
+          <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-semibold text-blue-700">
             Mock Policy Environment
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
           {/* MIN */}
-          <div className="space-y-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <label className="text-xs font-bold text-slate-800">
               Minimum Approval Limit
             </label>
 
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-xs">
+              <span className="absolute top-2.5 left-3 font-mono text-xs text-slate-400">
                 ₦
               </span>
 
@@ -1251,12 +1122,8 @@ export const CreditFacilitiesManagement: React.FC = () => {
                 type="number"
                 step="100000"
                 value={minLimitInput}
-                onChange={(e) =>
-                  setMinLimitInput(
-                    Number(e.target.value)
-                  )
-                }
-                className="w-full pl-7 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setMinLimitInput(Number(e.target.value))}
+                className="w-full rounded-lg border border-slate-300 bg-white py-2 pr-3 pl-7 font-mono text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
 
@@ -1266,13 +1133,13 @@ export const CreditFacilitiesManagement: React.FC = () => {
           </div>
 
           {/* MAX */}
-          <div className="space-y-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <label className="text-xs font-bold text-slate-800">
               Maximum Approval Limit
             </label>
 
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-xs">
+              <span className="absolute top-2.5 left-3 font-mono text-xs text-slate-400">
                 ₦
               </span>
 
@@ -1281,12 +1148,8 @@ export const CreditFacilitiesManagement: React.FC = () => {
                 step="500000"
                 min={minLimitInput}
                 value={maxLimitInput}
-                onChange={(e) =>
-                  setMaxLimitInput(
-                    Number(e.target.value)
-                  )
-                }
-                className="w-full pl-7 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setMaxLimitInput(Number(e.target.value))}
+                className="w-full rounded-lg border border-slate-300 bg-white py-2 pr-3 pl-7 font-mono text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
 
@@ -1296,13 +1159,13 @@ export const CreditFacilitiesManagement: React.FC = () => {
           </div>
 
           {/* POOL */}
-          <div className="space-y-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <label className="text-xs font-bold text-slate-800">
               Total Credit Risk Pool
             </label>
 
             <div className="relative">
-              <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-xs">
+              <span className="absolute top-2.5 left-3 font-mono text-xs text-slate-400">
                 ₦
               </span>
 
@@ -1310,12 +1173,8 @@ export const CreditFacilitiesManagement: React.FC = () => {
                 type="number"
                 step="1000000"
                 value={poolLimitInput}
-                onChange={(e) =>
-                  setPoolLimitInput(
-                    Number(e.target.value)
-                  )
-                }
-                className="w-full pl-7 pr-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setPoolLimitInput(Number(e.target.value))}
+                className="w-full rounded-lg border border-slate-300 bg-white py-2 pr-3 pl-7 font-mono text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>
 
@@ -1325,19 +1184,15 @@ export const CreditFacilitiesManagement: React.FC = () => {
           </div>
 
           {/* TERMS */}
-          <div className="space-y-2 p-4 rounded-xl bg-slate-50 border border-slate-200">
+          <div className="space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
             <label className="text-xs font-bold text-slate-800">
               Default Facility Tenor
             </label>
 
             <select
               value={defaultTermsInput}
-              onChange={(e) =>
-                setDefaultTermsInput(
-                  e.target.value
-                )
-              }
-              className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setDefaultTermsInput(e.target.value)}
+              className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none"
             >
               <option value="Net 15 Days Revolving Facility">
                 Net 15 Days
@@ -1363,17 +1218,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
         </div>
 
         {/* TIER MATRIX */}
-        <div className="p-4 bg-slate-900 text-white rounded-xl space-y-3">
-
+        <div className="space-y-3 rounded-xl bg-slate-900 p-4 text-white">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <Sparkles className="h-4 w-4 text-emerald-400" />
 
-            <span className="text-xs font-bold uppercase tracking-wider">
+            <span className="text-xs font-bold tracking-wider uppercase">
               Dynamic Credit Rating Calibration Matrix
             </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
             {(
               [
                 ["AAA", "Prime Federal Teaching"],
@@ -1386,21 +1240,17 @@ export const CreditFacilitiesManagement: React.FC = () => {
             ).map(([tier, description]) => (
               <div
                 key={tier}
-                className="p-2.5 rounded-lg bg-white/5 border border-white/10"
+                className="rounded-lg border border-white/10 bg-white/5 p-2.5"
               >
-                <span className="text-[10px] text-slate-300 font-bold block uppercase">
+                <span className="block text-[10px] font-bold text-slate-300 uppercase">
                   Tier {tier}
                 </span>
 
-                <span className="font-mono font-bold text-sm block mt-0.5">
-                  {formatCurrency(
-                    getTierRecommendedLimit(
-                      tier
-                    )
-                  )}
+                <span className="mt-0.5 block font-mono text-sm font-bold">
+                  {formatCurrency(getTierRecommendedLimit(tier))}
                 </span>
 
-                <span className="text-[10px] text-slate-400 block mt-0.5">
+                <span className="mt-0.5 block text-[10px] text-slate-400">
                   {description}
                 </span>
               </div>
@@ -1412,109 +1262,71 @@ export const CreditFacilitiesManagement: React.FC = () => {
           <button
             onClick={handleSavePlatformLimits}
             disabled={isSavingLimits}
-            className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-600/20 transition flex items-center gap-2 disabled:opacity-50"
+            className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white shadow-md shadow-blue-600/20 transition hover:bg-blue-700 disabled:opacity-50"
           >
-            <Save className="w-4 h-4" />
+            <Save className="h-4 w-4" />
 
-            {isSavingLimits
-              ? "Saving Policy..."
-              : "Deploy Platform Limits"}
+            {isSavingLimits ? "Saving Policy..." : "Deploy Platform Limits"}
           </button>
         </div>
       </div>
 
       {/* ACCOUNTS */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-
-        <div className="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
-
+      <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
+        <div className="flex flex-col justify-between gap-4 border-b border-slate-100 p-6 md:flex-row md:items-center">
           <div>
-            <h3 className="font-display font-bold text-slate-900 text-base flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-blue-600" />
+            <h3 className="font-display flex items-center gap-2 text-base font-bold text-slate-900">
+              <Building2 className="h-5 w-5 text-blue-600" />
               Manage User Credit Accounts & Tier Allocations
             </h3>
 
-            <p className="text-xs text-slate-500 mt-0.5">
-              Configure credit tiers, facility limits, status and available credit.
+            <p className="mt-0.5 text-xs text-slate-500">
+              Configure credit tiers, facility limits, status and available
+              credit.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 flex-wrap">
-
+          <div className="flex flex-wrap items-center gap-2.5">
             <div className="relative">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+              <Search className="absolute top-2.5 left-3 h-3.5 w-3.5 text-slate-400" />
 
               <input
                 type="text"
                 placeholder="Search hospital or user..."
                 value={searchTerm}
-                onChange={(e) =>
-                  setSearchTerm(e.target.value)
-                }
-                className="pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 sm:w-60"
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-48 rounded-xl border border-slate-200 bg-slate-50 py-1.5 pr-3 pl-8 text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none sm:w-60"
               />
             </div>
 
             <select
               value={tierFilter}
               onChange={(e) =>
-                setTierFilter(
-                  e.target.value as
-                    | "ALL"
-                    | CreditRatingTier
-                )
+                setTierFilter(e.target.value as "ALL" | CreditRatingTier)
               }
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700"
             >
-              <option value="ALL">
-                All Credit Tiers
-              </option>
-              <option value="AAA">
-                Tier AAA
-              </option>
-              <option value="AA">
-                Tier AA
-              </option>
-              <option value="A">
-                Tier A
-              </option>
-              <option value="B">
-                Tier B
-              </option>
-              <option value="C">
-                Tier C
-              </option>
-              <option value="UNRATED">
-                Unrated
-              </option>
+              <option value="ALL">All Credit Tiers</option>
+              <option value="AAA">Tier AAA</option>
+              <option value="AA">Tier AA</option>
+              <option value="A">Tier A</option>
+              <option value="B">Tier B</option>
+              <option value="C">Tier C</option>
+              <option value="UNRATED">Unrated</option>
             </select>
 
             <select
               value={statusFilter}
               onChange={(e) =>
-                setStatusFilter(
-                  e.target.value as
-                    | "ALL"
-                    | CreditStatus
-                )
+                setStatusFilter(e.target.value as "ALL" | CreditStatus)
               }
-              className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700"
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700"
             >
-              <option value="ALL">
-                All Statuses
-              </option>
-              <option value="ACTIVE">
-                Active
-              </option>
-              <option value="FROZEN">
-                Frozen
-              </option>
-              <option value="SUSPENDED">
-                Suspended
-              </option>
-              <option value="PENDING">
-                Pending
-              </option>
+              <option value="ALL">All Statuses</option>
+              <option value="ACTIVE">Active</option>
+              <option value="FROZEN">Frozen</option>
+              <option value="SUSPENDED">Suspended</option>
+              <option value="PENDING">Pending</option>
             </select>
           </div>
         </div>
@@ -1522,45 +1334,24 @@ export const CreditFacilitiesManagement: React.FC = () => {
         {/* TABLE */}
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-
-            <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10.5px] border-b border-slate-100">
+            <thead className="border-b border-slate-100 bg-slate-50 text-[10.5px] tracking-wider text-slate-500 uppercase">
               <tr>
-                <th className="py-3.5 px-4">
-                  Healthcare Institution
-                </th>
-                <th className="py-3.5 px-4">
-                  Credit Tier
-                </th>
-                <th className="py-3.5 px-4">
-                  Approved Limit
-                </th>
-                <th className="py-3.5 px-4">
-                  Available Credit
-                </th>
-                <th className="py-3.5 px-4">
-                  Outstanding
-                </th>
-                <th className="py-3.5 px-4">
-                  Utilization
-                </th>
-                <th className="py-3.5 px-4">
-                  Status
-                </th>
-                <th className="py-3.5 px-4 text-right">
-                  Actions
-                </th>
+                <th className="px-4 py-3.5">Healthcare Institution</th>
+                <th className="px-4 py-3.5">Credit Tier</th>
+                <th className="px-4 py-3.5">Approved Limit</th>
+                <th className="px-4 py-3.5">Available Credit</th>
+                <th className="px-4 py-3.5">Outstanding</th>
+                <th className="px-4 py-3.5">Utilization</th>
+                <th className="px-4 py-3.5">Status</th>
+                <th className="px-4 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100">
-
               {filteredAccounts.length === 0 ? (
                 <tr>
-                  <td
-                    colSpan={8}
-                    className="py-10 text-center"
-                  >
-                    <CreditCard className="w-8 h-8 mx-auto mb-2 text-slate-300" />
+                  <td colSpan={8} className="py-10 text-center">
+                    <CreditCard className="mx-auto mb-2 h-8 w-8 text-slate-300" />
 
                     <p className="text-sm font-semibold text-slate-600">
                       No credit accounts found
@@ -1569,84 +1360,63 @@ export const CreditFacilitiesManagement: React.FC = () => {
                 </tr>
               ) : (
                 filteredAccounts.map((item) => {
+                  const limit = item.account.creditLimit || 0
 
-                  const limit =
-                    item.account.creditLimit || 0;
+                  const available = item.account.availableCredit || 0
 
-                  const available =
-                    item.account.availableCredit ||
-                    0;
-
-                  const used =
-                    item.account.creditUsed || 0;
+                  const used = item.account.creditUsed || 0
 
                   const percent =
                     limit > 0
-                      ? Math.min(
-                          100,
-                          Math.round(
-                            (used / limit) * 100
-                          )
-                        )
-                      : 0;
+                      ? Math.min(100, Math.round((used / limit) * 100))
+                      : 0
 
                   const tier =
-                    item.account
-                      .creditRatingTier ||
+                    item.account.creditRatingTier ||
                     item.user.creditRatingTier ||
-                    "UNRATED";
+                    "UNRATED"
 
                   return (
                     <tr
                       key={item.user.id}
-                      className="hover:bg-slate-50/80 transition"
+                      className="transition hover:bg-slate-50/80"
                     >
-
-                      <td className="py-3.5 px-4">
+                      <td className="px-4 py-3.5">
                         <div className="font-semibold text-slate-900">
-                          {item.user.organization ||
-                            item.user.name}
+                          {item.user.organization || item.user.name}
                         </div>
 
-                        <div className="text-[11px] text-slate-500 mt-0.5">
+                        <div className="mt-0.5 text-[11px] text-slate-500">
                           {item.user.name}
-                          <span className="mx-1.5 text-slate-300">
-                            •
-                          </span>
+                          <span className="mx-1.5 text-slate-300">•</span>
                           {item.user.role}
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        {getTierBadge(tier)}
-                      </td>
+                      <td className="px-4 py-3.5">{getTierBadge(tier)}</td>
 
-                      <td className="py-3.5 px-4 font-mono font-bold">
+                      <td className="px-4 py-3.5 font-mono font-bold">
                         {formatCurrency(limit)}
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">
+                      <td className="px-4 py-3.5">
+                        <span className="rounded-md border border-emerald-100 bg-emerald-50 px-2 py-0.5 font-mono font-bold text-emerald-700">
                           {formatCurrency(available)}
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4">
+                      <td className="px-4 py-3.5">
                         <span
                           className={`font-mono font-semibold ${
-                            used > 0
-                              ? "text-amber-700"
-                              : "text-slate-400"
+                            used > 0 ? "text-amber-700" : "text-slate-400"
                           }`}
                         >
                           {formatCurrency(used)}
                         </span>
 
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="block text-[10px] text-slate-400">
                           Due:{" "}
-                          {new Date(
-                            item.account.dueDate
-                          ).toLocaleDateString(
+                          {new Date(item.account.dueDate).toLocaleDateString(
                             "en-NG",
                             {
                               month: "short",
@@ -1657,21 +1427,19 @@ export const CreditFacilitiesManagement: React.FC = () => {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-4 w-32">
-                        <div className="flex justify-between text-[10px] font-mono text-slate-500 mb-1">
-                          <span>
-                            {percent}%
-                          </span>
+                      <td className="w-32 px-4 py-3.5">
+                        <div className="mb-1 flex justify-between font-mono text-[10px] text-slate-500">
+                          <span>{percent}%</span>
                         </div>
 
-                        <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-100">
                           <div
                             className={`h-full rounded-full ${
                               percent > 80
                                 ? "bg-rose-500"
                                 : percent > 50
-                                ? "bg-amber-500"
-                                : "bg-emerald-500"
+                                  ? "bg-amber-500"
+                                  : "bg-emerald-500"
                             }`}
                             style={{
                               width: `${percent}%`,
@@ -1680,53 +1448,41 @@ export const CreditFacilitiesManagement: React.FC = () => {
                         </div>
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        {getStatusBadge(
-                          item.account.status
-                        )}
+                      <td className="px-4 py-3.5">
+                        {getStatusBadge(item.account.status)}
                       </td>
 
-                      <td className="py-3.5 px-4">
-                        <div className="flex justify-end items-center gap-1.5">
-
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center justify-end gap-1.5">
                           <button
-                            onClick={() =>
-                              openConfigModal(item)
-                            }
-                            className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-[11px] font-semibold transition flex items-center gap-1"
+                            onClick={() => openConfigModal(item)}
+                            className="flex items-center gap-1 rounded-lg bg-blue-50 px-2.5 py-1.5 text-[11px] font-semibold text-blue-700 transition hover:bg-blue-100"
                           >
-                            <Sliders className="w-3.5 h-3.5" />
+                            <Sliders className="h-3.5 w-3.5" />
                             Config
                           </button>
 
                           <button
-                            onClick={() =>
-                              openTopUpModal(item)
-                            }
-                            className="px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-[11px] font-semibold transition flex items-center gap-1"
+                            onClick={() => openTopUpModal(item)}
+                            className="flex items-center gap-1 rounded-lg bg-emerald-50 px-2.5 py-1.5 text-[11px] font-semibold text-emerald-700 transition hover:bg-emerald-100"
                           >
-                            <PlusCircle className="w-3.5 h-3.5" />
+                            <PlusCircle className="h-3.5 w-3.5" />
                             Top-Up
                           </button>
 
                           <button
-                            onClick={() =>
-                              openLedgerModal(item)
-                            }
-                            className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+                            onClick={() => openLedgerModal(item)}
+                            className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-700"
                             title="View Ledger"
                           >
-                            <History className="w-4 h-4" />
+                            <History className="h-4 w-4" />
                           </button>
-
                         </div>
                       </td>
-
                     </tr>
-                  );
+                  )
                 })
               )}
-
             </tbody>
           </table>
         </div>
@@ -1737,20 +1493,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
       {/* -------------------------------------------------------------------- */}
 
       {selectedForConfig && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 max-h-[92vh] overflow-y-auto space-y-5">
-
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="max-h-[92vh] w-full max-w-xl space-y-5 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
-
-                <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                  <Sliders className="w-5 h-5" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
+                  <Sliders className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     Configure Credit Facility
                   </h3>
 
@@ -1759,149 +1511,108 @@ export const CreditFacilitiesManagement: React.FC = () => {
                       selectedForConfig.user.name}
                   </p>
                 </div>
-
               </div>
 
               <button
-                onClick={() =>
-                  setSelectedForConfig(null)
-                }
-                className="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center"
+                onClick={() => setSelectedForConfig(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
-
             </div>
 
             {/* SUMMARY */}
-            <div className="grid grid-cols-3 gap-3 p-3.5 bg-slate-50 rounded-xl border border-slate-100">
-
+            <div className="grid grid-cols-3 gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3.5">
               <div>
-                <span className="text-[10px] text-slate-400 uppercase block">
+                <span className="block text-[10px] text-slate-400 uppercase">
                   Current Limit
                 </span>
 
                 <span className="font-mono font-bold text-slate-800">
-                  {formatCurrency(
-                    selectedForConfig.account
-                      .creditLimit
-                  )}
+                  {formatCurrency(selectedForConfig.account.creditLimit)}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase block">
+                <span className="block text-[10px] text-slate-400 uppercase">
                   Available
                 </span>
 
                 <span className="font-mono font-bold text-emerald-600">
-                  {formatCurrency(
-                    selectedForConfig.account
-                      .availableCredit
-                  )}
+                  {formatCurrency(selectedForConfig.account.availableCredit)}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] text-slate-400 uppercase block">
+                <span className="block text-[10px] text-slate-400 uppercase">
                   Outstanding
                 </span>
 
                 <span className="font-mono font-bold text-amber-600">
-                  {formatCurrency(
-                    selectedForConfig.account
-                      .creditUsed
-                  )}
+                  {formatCurrency(selectedForConfig.account.creditUsed)}
                 </span>
               </div>
-
             </div>
 
             {/* TIER */}
             <div className="space-y-2">
-
               <label className="text-xs font-bold">
                 1. Select Credit Rating Tier
               </label>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+                {(["AAA", "AA", "A", "B", "C", "UNRATED"] as const).map(
+                  (tier) => {
+                    const selected = editTier === tier
 
-                {(
-                  [
-                    "AAA",
-                    "AA",
-                    "A",
-                    "B",
-                    "C",
-                    "UNRATED",
-                  ] as const
-                ).map((tier) => {
-
-                  const selected =
-                    editTier === tier;
-
-                  const recommended =
-                    getTierRecommendedLimit(
+                    const recommended = getTierRecommendedLimit(
                       tier,
                       config.minCreditApprovalLimit,
                       config.maxCreditApprovalLimit
-                    );
+                    )
 
-                  return (
-                    <button
-                      key={tier}
-                      type="button"
-                      onClick={() =>
-                        handleTierSelection(
-                          tier
-                        )
-                      }
-                      className={`p-3 rounded-xl border text-left transition ${
-                        selected
-                          ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
-                          : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <div className="flex justify-between">
-                        <span className="font-bold text-xs">
-                          Tier {tier}
+                    return (
+                      <button
+                        key={tier}
+                        type="button"
+                        onClick={() => handleTierSelection(tier)}
+                        className={`rounded-xl border p-3 text-left transition ${
+                          selected
+                            ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                            : "border-slate-200 hover:border-slate-300"
+                        }`}
+                      >
+                        <div className="flex justify-between">
+                          <span className="text-xs font-bold">Tier {tier}</span>
+
+                          {selected && (
+                            <Check className="h-3.5 w-3.5 text-blue-600" />
+                          )}
+                        </div>
+
+                        <span className="mt-1 block font-mono text-[11px] font-semibold text-slate-600">
+                          {formatCurrency(recommended)}
                         </span>
-
-                        {selected && (
-                          <Check className="w-3.5 h-3.5 text-blue-600" />
-                        )}
-                      </div>
-
-                      <span className="font-mono text-[11px] font-semibold text-slate-600 block mt-1">
-                        {formatCurrency(
-                          recommended
-                        )}
-                      </span>
-                    </button>
-                  );
-                })}
-
+                      </button>
+                    )
+                  }
+                )}
               </div>
             </div>
 
             {/* LIMIT */}
             <div className="space-y-2">
-
               <div className="flex justify-between">
                 <label className="text-xs font-bold">
                   2. Configured Credit Limit
                 </label>
 
-                <label className="text-[11px] flex items-center gap-1.5">
+                <label className="flex items-center gap-1.5 text-[11px]">
                   <input
                     type="checkbox"
-                    checked={
-                      autoCalibrateLimit
-                    }
+                    checked={autoCalibrateLimit}
                     onChange={(e) => {
-                      setAutoCalibrateLimit(
-                        e.target.checked
-                      );
+                      setAutoCalibrateLimit(e.target.checked)
 
                       if (e.target.checked) {
                         setEditLimit(
@@ -1910,18 +1621,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
                             config.minCreditApprovalLimit,
                             config.maxCreditApprovalLimit
                           )
-                        );
+                        )
                       }
                     }}
                   />
-
                   Auto-calibrate
                 </label>
               </div>
 
               <div className="relative">
-
-                <span className="absolute left-3 top-2.5 text-slate-400 font-mono text-xs">
+                <span className="absolute top-2.5 left-3 font-mono text-xs text-slate-400">
                   ₦
                 </span>
 
@@ -1929,118 +1638,76 @@ export const CreditFacilitiesManagement: React.FC = () => {
                   type="number"
                   step="250000"
                   value={editLimit}
-                  min={
-                    config.minCreditApprovalLimit
-                  }
-                  max={
-                    config.maxCreditApprovalLimit
-                  }
+                  min={config.minCreditApprovalLimit}
+                  max={config.maxCreditApprovalLimit}
                   onChange={(e) => {
-                    setEditLimit(
-                      Number(e.target.value)
-                    );
-                    setAutoCalibrateLimit(false);
+                    setEditLimit(Number(e.target.value))
+                    setAutoCalibrateLimit(false)
                   }}
-                  className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-lg border border-slate-300 py-2 pr-3 pl-7 font-mono text-xs font-bold focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
-
               </div>
 
               <div className="flex justify-between text-[11px]">
-
                 <span className="text-slate-500">
-                  Bounds:{" "}
-                  {formatCurrency(
-                    config.minCreditApprovalLimit
-                  )}{" "}
-                  –{" "}
-                  {formatCurrency(
-                    config.maxCreditApprovalLimit
-                  )}
+                  Bounds: {formatCurrency(config.minCreditApprovalLimit)} –{" "}
+                  {formatCurrency(config.maxCreditApprovalLimit)}
                 </span>
 
-                {editLimit >=
-                  config.minCreditApprovalLimit &&
-                editLimit <=
-                  config.maxCreditApprovalLimit ? (
-                  <span className="text-emerald-700 font-semibold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" />
+                {editLimit >= config.minCreditApprovalLimit &&
+                editLimit <= config.maxCreditApprovalLimit ? (
+                  <span className="flex items-center gap-1 font-semibold text-emerald-700">
+                    <CheckCircle2 className="h-3 w-3" />
                     Valid
                   </span>
                 ) : (
-                  <span className="text-rose-600 font-semibold flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3" />
+                  <span className="flex items-center gap-1 font-semibold text-rose-600">
+                    <AlertTriangle className="h-3 w-3" />
                     Invalid
                   </span>
                 )}
-
               </div>
 
-              <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-100 flex justify-between text-xs">
-                <span className="text-emerald-800">
-                  Projected Available:
-                </span>
+              <div className="flex justify-between rounded-lg border border-emerald-100 bg-emerald-50 p-2.5 text-xs">
+                <span className="text-emerald-800">Projected Available:</span>
 
                 <span className="font-mono font-bold text-emerald-900">
                   {formatCurrency(
                     Math.max(
                       0,
-                      editLimit -
-                        selectedForConfig
-                          .account
-                          .creditUsed
+                      editLimit - selectedForConfig.account.creditUsed
                     )
                   )}
                 </span>
               </div>
-
             </div>
 
             {/* STATUS + TERMS */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="space-y-1">
-                <label className="text-xs font-bold">
-                  Facility Status
-                </label>
+                <label className="text-xs font-bold">Facility Status</label>
 
                 <select
                   value={editStatus}
                   onChange={(e) =>
-                    setEditStatus(
-                      e.target.value as CreditStatus
-                    )
+                    setEditStatus(e.target.value as CreditStatus)
                   }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold"
                 >
-                  <option value="ACTIVE">
-                    ACTIVE
-                  </option>
-                  <option value="FROZEN">
-                    FROZEN
-                  </option>
-                  <option value="SUSPENDED">
-                    SUSPENDED
-                  </option>
-                  <option value="PENDING">
-                    PENDING
-                  </option>
+                  <option value="ACTIVE">ACTIVE</option>
+                  <option value="FROZEN">FROZEN</option>
+                  <option value="SUSPENDED">SUSPENDED</option>
+                  <option value="PENDING">PENDING</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-bold">
-                  Settlement Terms
-                </label>
+                <label className="text-xs font-bold">Settlement Terms</label>
 
                 <select
                   value={editTerms}
-                  onChange={(e) =>
-                    setEditTerms(
-                      e.target.value
-                    )
-                  }
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold"
+                  onChange={(e) => setEditTerms(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs font-semibold"
                 >
                   <option value="Net 15 Days Community Line">
                     Net 15 Days
@@ -2056,37 +1723,27 @@ export const CreditFacilitiesManagement: React.FC = () => {
                   </option>
                 </select>
               </div>
-
             </div>
 
             {/* ACTIONS */}
-            <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
-
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-3">
               <button
-                onClick={() =>
-                  setSelectedForConfig(null)
-                }
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold"
+                onClick={() => setSelectedForConfig(null)}
+                className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold hover:bg-slate-200"
               >
                 Cancel
               </button>
 
               <button
-                onClick={
-                  handleSaveUserAccount
-                }
+                onClick={handleSaveUserAccount}
                 disabled={isSavingAccount}
-                className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-5 py-2 text-xs font-bold text-white hover:bg-blue-700 disabled:opacity-50"
               >
-                <Save className="w-4 h-4" />
+                <Save className="h-4 w-4" />
 
-                {isSavingAccount
-                  ? "Saving..."
-                  : "Deploy Configuration"}
+                {isSavingAccount ? "Saving..." : "Deploy Configuration"}
               </button>
-
             </div>
-
           </div>
         </div>
       )}
@@ -2096,20 +1753,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
       {/* -------------------------------------------------------------------- */}
 
       {selectedForTopUp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
-
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-lg space-y-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
-
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center">
-                  <PlusCircle className="w-5 h-5" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700">
+                  <PlusCircle className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     Top-Up Available Credit
                   </h3>
 
@@ -2118,74 +1771,53 @@ export const CreditFacilitiesManagement: React.FC = () => {
                       selectedForTopUp.user.name}
                   </p>
                 </div>
-
               </div>
 
               <button
-                onClick={() =>
-                  setSelectedForTopUp(null)
-                }
-                className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 flex items-center justify-center"
+                onClick={() => setSelectedForTopUp(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
-
             </div>
 
-            <div className="grid grid-cols-2 gap-3 p-3 bg-slate-50 rounded-xl border border-slate-100">
-
+            <div className="grid grid-cols-2 gap-3 rounded-xl border border-slate-100 bg-slate-50 p-3">
               <div>
-                <span className="text-[10px] uppercase text-slate-400 block">
+                <span className="block text-[10px] text-slate-400 uppercase">
                   Current Available
                 </span>
 
-                <span className="font-mono font-bold text-emerald-700 text-base">
-                  {formatCurrency(
-                    selectedForTopUp.account
-                      .availableCredit
-                  )}
+                <span className="font-mono text-base font-bold text-emerald-700">
+                  {formatCurrency(selectedForTopUp.account.availableCredit)}
                 </span>
               </div>
 
               <div>
-                <span className="text-[10px] uppercase text-slate-400 block">
+                <span className="block text-[10px] text-slate-400 uppercase">
                   Outstanding
                 </span>
 
-                <span className="font-mono font-bold text-amber-700 text-base">
-                  {formatCurrency(
-                    selectedForTopUp.account
-                      .outstandingBalance
-                  )}
+                <span className="font-mono text-base font-bold text-amber-700">
+                  {formatCurrency(selectedForTopUp.account.outstandingBalance)}
                 </span>
               </div>
-
             </div>
 
             {/* TOP-UP TYPE */}
             <div className="space-y-2">
-
-              <label className="text-xs font-bold">
-                Top-Up Method
-              </label>
+              <label className="text-xs font-bold">Top-Up Method</label>
 
               <div className="grid grid-cols-2 gap-2">
-
                 <button
                   type="button"
-                  onClick={() =>
-                    setTopUpType(
-                      "HEADROOM_BOOST"
-                    )
-                  }
-                  className={`p-3 rounded-xl border text-left ${
-                    topUpType ===
-                    "HEADROOM_BOOST"
+                  onClick={() => setTopUpType("HEADROOM_BOOST")}
+                  className={`rounded-xl border p-3 text-left ${
+                    topUpType === "HEADROOM_BOOST"
                       ? "border-emerald-600 bg-emerald-50 ring-1 ring-emerald-600"
                       : "border-slate-200"
                   }`}
                 >
-                  <span className="text-xs font-bold block">
+                  <span className="block text-xs font-bold">
                     Headroom Boost
                   </span>
 
@@ -2196,19 +1828,14 @@ export const CreditFacilitiesManagement: React.FC = () => {
 
                 <button
                   type="button"
-                  onClick={() =>
-                    setTopUpType(
-                      "SETTLEMENT"
-                    )
-                  }
-                  className={`p-3 rounded-xl border text-left ${
-                    topUpType ===
-                    "SETTLEMENT"
+                  onClick={() => setTopUpType("SETTLEMENT")}
+                  className={`rounded-xl border p-3 text-left ${
+                    topUpType === "SETTLEMENT"
                       ? "border-emerald-600 bg-emerald-50 ring-1 ring-emerald-600"
                       : "border-slate-200"
                   }`}
                 >
-                  <span className="text-xs font-bold block">
+                  <span className="block text-xs font-bold">
                     Settlement Clearance
                   </span>
 
@@ -2216,80 +1843,58 @@ export const CreditFacilitiesManagement: React.FC = () => {
                     Reduce outstanding facility balance.
                   </span>
                 </button>
-
               </div>
             </div>
 
             {/* AMOUNT */}
             <div className="space-y-2">
-
-              <label className="text-xs font-bold">
-                Top-Up Amount
-              </label>
+              <label className="text-xs font-bold">Top-Up Amount</label>
 
               <div className="relative">
-
-                <span className="absolute left-3 top-2.5 text-slate-400">
+                <span className="absolute top-2.5 left-3 text-slate-400">
                   ₦
                 </span>
 
                 <input
                   type="number"
                   value={topUpAmount}
-                  onChange={(e) =>
-                    setTopUpAmount(
-                      Number(e.target.value)
-                    )
-                  }
-                  className="w-full pl-7 pr-3 py-2 border border-slate-300 rounded-lg text-xs font-mono font-bold"
+                  onChange={(e) => setTopUpAmount(Number(e.target.value))}
+                  className="w-full rounded-lg border border-slate-300 py-2 pr-3 pl-7 font-mono text-xs font-bold"
                 />
-
               </div>
 
-              <div className="flex gap-1.5 flex-wrap">
+              <div className="flex flex-wrap gap-1.5">
+                {[500000, 1000000, 2500000, 5000000].map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTopUpAmount(value)}
+                    className="rounded-lg bg-slate-100 px-2.5 py-1 font-mono text-xs hover:bg-slate-200"
+                  >
+                    +{formatCurrency(value)}
+                  </button>
+                ))}
 
-                {[500000, 1000000, 2500000, 5000000].map(
-                  (value) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() =>
-                        setTopUpAmount(value)
-                      }
-                      className="px-2.5 py-1 rounded-lg text-xs font-mono bg-slate-100 hover:bg-slate-200"
-                    >
-                      +{formatCurrency(value)}
-                    </button>
-                  )
-                )}
-
-                {selectedForTopUp.account
-                  .outstandingBalance > 0 && (
+                {selectedForTopUp.account.outstandingBalance > 0 && (
                   <button
                     type="button"
                     onClick={() => {
                       setTopUpAmount(
-                        selectedForTopUp
-                          .account
-                          .outstandingBalance
-                      );
+                        selectedForTopUp.account.outstandingBalance
+                      )
 
-                      setTopUpType(
-                        "SETTLEMENT"
-                      );
+                      setTopUpType("SETTLEMENT")
                     }}
-                    className="px-2.5 py-1 rounded-lg text-xs font-medium bg-amber-100 text-amber-800 hover:bg-amber-200"
+                    className="rounded-lg bg-amber-100 px-2.5 py-1 text-xs font-medium text-amber-800 hover:bg-amber-200"
                   >
                     Clear Balance
                   </button>
                 )}
-
               </div>
             </div>
 
             {/* NOTES */}
             <div className="space-y-1">
-
               <label className="text-xs font-bold">
                 Internal Reason / Reference
               </label>
@@ -2297,65 +1902,43 @@ export const CreditFacilitiesManagement: React.FC = () => {
               <input
                 type="text"
                 value={topUpNotes}
-                onChange={(e) =>
-                  setTopUpNotes(
-                    e.target.value
-                  )
-                }
+                onChange={(e) => setTopUpNotes(e.target.value)}
                 placeholder="e.g. Emergency procurement authorization"
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-xs"
               />
-
             </div>
 
             {/* PROJECTION */}
-            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-
-              <div className="flex justify-between font-semibold text-emerald-900 text-xs">
-
-                <span>
-                  Projected Available Credit:
-                </span>
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3">
+              <div className="flex justify-between text-xs font-semibold text-emerald-900">
+                <span>Projected Available Credit:</span>
 
                 <span className="font-mono text-sm">
                   {formatCurrency(
-                    selectedForTopUp.account
-                      .availableCredit +
-                      topUpAmount
+                    selectedForTopUp.account.availableCredit + topUpAmount
                   )}
                 </span>
-
               </div>
-
             </div>
 
-            <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
-
+            <div className="flex justify-end gap-2 border-t border-slate-100 pt-2">
               <button
-                onClick={() =>
-                  setSelectedForTopUp(null)
-                }
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold"
+                onClick={() => setSelectedForTopUp(null)}
+                className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold hover:bg-slate-200"
               >
                 Cancel
               </button>
 
               <button
-                onClick={
-                  handleExecuteTopUp
-                }
+                onClick={handleExecuteTopUp}
                 disabled={isToppingUp}
-                className="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 disabled:opacity-50"
+                className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-5 py-2 text-xs font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
               >
-                <PlusCircle className="w-4 h-4" />
+                <PlusCircle className="h-4 w-4" />
 
-                {isToppingUp
-                  ? "Applying..."
-                  : "Confirm Credit Top-Up"}
+                {isToppingUp ? "Applying..." : "Confirm Credit Top-Up"}
               </button>
-
             </div>
-
           </div>
         </div>
       )}
@@ -2365,20 +1948,16 @@ export const CreditFacilitiesManagement: React.FC = () => {
       {/* -------------------------------------------------------------------- */}
 
       {selectedForLedger && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
-
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto space-y-4">
-
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm">
+          <div className="max-h-[90vh] w-full max-w-2xl space-y-4 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2.5">
-
-                <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
-                  <History className="w-5 h-5" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                  <History className="h-5 w-5" />
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-base text-slate-900">
+                  <h3 className="text-base font-bold text-slate-900">
                     Credit Facility Ledger
                   </h3>
 
@@ -2387,130 +1966,91 @@ export const CreditFacilitiesManagement: React.FC = () => {
                       selectedForLedger.user.name}
                   </p>
                 </div>
-
               </div>
 
               <button
-                onClick={() =>
-                  setSelectedForLedger(null)
-                }
-                className="w-8 h-8 rounded-lg text-slate-400 hover:bg-slate-100 flex items-center justify-center"
+                onClick={() => setSelectedForLedger(null)}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100"
               >
-                <X className="w-4 h-4" />
+                <X className="h-4 w-4" />
               </button>
-
             </div>
 
             {loadingLedger ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
-                <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2" />
+              <div className="py-12 text-center text-xs text-slate-400">
+                <RefreshCw className="mx-auto mb-2 h-6 w-6 animate-spin" />
                 Loading ledger entries...
               </div>
             ) : userTransactions.length === 0 ? (
-              <div className="py-12 text-center text-slate-400 text-xs">
+              <div className="py-12 text-center text-xs text-slate-400">
                 No transactions recorded on this credit line yet.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100 max-h-[60vh] overflow-y-auto">
-
-                {userTransactions.map(
-                  (tx) => (
-                    <div
-                      key={tx.id}
-                      className="py-3 flex items-center justify-between gap-3"
-                    >
-
-                      <div>
-
-                        <div className="flex items-center gap-2">
-
-                          <span
-                            className={`px-1.5 py-0.5 rounded-md font-mono text-[10px] font-bold ${
-                              tx.direction ===
-                              "CHARGE"
-                                ? "bg-rose-50 text-rose-700"
-                                : "bg-emerald-50 text-emerald-700"
-                            }`}
-                          >
-                            {tx.type}
-                          </span>
-
-                          <span className="font-semibold text-slate-800 text-xs">
-                            {tx.description}
-                          </span>
-
-                        </div>
-
-                        <div className="text-[11px] text-slate-400 mt-0.5">
-                          Ref:{" "}
-                          {tx.reference}
-                          <span className="mx-2">
-                            •
-                          </span>
-                          {new Date(
-                            tx.createdAt
-                          ).toLocaleString(
-                            "en-NG"
-                          )}
-                        </div>
-
-                      </div>
-
-                      <div className="text-right">
-
+              <div className="max-h-[60vh] divide-y divide-slate-100 overflow-y-auto">
+                {userTransactions.map((tx) => (
+                  <div
+                    key={tx.id}
+                    className="flex items-center justify-between gap-3 py-3"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
                         <span
-                          className={`font-mono font-bold text-xs ${
-                            tx.direction ===
-                            "CHARGE"
-                              ? "text-rose-600"
-                              : "text-emerald-600"
+                          className={`rounded-md px-1.5 py-0.5 font-mono text-[10px] font-bold ${
+                            tx.direction === "CHARGE"
+                              ? "bg-rose-50 text-rose-700"
+                              : "bg-emerald-50 text-emerald-700"
                           }`}
                         >
-                          {tx.direction ===
-                          "CHARGE"
-                            ? "-"
-                            : "+"}
-
-                          {formatCurrency(
-                            tx.amount
-                          )}
+                          {tx.type}
                         </span>
 
-                        <span className="text-[10.5px] text-slate-400 block font-mono">
-                          Bal:{" "}
-                          {formatCurrency(
-                            tx.balanceAfter
-                          )}
+                        <span className="text-xs font-semibold text-slate-800">
+                          {tx.description}
                         </span>
-
                       </div>
 
+                      <div className="mt-0.5 text-[11px] text-slate-400">
+                        Ref: {tx.reference}
+                        <span className="mx-2">•</span>
+                        {new Date(tx.createdAt).toLocaleString("en-NG")}
+                      </div>
                     </div>
-                  )
-                )}
 
+                    <div className="text-right">
+                      <span
+                        className={`font-mono text-xs font-bold ${
+                          tx.direction === "CHARGE"
+                            ? "text-rose-600"
+                            : "text-emerald-600"
+                        }`}
+                      >
+                        {tx.direction === "CHARGE" ? "-" : "+"}
+
+                        {formatCurrency(tx.amount)}
+                      </span>
+
+                      <span className="block font-mono text-[10.5px] text-slate-400">
+                        Bal: {formatCurrency(tx.balanceAfter)}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
 
-            <div className="pt-2 border-t border-slate-100 flex justify-end">
-
+            <div className="flex justify-end border-t border-slate-100 pt-2">
               <button
-                onClick={() =>
-                  setSelectedForLedger(null)
-                }
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-semibold"
+                onClick={() => setSelectedForLedger(null)}
+                className="rounded-xl bg-slate-100 px-4 py-2 text-xs font-semibold hover:bg-slate-200"
               >
                 Close Ledger
               </button>
-
             </div>
-
           </div>
         </div>
       )}
-
     </div>
-  );
-};
+  )
+}
 
-export default CreditFacilitiesManagement;
+export default CreditFacilitiesManagement

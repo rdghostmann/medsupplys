@@ -4,103 +4,86 @@ import type {
   InitializePaymentParams,
   InitializePaymentResult,
   VerifyPaymentResult,
-} from "./payment.types";
+} from "./payment.types"
 
-import type { PaymentProvider } from "./payment-provider";
+import type { PaymentProvider } from "./payment-provider"
 
-const FLUTTERWAVE_BASE_URL =
-  "https://api.flutterwave.com/v3";
+const FLUTTERWAVE_BASE_URL = "https://api.flutterwave.com/v3"
 
 function getFlutterwaveSecretKey(): string {
-  const key = process.env.FLW_SECRET_KEY;
+  const key = process.env.FLW_SECRET_KEY
 
   if (!key) {
-    throw new Error(
-      "FLW_SECRET_KEY is not configured"
-    );
+    throw new Error("FLW_SECRET_KEY is not configured")
   }
 
-  return key;
+  return key
 }
 
-export class FlutterwavePaymentProvider
-  implements PaymentProvider
-{
+export class FlutterwavePaymentProvider implements PaymentProvider {
   async initializePayment(
     params: InitializePaymentParams
   ): Promise<InitializePaymentResult> {
-    const secretKey =
-      getFlutterwaveSecretKey();
+    const secretKey = getFlutterwaveSecretKey()
 
-    const response = await fetch(
-      `${FLUTTERWAVE_BASE_URL}/payments`,
-      {
-        method: "POST",
+    const response = await fetch(`${FLUTTERWAVE_BASE_URL}/payments`, {
+      method: "POST",
 
-        headers: {
-          Authorization: `Bearer ${secretKey}`,
-          "Content-Type": "application/json",
+      headers: {
+        Authorization: `Bearer ${secretKey}`,
+        "Content-Type": "application/json",
+      },
+
+      body: JSON.stringify({
+        tx_ref: params.reference,
+
+        amount: params.amount,
+
+        currency: params.currency,
+
+        redirect_url: params.callbackUrl,
+
+        customer: {
+          email: params.email,
+
+          name: params.name,
+
+          ...(params.phone
+            ? {
+                phonenumber: params.phone,
+              }
+            : {}),
         },
 
-        body: JSON.stringify({
-          tx_ref: params.reference,
+        customizations: {
+          title: "MedSupply Wallet",
+          description: "Buyer wallet top-up",
+        },
 
-          amount: params.amount,
+        meta: {
+          buyerId: params.buyerId,
 
-          currency: params.currency,
+          purpose: params.purpose,
 
-          redirect_url: params.callbackUrl,
+          ...(params.metadata ?? {}),
+        },
+      }),
 
-          customer: {
-            email: params.email,
+      cache: "no-store",
+    })
 
-            name: params.name,
+    const data = await response.json()
 
-            ...(params.phone
-              ? {
-                  phonenumber: params.phone,
-                }
-              : {}),
-          },
-
-          customizations: {
-            title: "MedSupply Wallet",
-            description:
-              "Buyer wallet top-up",
-          },
-
-          meta: {
-            buyerId: params.buyerId,
-
-            purpose: params.purpose,
-
-            ...(params.metadata ?? {}),
-          },
-        }),
-
-        cache: "no-store",
-      }
-    );
-
-    const data = await response.json();
-
-    if (
-      !response.ok ||
-      data?.status !== "success"
-    ) {
+    if (!response.ok || data?.status !== "success") {
       throw new Error(
-        data?.message ||
-          "Unable to initialize Flutterwave payment"
-      );
+        data?.message || "Unable to initialize Flutterwave payment"
+      )
     }
 
-    const checkoutUrl =
-      data?.data?.link;
+    const checkoutUrl = data?.data?.link
 
     if (!checkoutUrl) {
-      throw new Error(
-        "Flutterwave did not return a checkout URL"
-      );
+      throw new Error("Flutterwave did not return a checkout URL")
     }
 
     return {
@@ -113,12 +96,10 @@ export class FlutterwavePaymentProvider
       checkoutUrl,
 
       message: data.message,
-    };
+    }
   }
 
-  async verifyPayment(
-    reference: string
-  ): Promise<VerifyPaymentResult> {
+  async verifyPayment(reference: string): Promise<VerifyPaymentResult> {
     /**
      * Flutterwave verification requires
      * the provider transaction ID.
@@ -131,8 +112,7 @@ export class FlutterwavePaymentProvider
      * stored providerReference before calling
      * this method.
      */
-    const secretKey =
-      getFlutterwaveSecretKey();
+    const secretKey = getFlutterwaveSecretKey()
 
     const response = await fetch(
       `${FLUTTERWAVE_BASE_URL}/transactions/${encodeURIComponent(
@@ -148,9 +128,9 @@ export class FlutterwavePaymentProvider
 
         cache: "no-store",
       }
-    );
+    )
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (!response.ok) {
       return {
@@ -168,14 +148,11 @@ export class FlutterwavePaymentProvider
 
         raw: data,
 
-        message:
-          data?.message ||
-          "Unable to verify Flutterwave transaction",
-      };
+        message: data?.message || "Unable to verify Flutterwave transaction",
+      }
     }
 
-    const transaction =
-      data?.data;
+    const transaction = data?.data
 
     if (!transaction) {
       return {
@@ -193,44 +170,35 @@ export class FlutterwavePaymentProvider
 
         raw: data,
 
-        message:
-          "Flutterwave verification returned no transaction",
-      };
+        message: "Flutterwave verification returned no transaction",
+      }
     }
 
     const status =
       transaction.status === "successful"
         ? "SUCCESS"
         : transaction.status === "failed"
-        ? "FAILED"
-        : "PENDING";
+          ? "FAILED"
+          : "PENDING"
 
     return {
       success: status === "SUCCESS",
 
       provider: "FLUTTERWAVE",
 
-      reference:
-        transaction.tx_ref ??
-        reference,
+      reference: transaction.tx_ref ?? reference,
 
-      providerReference:
-        transaction.id
-          ? String(transaction.id)
-          : undefined,
+      providerReference: transaction.id ? String(transaction.id) : undefined,
 
-      amount:
-        Number(transaction.amount),
+      amount: Number(transaction.amount),
 
-      currency:
-        transaction.currency ?? "NGN",
+      currency: transaction.currency ?? "NGN",
 
       status,
 
       raw: transaction,
 
-      message:
-        transaction.processor_response,
-    };
+      message: transaction.processor_response,
+    }
   }
 }

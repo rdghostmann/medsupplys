@@ -1,13 +1,6 @@
 // /models/Procurement.ts
 
-import {
-  Schema,
-  Types,
-  model,
-  models,
-  Document,
-  Model,
-} from "mongoose";
+import { Schema, Types, model, models, Document, Model } from "mongoose"
 
 /* =========================================================
    Procurement Status
@@ -24,7 +17,7 @@ export type ProcurementStatus =
   | "ORDER_CREATED"
   | "COMPLETED"
   | "CANCELLED"
-  | "EXPIRED";
+  | "EXPIRED"
 
 /* =========================================================
    Supplier Candidate Status
@@ -36,59 +29,55 @@ export type SupplierCandidateStatus =
   | "ACCEPTED"
   | "DECLINED"
   | "TIMEOUT"
-  | "SKIPPED";
+  | "SKIPPED"
 
 /* =========================================================
    Procurement Payment Method
    ========================================================= */
 
-export type ProcurementPaymentMethod =
-  | "WALLET"
-  | "CREDIT"
-  | "WALLET_AND_CREDIT";
+export type ProcurementPaymentMethod = "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
 
 /* =========================================================
    Procurement Item
    ========================================================= */
 
 export interface IProcurementItem {
-  productId: Types.ObjectId;
+  productId: Types.ObjectId
 
-  productName: string;
+  productName: string
 
-  supplierProductId: Types.ObjectId;
+  supplierProductId: Types.ObjectId
 
-  supplierId: Types.ObjectId;
+  supplierId: Types.ObjectId
 
-  supplierName: string;
+  supplierName: string
 
-  supplierType: string;
+  supplierType: string
 
-  quantity: number;
+  quantity: number
 
-  unit: string;
+  unit: string
 
-  unitPrice: number;
+  unitPrice: number
 
-  totalPrice: number;
+  totalPrice: number
 
-  preferredSupplierType?: string;
+  preferredSupplierType?: string
 
-  requiredByDate?: Date;
+  requiredByDate?: Date
 }
 
-
 export interface IProcurementSupplierCandidate {
-  supplierId: Types.ObjectId;
-  supplierName: string;
-  supplierType: string;
-  supplierProductId: Types.ObjectId;
-  unitPrice: number;
-  totalPrice: number;
-  stock: number;
-  rank: number;
-  score: number;
-  status: SupplierCandidateStatus;
+  supplierId: Types.ObjectId
+  supplierName: string
+  supplierType: string
+  supplierProductId: Types.ObjectId
+  unitPrice: number
+  totalPrice: number
+  stock: number
+  rank: number
+  score: number
+  status: SupplierCandidateStatus
 }
 
 /* =========================================================
@@ -96,25 +85,25 @@ export interface IProcurementSupplierCandidate {
    ========================================================= */
 
 export interface ISupplierCandidate {
-  supplierId: Types.ObjectId;
+  supplierId: Types.ObjectId
 
-  supplierName: string;
+  supplierName: string
 
-  supplierType: string;
+  supplierType: string
 
-  supplierProductId: Types.ObjectId;
+  supplierProductId: Types.ObjectId
 
-  unitPrice: number;
+  unitPrice: number
 
-  totalPrice: number;
+  totalPrice: number
 
-  stock: number;
+  stock: number
 
-  rank: number;
+  rank: number
 
-  score: number;
+  score: number
 
-  status: SupplierCandidateStatus;
+  status: SupplierCandidateStatus
 }
 
 /* =========================================================
@@ -122,25 +111,25 @@ export interface ISupplierCandidate {
    ========================================================= */
 
 export interface IProcurementAttempt {
-  attemptNumber: number;
+  attemptNumber: number
 
-  supplierId: Types.ObjectId;
+  supplierId: Types.ObjectId
 
-  supplierName: string;
+  supplierName: string
 
-  supplierType: string;
+  supplierType: string
 
-  supplierProductId?: Types.ObjectId;
+  supplierProductId?: Types.ObjectId
 
-  offeredPrice?: number;
+  offeredPrice?: number
 
-  status: SupplierCandidateStatus;
+  status: SupplierCandidateStatus
 
-  contactedAt?: Date;
+  contactedAt?: Date
 
-  respondedAt?: Date;
+  respondedAt?: Date
 
-  responseNotes?: string;
+  responseNotes?: string
 }
 
 /* =========================================================
@@ -148,17 +137,17 @@ export interface IProcurementAttempt {
    ========================================================= */
 
 export interface IMatchingWeightsSnapshot {
-  priceWeight: number;
+  priceWeight: number
 
-  stockWeight: number;
+  stockWeight: number
 
-  ratingWeight: number;
+  ratingWeight: number
 
-  fulfillmentWeight: number;
+  fulfillmentWeight: number
 
-  deliveryWeight: number;
+  deliveryWeight: number
 
-  supplierTypeWeight: number;
+  supplierTypeWeight: number
 }
 
 /* =========================================================
@@ -166,19 +155,19 @@ export interface IMatchingWeightsSnapshot {
    ========================================================= */
 
 export interface IProcurementFinancials {
-  totalAmount: number;
+  totalAmount: number
 
-  walletAmount: number;
+  walletAmount: number
 
-  creditAmount: number;
+  creditAmount: number
 
-  paymentMethod: ProcurementPaymentMethod;
+  paymentMethod: ProcurementPaymentMethod
 
-  currency: "NGN";
+  currency: "NGN"
 
-  walletTransactionId?: Types.ObjectId;
+  walletTransactionId?: Types.ObjectId
 
-  creditTransactionId?: Types.ObjectId;
+  creditTransactionId?: Types.ObjectId
 }
 
 /* =========================================================
@@ -186,554 +175,541 @@ export interface IProcurementFinancials {
    ========================================================= */
 
 export interface IProcurement extends Document {
-  procurementNumber: string;
+  procurementNumber: string
 
-  buyerId: Types.ObjectId;
+  buyerId: Types.ObjectId
 
-  buyerName: string;
+  buyerName: string
 
-  items: IProcurementItem[];
+  items: IProcurementItem[]
 
-  status: ProcurementStatus;
+  status: ProcurementStatus
 
-  financials: IProcurementFinancials;
+  financials: IProcurementFinancials
 
-  supplierCandidates: IProcurementSupplierCandidate[];
+  supplierCandidates: IProcurementSupplierCandidate[]
 
-  currentSupplierIndex: number;
+  currentSupplierIndex: number
 
-  currentSupplierId?: Types.ObjectId;
+  currentSupplierId?: Types.ObjectId
 
-  currentSupplierProductId?: Types.ObjectId;
+  currentSupplierProductId?: Types.ObjectId
 
-  currentSupplierName?: string;
+  currentSupplierName?: string
 
-  attemptHistory: IProcurementAttempt[];
+  attemptHistory: IProcurementAttempt[]
 
-  deliveryAddress: string;
+  deliveryAddress: string
 
-  notes?: string;
+  notes?: string
 
-  matchingWeightsSnapshot?: IMatchingWeightsSnapshot;
+  matchingWeightsSnapshot?: IMatchingWeightsSnapshot
 
-  orderId?: Types.ObjectId;
+  orderId?: Types.ObjectId
 
-  supplierContactedAt?: Date;
+  supplierContactedAt?: Date
 
-  supplierConfirmedAt?: Date;
+  supplierConfirmedAt?: Date
 
-  cancelledAt?: Date;
+  cancelledAt?: Date
 
-  cancellationReason?: string;
+  cancellationReason?: string
 
-  expiresAt?: Date;
+  expiresAt?: Date
 
-  createdAt: Date;
+  createdAt: Date
 
-  updatedAt: Date;
+  updatedAt: Date
 }
 
 /* =========================================================
    Procurement Item Schema
    ========================================================= */
 
-const ProcurementItemSchema =
-  new Schema<IProcurementItem>(
-    {
-      productId: {
-        type: Schema.Types.ObjectId,
-        ref: "Product",
-        required: true,
-      },
-
-      productName: {
-        type: String,
-        required: true,
-      },
-
-      supplierProductId: {
-        type: Schema.Types.ObjectId,
-        ref: "SupplierProduct",
-        required: true,
-      },
-
-      supplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-
-      supplierName: {
-        type: String,
-        required: true,
-      },
-
-      supplierType: {
-        type: String,
-        required: true,
-      },
-
-      quantity: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-
-      unit: {
-        type: String,
-        required: true,
-      },
-
-      unitPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      totalPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      preferredSupplierType: String,
-
-      requiredByDate: Date,
+const ProcurementItemSchema = new Schema<IProcurementItem>(
+  {
+    productId: {
+      type: Schema.Types.ObjectId,
+      ref: "Product",
+      required: true,
     },
-    {
-      _id: false,
-    }
-  );
+
+    productName: {
+      type: String,
+      required: true,
+    },
+
+    supplierProductId: {
+      type: Schema.Types.ObjectId,
+      ref: "SupplierProduct",
+      required: true,
+    },
+
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    supplierName: {
+      type: String,
+      required: true,
+    },
+
+    supplierType: {
+      type: String,
+      required: true,
+    },
+
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    unit: {
+      type: String,
+      required: true,
+    },
+
+    unitPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    preferredSupplierType: String,
+
+    requiredByDate: Date,
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    Supplier Candidate Schema
    ========================================================= */
 
-const SupplierCandidateSchema =
-  new Schema<ISupplierCandidate>(
-    {
-      supplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-
-      supplierName: {
-        type: String,
-        required: true,
-      },
-
-      supplierType: {
-        type: String,
-        required: true,
-      },
-
-      supplierProductId: {
-        type: Schema.Types.ObjectId,
-        ref: "SupplierProduct",
-        required: true,
-      },
-
-      unitPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      totalPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      stock: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      rank: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-
-      score: {
-        type: Number,
-        required: true,
-        min: 0,
-        max: 100,
-      },
-
-      status: {
-        type: String,
-        enum: [
-          "QUEUED",
-          "CONTACTED",
-          "ACCEPTED",
-          "DECLINED",
-          "TIMEOUT",
-          "SKIPPED",
-        ],
-        default: "QUEUED",
-      },
+const SupplierCandidateSchema = new Schema<ISupplierCandidate>(
+  {
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-    {
-      _id: false,
-    }
-  );
+
+    supplierName: {
+      type: String,
+      required: true,
+    },
+
+    supplierType: {
+      type: String,
+      required: true,
+    },
+
+    supplierProductId: {
+      type: Schema.Types.ObjectId,
+      ref: "SupplierProduct",
+      required: true,
+    },
+
+    unitPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    totalPrice: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    stock: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    rank: {
+      type: Number,
+      required: true,
+      min: 1,
+    },
+
+    score: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "QUEUED",
+        "CONTACTED",
+        "ACCEPTED",
+        "DECLINED",
+        "TIMEOUT",
+        "SKIPPED",
+      ],
+      default: "QUEUED",
+    },
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    Procurement Attempt Schema
    ========================================================= */
 
-const ProcurementAttemptSchema =
-  new Schema<IProcurementAttempt>(
-    {
-      attemptNumber: {
-        type: Number,
-        required: true,
-        min: 1,
-      },
-
-      supplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-      },
-
-      supplierName: {
-        type: String,
-        required: true,
-      },
-
-      supplierType: {
-        type: String,
-        required: true,
-      },
-
-      supplierProductId: {
-        type: Schema.Types.ObjectId,
-        ref: "SupplierProduct",
-      },
-
-      offeredPrice: {
-        type: Number,
-        min: 0,
-      },
-
-      status: {
-        type: String,
-        enum: [
-          "QUEUED",
-          "CONTACTED",
-          "ACCEPTED",
-          "DECLINED",
-          "TIMEOUT",
-          "SKIPPED",
-        ],
-        required: true,
-      },
-
-      contactedAt: Date,
-
-      respondedAt: Date,
-
-      responseNotes: String,
+const ProcurementAttemptSchema = new Schema<IProcurementAttempt>(
+  {
+    attemptNumber: {
+      type: Number,
+      required: true,
+      min: 1,
     },
-    {
-      _id: false,
-    }
-  );
+
+    supplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+
+    supplierName: {
+      type: String,
+      required: true,
+    },
+
+    supplierType: {
+      type: String,
+      required: true,
+    },
+
+    supplierProductId: {
+      type: Schema.Types.ObjectId,
+      ref: "SupplierProduct",
+    },
+
+    offeredPrice: {
+      type: Number,
+      min: 0,
+    },
+
+    status: {
+      type: String,
+      enum: [
+        "QUEUED",
+        "CONTACTED",
+        "ACCEPTED",
+        "DECLINED",
+        "TIMEOUT",
+        "SKIPPED",
+      ],
+      required: true,
+    },
+
+    contactedAt: Date,
+
+    respondedAt: Date,
+
+    responseNotes: String,
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    Financial Schema
    ========================================================= */
 
-const ProcurementFinancialsSchema =
-  new Schema<IProcurementFinancials>(
-    {
-      totalAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      walletAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0,
-      },
-
-      creditAmount: {
-        type: Number,
-        required: true,
-        min: 0,
-        default: 0,
-      },
-
-      paymentMethod: {
-        type: String,
-        enum: [
-          "WALLET",
-          "CREDIT",
-          "WALLET_AND_CREDIT",
-        ],
-        required: true,
-      },
-
-      currency: {
-        type: String,
-        enum: ["NGN"],
-        default: "NGN",
-        required: true,
-      },
-
-      walletTransactionId: {
-        type: Schema.Types.ObjectId,
-        ref: "WalletTransaction",
-      },
-
-      creditTransactionId: {
-        type: Schema.Types.ObjectId,
-        ref: "CreditTransaction",
-      },
+const ProcurementFinancialsSchema = new Schema<IProcurementFinancials>(
+  {
+    totalAmount: {
+      type: Number,
+      required: true,
+      min: 0,
     },
-    {
-      _id: false,
-    }
-  );
+
+    walletAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+
+    creditAmount: {
+      type: Number,
+      required: true,
+      min: 0,
+      default: 0,
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["WALLET", "CREDIT", "WALLET_AND_CREDIT"],
+      required: true,
+    },
+
+    currency: {
+      type: String,
+      enum: ["NGN"],
+      default: "NGN",
+      required: true,
+    },
+
+    walletTransactionId: {
+      type: Schema.Types.ObjectId,
+      ref: "WalletTransaction",
+    },
+
+    creditTransactionId: {
+      type: Schema.Types.ObjectId,
+      ref: "CreditTransaction",
+    },
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    Matching Snapshot Schema
    ========================================================= */
 
-const MatchingWeightsSnapshotSchema =
-  new Schema<IMatchingWeightsSnapshot>(
-    {
-      priceWeight: {
-        type: Number,
-        required: true,
-      },
-
-      stockWeight: {
-        type: Number,
-        required: true,
-      },
-
-      ratingWeight: {
-        type: Number,
-        required: true,
-      },
-
-      fulfillmentWeight: {
-        type: Number,
-        required: true,
-      },
-
-      deliveryWeight: {
-        type: Number,
-        required: true,
-      },
-
-      supplierTypeWeight: {
-        type: Number,
-        required: true,
-      },
+const MatchingWeightsSnapshotSchema = new Schema<IMatchingWeightsSnapshot>(
+  {
+    priceWeight: {
+      type: Number,
+      required: true,
     },
-    {
-      _id: false,
-    }
-  );
+
+    stockWeight: {
+      type: Number,
+      required: true,
+    },
+
+    ratingWeight: {
+      type: Number,
+      required: true,
+    },
+
+    fulfillmentWeight: {
+      type: Number,
+      required: true,
+    },
+
+    deliveryWeight: {
+      type: Number,
+      required: true,
+    },
+
+    supplierTypeWeight: {
+      type: Number,
+      required: true,
+    },
+  },
+  {
+    _id: false,
+  }
+)
 
 /* =========================================================
    Procurement Schema
    ========================================================= */
 
-const ProcurementSchema =
-  new Schema<IProcurement>(
-    {
-      /* ================================================
+const ProcurementSchema = new Schema<IProcurement>(
+  {
+    /* ================================================
          Procurement Identity
          ================================================ */
 
-      procurementNumber: {
-        type: String,
-        required: true,
-        unique: true,
-        index: true,
-      },
+    procurementNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      index: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Buyer
          ================================================ */
 
-      buyerId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
-        index: true,
-      },
+    buyerId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
 
-      buyerName: {
-        type: String,
-        required: true,
-      },
+    buyerName: {
+      type: String,
+      required: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Procurement Items
          ================================================ */
 
-      items: {
-        type: [ProcurementItemSchema],
-        required: true,
+    items: {
+      type: [ProcurementItemSchema],
+      required: true,
 
-        validate: {
-          validator: (
-            items: IProcurementItem[]
-          ) => items.length > 0,
+      validate: {
+        validator: (items: IProcurementItem[]) => items.length > 0,
 
-          message:
-            "Procurement must contain at least one item",
-        },
+        message: "Procurement must contain at least one item",
       },
+    },
 
-      /* ================================================
+    /* ================================================
          Procurement Status
          ================================================ */
 
-      status: {
-        type: String,
-        enum: [
-          "DRAFT",
-          "OPEN",
-          "MATCHING",
-          "SOURCING",
-          "SUPPLIER_CONTACTED",
-          "SUPPLIER_CONFIRMED",
-          "VERIFICATION",
-          "ORDER_CREATED",
-          "COMPLETED",
-          "CANCELLED",
-          "EXPIRED",
-        ],
-        default: "DRAFT",
-        index: true,
-      },
+    status: {
+      type: String,
+      enum: [
+        "DRAFT",
+        "OPEN",
+        "MATCHING",
+        "SOURCING",
+        "SUPPLIER_CONTACTED",
+        "SUPPLIER_CONFIRMED",
+        "VERIFICATION",
+        "ORDER_CREATED",
+        "COMPLETED",
+        "CANCELLED",
+        "EXPIRED",
+      ],
+      default: "DRAFT",
+      index: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Financial Snapshot
          ================================================ */
 
-      financials: {
-        type: ProcurementFinancialsSchema,
-        required: true,
-      },
+    financials: {
+      type: ProcurementFinancialsSchema,
+      required: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Ranked Supplier Pool
          ================================================ */
 
-      supplierCandidates: {
-        type: [SupplierCandidateSchema],
-        default: [],
-      },
+    supplierCandidates: {
+      type: [SupplierCandidateSchema],
+      default: [],
+    },
 
-      /* ================================================
+    /* ================================================
          Current Supplier
          ================================================ */
 
-      currentSupplierIndex: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+    currentSupplierIndex: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
 
-      currentSupplierId: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
+    currentSupplierId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
 
-      currentSupplierProductId: {
-        type: Schema.Types.ObjectId,
-        ref: "SupplierProduct",
-      },
+    currentSupplierProductId: {
+      type: Schema.Types.ObjectId,
+      ref: "SupplierProduct",
+    },
 
-      currentSupplierName: String,
+    currentSupplierName: String,
 
-      /* ================================================
+    /* ================================================
          Supplier Contact / Response
          ================================================ */
 
-      attemptHistory: {
-        type: [ProcurementAttemptSchema],
-        default: [],
-      },
+    attemptHistory: {
+      type: [ProcurementAttemptSchema],
+      default: [],
+    },
 
-      supplierContactedAt: Date,
+    supplierContactedAt: Date,
 
-      supplierConfirmedAt: Date,
+    supplierConfirmedAt: Date,
 
-      /* ================================================
+    /* ================================================
          Delivery
          ================================================ */
 
-      deliveryAddress: {
-        type: String,
-        required: true,
-        trim: true,
-      },
+    deliveryAddress: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Notes
          ================================================ */
 
-      notes: {
-        type: String,
-        trim: true,
-      },
+    notes: {
+      type: String,
+      trim: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Matching Algorithm Snapshot
          ================================================ */
 
-      matchingWeightsSnapshot: {
-        type: MatchingWeightsSnapshotSchema,
-      },
+    matchingWeightsSnapshot: {
+      type: MatchingWeightsSnapshotSchema,
+    },
 
-      /* ================================================
+    /* ================================================
          Order
          ================================================ */
 
-      orderId: {
-        type: Schema.Types.ObjectId,
-        ref: "Order",
-        index: true,
-      },
+    orderId: {
+      type: Schema.Types.ObjectId,
+      ref: "Order",
+      index: true,
+    },
 
-      /* ================================================
+    /* ================================================
          Cancellation
          ================================================ */
 
-      cancelledAt: Date,
+    cancelledAt: Date,
 
-      cancellationReason: String,
+    cancellationReason: String,
 
-      /* ================================================
+    /* ================================================
          Expiration
          ================================================ */
 
-      expiresAt: {
-        type: Date,
-        index: true,
-      },
+    expiresAt: {
+      type: Date,
+      index: true,
     },
-    {
-      timestamps: true,
-      versionKey: false,
-    }
-  );
+  },
+  {
+    timestamps: true,
+    versionKey: false,
+  }
+)
 
 /* =========================================================
    Indexes
@@ -742,34 +718,30 @@ const ProcurementSchema =
 ProcurementSchema.index({
   buyerId: 1,
   status: 1,
-});
+})
 
 ProcurementSchema.index({
   status: 1,
   createdAt: -1,
-});
+})
 
 ProcurementSchema.index({
   currentSupplierId: 1,
   status: 1,
-});
+})
 
 ProcurementSchema.index({
   expiresAt: 1,
   status: 1,
-});
+})
 
 ProcurementSchema.index({
   orderId: 1,
-});
+})
 
 /* =========================================================
    Model
    ========================================================= */
 
 export const Procurement: Model<IProcurement> =
-  models.Procurement ||
-  model<IProcurement>(
-    "Procurement",
-    ProcurementSchema
-  );
+  models.Procurement || model<IProcurement>("Procurement", ProcurementSchema)

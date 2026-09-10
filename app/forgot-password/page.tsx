@@ -1,6 +1,6 @@
 // ForgotPasswordPage.tsx
-import React from 'react'
-import { ForgotPasswordPage } from './ForgotPasswordPage'
+import React from "react"
+import { ForgotPasswordPage } from "./ForgotPasswordPage"
 
 const page = () => {
   return (

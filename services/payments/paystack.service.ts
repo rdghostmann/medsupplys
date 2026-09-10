@@ -4,38 +4,33 @@ import type {
   InitializePaymentParams,
   InitializePaymentResult,
   VerifyPaymentResult,
-} from "./payment.types";
+} from "./payment.types"
 
-import type { PaymentProvider } from "./payment-provider";
+import type { PaymentProvider } from "./payment-provider"
 
-const PAYSTACK_BASE_URL =
-  "https://api.paystack.co";
+const PAYSTACK_BASE_URL = "https://api.paystack.co"
 
 function getPaystackSecretKey(): string {
-  const key = process.env.PAYSTACK_SECRET_KEY;
+  const key = process.env.PAYSTACK_SECRET_KEY
 
   if (!key) {
-    throw new Error(
-      "PAYSTACK_SECRET_KEY is not configured"
-    );
+    throw new Error("PAYSTACK_SECRET_KEY is not configured")
   }
 
-  return key;
+  return key
 }
 
 function toKobo(amount: number): number {
-  return Math.round(amount * 100);
+  return Math.round(amount * 100)
 }
 
-export class PaystackPaymentProvider
-  implements PaymentProvider
-{
+export class PaystackPaymentProvider implements PaymentProvider {
   async initializePayment(
     params: InitializePaymentParams
   ): Promise<InitializePaymentResult> {
-    const secretKey = getPaystackSecretKey();
+    const secretKey = getPaystackSecretKey()
 
-    const amountInKobo = toKobo(params.amount);
+    const amountInKobo = toKobo(params.amount)
 
     const response = await fetch(
       `${PAYSTACK_BASE_URL}/transaction/initialize`,
@@ -67,24 +62,18 @@ export class PaystackPaymentProvider
 
         cache: "no-store",
       }
-    );
+    )
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (!response.ok || !data?.status) {
-      throw new Error(
-        data?.message ||
-          "Unable to initialize Paystack payment"
-      );
+      throw new Error(data?.message || "Unable to initialize Paystack payment")
     }
 
-    const authorizationUrl =
-      data?.data?.authorization_url;
+    const authorizationUrl = data?.data?.authorization_url
 
     if (!authorizationUrl) {
-      throw new Error(
-        "Paystack did not return a checkout URL"
-      );
+      throw new Error("Paystack did not return a checkout URL")
     }
 
     return {
@@ -92,23 +81,18 @@ export class PaystackPaymentProvider
 
       provider: "PAYSTACK",
 
-      reference:
-        data.data.reference ??
-        params.reference,
+      reference: data.data.reference ?? params.reference,
 
       checkoutUrl: authorizationUrl,
 
-      providerReference:
-        data.data.access_code,
+      providerReference: data.data.access_code,
 
       message: data.message,
-    };
+    }
   }
 
-  async verifyPayment(
-    reference: string
-  ): Promise<VerifyPaymentResult> {
-    const secretKey = getPaystackSecretKey();
+  async verifyPayment(reference: string): Promise<VerifyPaymentResult> {
+    const secretKey = getPaystackSecretKey()
 
     const response = await fetch(
       `${PAYSTACK_BASE_URL}/transaction/verify/${encodeURIComponent(
@@ -123,9 +107,9 @@ export class PaystackPaymentProvider
 
         cache: "no-store",
       }
-    );
+    )
 
-    const data = await response.json();
+    const data = await response.json()
 
     if (!response.ok || !data?.status) {
       return {
@@ -143,13 +127,11 @@ export class PaystackPaymentProvider
 
         raw: data,
 
-        message:
-          data?.message ||
-          "Unable to verify Paystack transaction",
-      };
+        message: data?.message || "Unable to verify Paystack transaction",
+      }
     }
 
-    const transaction = data?.data;
+    const transaction = data?.data
 
     if (!transaction) {
       return {
@@ -167,42 +149,35 @@ export class PaystackPaymentProvider
 
         raw: data,
 
-        message:
-          "Paystack verification returned no transaction",
-      };
+        message: "Paystack verification returned no transaction",
+      }
     }
 
     const status =
       transaction.status === "success"
         ? "SUCCESS"
         : transaction.status === "failed"
-        ? "FAILED"
-        : "PENDING";
+          ? "FAILED"
+          : "PENDING"
 
     return {
       success: status === "SUCCESS",
 
       provider: "PAYSTACK",
 
-      reference:
-        transaction.reference ?? reference,
+      reference: transaction.reference ?? reference,
 
-      providerReference:
-        transaction.id
-          ? String(transaction.id)
-          : undefined,
+      providerReference: transaction.id ? String(transaction.id) : undefined,
 
-      amount:
-        Number(transaction.amount) / 100,
+      amount: Number(transaction.amount) / 100,
 
-      currency:
-        transaction.currency ?? "NGN",
+      currency: transaction.currency ?? "NGN",
 
       status,
 
       raw: transaction,
 
       message: transaction.gateway_response,
-    };
+    }
   }
 }

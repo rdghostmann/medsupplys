@@ -1,6 +1,6 @@
 // /dashboard/supplier/SupplierDashboard.tsx
 
-"use client";
+"use client"
 
 import {
   Breadcrumb,
@@ -9,20 +9,20 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+} from "@/components/ui/breadcrumb"
 
 import type {
   CurrentSupplierUser,
   IncomingProcurementRequest,
   SupplierOrder,
-} from "@/controllers/supplier.action";
+} from "@/controllers/supplier.action"
 
-import SupplierDashboardPage from "./SupplierDashboardPage";
+import SupplierDashboardPage from "./SupplierDashboardPage"
 
 interface SupplierDashboardProps {
-  user: CurrentSupplierUser | null;
-  incomingProcurementRequests: IncomingProcurementRequest[];
-  orders: SupplierOrder[];
+  user: CurrentSupplierUser | null
+  incomingProcurementRequests: IncomingProcurementRequest[]
+  orders: SupplierOrder[]
 }
 
 export default function SupplierDashboard({
@@ -35,17 +35,13 @@ export default function SupplierDashboard({
       <Breadcrumb className="p-4 lg:px-6">
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink href="/supplier">
-              Dashboard
-            </BreadcrumbLink>
+            <BreadcrumbLink href="/supplier">Dashboard</BreadcrumbLink>
           </BreadcrumbItem>
 
           <BreadcrumbSeparator />
 
           <BreadcrumbItem>
-            <BreadcrumbPage>
-              Supplier Dashboard
-            </BreadcrumbPage>
+            <BreadcrumbPage>Supplier Dashboard</BreadcrumbPage>
           </BreadcrumbItem>
         </BreadcrumbList>
       </Breadcrumb>
@@ -62,5 +58,5 @@ export default function SupplierDashboard({
         </div>
       </div>
     </div>
-  );
+  )
 }

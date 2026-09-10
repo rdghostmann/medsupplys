@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
+import React, { useState } from "react"
 import {
   CreditCard,
   UserRound,
@@ -10,147 +10,118 @@ import {
   Loader2,
   RefreshCw,
   ShieldCheck,
-} from "lucide-react";
-import { toast } from "sonner";
+} from "lucide-react"
+import { toast } from "sonner"
 
 interface CreditAccount {
-  _id: string;
-  buyerId: string;
-  buyerName: string;
+  _id: string
+  buyerId: string
+  buyerName: string
 
-  creditLimit: number;
-  availableCredit: number;
-  creditUsed: number;
-  outstandingBalance: number;
+  creditLimit: number
+  availableCredit: number
+  creditUsed: number
+  outstandingBalance: number
 
-  status:
-    | "PENDING"
-    | "ACTIVE"
-    | "SUSPENDED"
-    | "EXPIRED"
-    | "CLOSED";
+  status: "PENDING" | "ACTIVE" | "SUSPENDED" | "EXPIRED" | "CLOSED"
 
-  ratingTier:
-    | "A"
-    | "B"
-    | "C"
-    | "UNRATED";
+  ratingTier: "A" | "B" | "C" | "UNRATED"
 
-  approvedBy?: string;
-  approvedAt?: string;
-  dueDate?: string;
+  approvedBy?: string
+  approvedAt?: string
+  dueDate?: string
 
-  terms: string;
-  interestRatePercent: number;
+  terms: string
+  interestRatePercent: number
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string
+  updatedAt: string
 }
 
 interface SeedResponse {
-  success: boolean;
-  seeded?: boolean;
-  alreadyExists?: boolean;
-  message: string;
-  creditAccount?: CreditAccount;
+  success: boolean
+  seeded?: boolean
+  alreadyExists?: boolean
+  message: string
+  creditAccount?: CreditAccount
 }
 
-const formatCurrency = (
-  amount: number | string | null | undefined
-) => {
-  const value = Number(amount ?? 0);
+const formatCurrency = (amount: number | string | null | undefined) => {
+  const value = Number(amount ?? 0)
 
   if (!Number.isFinite(value)) {
-    return "₦0";
+    return "₦0"
   }
 
   return new Intl.NumberFormat("en-NG", {
     style: "currency",
     currency: "NGN",
     maximumFractionDigits: 0,
-  }).format(value);
-};
+  }).format(value)
+}
 
 const SeedBuyerCreditAccount: React.FC = () => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false)
 
-  const [creditAccount, setCreditAccount] =
-    useState<CreditAccount | null>(null);
+  const [creditAccount, setCreditAccount] = useState<CreditAccount | null>(null)
 
-  const [status, setStatus] = useState<
-    "idle" | "success" | "exists" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "success" | "exists" | "error">(
+    "idle"
+  )
 
   const seedCreditAccount = async () => {
     try {
-      setIsLoading(true);
-      setStatus("idle");
+      setIsLoading(true)
+      setStatus("idle")
 
-      const response = await fetch(
-        "/api/seed-wallet",
-        {
-          method: "POST",
+      const response = await fetch("/api/seed-wallet", {
+        method: "POST",
 
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
-      const data: SeedResponse =
-        await response.json();
+      const data: SeedResponse = await response.json()
 
       if (!response.ok || !data.success) {
-        throw new Error(
-          data.message ||
-            "Failed to seed credit account."
-        );
+        throw new Error(data.message || "Failed to seed credit account.")
       }
 
       if (data.creditAccount) {
-        setCreditAccount(data.creditAccount);
+        setCreditAccount(data.creditAccount)
       }
 
       if (data.alreadyExists) {
-        setStatus("exists");
+        setStatus("exists")
 
-        toast.info(
-          "Credit account already exists",
-          {
-            description: data.message,
-          }
-        );
+        toast.info("Credit account already exists", {
+          description: data.message,
+        })
 
-        return;
+        return
       }
 
-      setStatus("success");
+      setStatus("success")
 
-      toast.success(
-        "Credit account seeded successfully",
-        {
-          description:
-            "₦10,000,000 credit facility is now available.",
-        }
-      );
+      toast.success("Credit account seeded successfully", {
+        description: "₦10,000,000 credit facility is now available.",
+      })
     } catch (error) {
-      console.error(error);
+      console.error(error)
 
-      setStatus("error");
+      setStatus("error")
 
-      toast.error(
-        "Credit account seeding failed",
-        {
-          description:
-            error instanceof Error
-              ? error.message
-              : "Unable to seed credit account.",
-        }
-      );
+      toast.error("Credit account seeding failed", {
+        description:
+          error instanceof Error
+            ? error.message
+            : "Unable to seed credit account.",
+      })
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
@@ -168,8 +139,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
               </h2>
 
               <p className="mt-1 text-sm text-slate-500">
-                Create the initial credit facility for the
-                LUTH buyer.
+                Create the initial credit facility for the LUTH buyer.
               </p>
             </div>
           </div>
@@ -185,31 +155,28 @@ const SeedBuyerCreditAccount: React.FC = () => {
         <div className="grid gap-4 md:grid-cols-2">
           {/* Buyer */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium tracking-wide text-slate-500 uppercase">
               <UserRound className="h-4 w-4" />
               Buyer
             </div>
 
             <p className="font-semibold text-slate-900">
-              Lagos University Teaching Hospital
-              (LUTH)
+              Lagos University Teaching Hospital (LUTH)
             </p>
 
-            <p className="mt-1 break-all font-mono text-xs text-slate-500">
+            <p className="mt-1 font-mono text-xs break-all text-slate-500">
               6a9cb82d853e785e43c110b8
             </p>
           </div>
 
           {/* Credit Limit */}
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+            <div className="mb-2 flex items-center gap-2 text-xs font-medium tracking-wide text-slate-500 uppercase">
               <Database className="h-4 w-4" />
               Credit Limit
             </div>
 
-            <p className="text-2xl font-bold text-blue-700">
-              ₦10,000,000
-            </p>
+            <p className="text-2xl font-bold text-blue-700">₦10,000,000</p>
 
             <p className="mt-1 text-xs text-slate-500">
               Initial approved credit facility
@@ -220,37 +187,25 @@ const SeedBuyerCreditAccount: React.FC = () => {
         {/* Credit Terms */}
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">
-              Rating
-            </p>
+            <p className="text-xs text-slate-500">Rating</p>
 
             <div className="mt-1 flex items-center gap-2">
               <ShieldCheck className="h-4 w-4 text-emerald-600" />
 
-              <span className="font-semibold text-slate-900">
-                Tier A
-              </span>
+              <span className="font-semibold text-slate-900">Tier A</span>
             </div>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">
-              Terms
-            </p>
+            <p className="text-xs text-slate-500">Terms</p>
 
-            <p className="mt-1 font-semibold text-slate-900">
-              Net 30 days
-            </p>
+            <p className="mt-1 font-semibold text-slate-900">Net 30 days</p>
           </div>
 
           <div className="rounded-xl border border-slate-200 p-4">
-            <p className="text-xs text-slate-500">
-              Interest
-            </p>
+            <p className="text-xs text-slate-500">Interest</p>
 
-            <p className="mt-1 font-semibold text-slate-900">
-              0%
-            </p>
+            <p className="mt-1 font-semibold text-slate-900">0%</p>
           </div>
         </div>
 
@@ -290,13 +245,11 @@ const SeedBuyerCreditAccount: React.FC = () => {
 
                 <div>
                   <p className="font-semibold text-emerald-900">
-                    Credit account seeded
-                    successfully
+                    Credit account seeded successfully
                   </p>
 
                   <p className="mt-1 text-sm text-emerald-700">
-                    The buyer now has an active
-                    ₦10,000,000 credit facility.
+                    The buyer now has an active ₦10,000,000 credit facility.
                   </p>
                 </div>
               </div>
@@ -312,8 +265,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
                   </p>
 
                   <p className="mt-1 text-sm text-blue-700">
-                    No duplicate credit account was
-                    created.
+                    No duplicate credit account was created.
                   </p>
                 </div>
               </div>
@@ -329,8 +281,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
                   </p>
 
                   <p className="mt-1 text-sm text-red-700">
-                    Check the server logs for more
-                    details.
+                    Check the server logs for more details.
                   </p>
                 </div>
               </div>
@@ -342,9 +293,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
         {creditAccount && (
           <div className="mt-6 overflow-hidden rounded-2xl border border-slate-200">
             <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-4">
-              <h3 className="font-semibold text-slate-900">
-                Credit Account
-              </h3>
+              <h3 className="font-semibold text-slate-900">Credit Account</h3>
 
               <div className="flex items-center gap-2">
                 <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
@@ -363,15 +312,13 @@ const SeedBuyerCreditAccount: React.FC = () => {
                   Credit Account ID
                 </span>
 
-                <span className="break-all font-mono text-xs text-slate-700">
+                <span className="font-mono text-xs break-all text-slate-700">
                   {creditAccount._id}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Buyer
-                </span>
+                <span className="text-sm text-slate-500">Buyer</span>
 
                 <span className="text-right text-sm font-medium text-slate-900">
                   {creditAccount.buyerName}
@@ -379,38 +326,26 @@ const SeedBuyerCreditAccount: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Credit Limit
-                </span>
+                <span className="text-sm text-slate-500">Credit Limit</span>
 
                 <span className="text-sm font-bold text-blue-700">
-                  {formatCurrency(
-                    creditAccount.creditLimit
-                  )}
+                  {formatCurrency(creditAccount.creditLimit)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Available Credit
-                </span>
+                <span className="text-sm text-slate-500">Available Credit</span>
 
                 <span className="text-sm font-bold text-emerald-700">
-                  {formatCurrency(
-                    creditAccount.availableCredit
-                  )}
+                  {formatCurrency(creditAccount.availableCredit)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Credit Used
-                </span>
+                <span className="text-sm text-slate-500">Credit Used</span>
 
                 <span className="text-sm font-semibold text-slate-900">
-                  {formatCurrency(
-                    creditAccount.creditUsed
-                  )}
+                  {formatCurrency(creditAccount.creditUsed)}
                 </span>
               </div>
 
@@ -420,16 +355,12 @@ const SeedBuyerCreditAccount: React.FC = () => {
                 </span>
 
                 <span className="text-sm font-semibold text-slate-900">
-                  {formatCurrency(
-                    creditAccount.outstandingBalance
-                  )}
+                  {formatCurrency(creditAccount.outstandingBalance)}
                 </span>
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Payment Terms
-                </span>
+                <span className="text-sm text-slate-500">Payment Terms</span>
 
                 <span className="text-sm font-medium text-slate-900">
                   {creditAccount.terms}
@@ -437,9 +368,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
               </div>
 
               <div className="flex items-center justify-between gap-4 px-5 py-3">
-                <span className="text-sm text-slate-500">
-                  Interest Rate
-                </span>
+                <span className="text-sm text-slate-500">Interest Rate</span>
 
                 <span className="text-sm font-medium text-slate-900">
                   {creditAccount.interestRatePercent}%
@@ -450,7 +379,7 @@ const SeedBuyerCreditAccount: React.FC = () => {
         )}
       </div>
     </section>
-  );
-};
+  )
+}
 
-export default SeedBuyerCreditAccount;
+export default SeedBuyerCreditAccount

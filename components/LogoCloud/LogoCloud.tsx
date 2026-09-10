@@ -1,6 +1,6 @@
-"use client";
+"use client"
 
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"
 import {
   Hospital,
   Building2,
@@ -8,20 +8,20 @@ import {
   Pill,
   Network,
   ShieldCheck,
-} from "lucide-react";
-import type { LucideIcon } from "lucide-react";
+} from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 interface Logo {
-  id: string;
-  name: string;
-  type: string;
-  icon?: LucideIcon;
+  id: string
+  name: string
+  type: string
+  icon?: LucideIcon
 }
 
 interface LogoCloudProps {
-  title?: string;
-  logos?: Logo[];
-  speed?: number;
+  title?: string
+  logos?: Logo[]
+  speed?: number
 }
 
 const DEFAULT_LOGOS: Logo[] = [
@@ -61,7 +61,7 @@ const DEFAULT_LOGOS: Logo[] = [
     type: "GDP Verified Importer",
     icon: ShieldCheck,
   },
-];
+]
 
 export function LogoCloud({
   title = "Trusted by leading healthcare networks and verified pharmaceutical suppliers",
@@ -69,7 +69,7 @@ export function LogoCloud({
   speed = 40,
 }: LogoCloudProps) {
   // Duplicate logos for a seamless marquee loop.
-  const duplicatedLogos = [...logos, ...logos];
+  const duplicatedLogos = [...logos, ...logos]
 
   return (
     <section
@@ -80,7 +80,7 @@ export function LogoCloud({
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Section Title */}
         {title && (
-          <h2 className="mb-12 text-center text-sm font-semibold uppercase tracking-widest text-slate-500">
+          <h2 className="mb-12 text-center text-sm font-semibold tracking-widest text-slate-500 uppercase">
             {title}
           </h2>
         )}
@@ -88,13 +88,13 @@ export function LogoCloud({
         <div className="relative">
           {/* Left Fade */}
           <div
-            className="pointer-events-none absolute left-0 top-0 z-10 h-full w-24 bg-linear-to-r from-white to-transparent"
+            className="pointer-events-none absolute top-0 left-0 z-10 h-full w-24 bg-linear-to-r from-white to-transparent"
             aria-hidden="true"
           />
 
           {/* Right Fade */}
           <div
-            className="pointer-events-none absolute right-0 top-0 z-10 h-full w-24 bg-linear-to-l from-white to-transparent"
+            className="pointer-events-none absolute top-0 right-0 z-10 h-full w-24 bg-linear-to-l from-white to-transparent"
             aria-hidden="true"
           />
 
@@ -116,36 +116,32 @@ export function LogoCloud({
               }}
             >
               {duplicatedLogos.map((logo, index) => {
-                const Icon = logo.icon ?? Hospital;
+                const Icon = logo.icon ?? Hospital
 
                 return (
                   <div
                     key={`${logo.id}-${index}`}
-                    className="flex shrink-0 cursor-default select-none items-center gap-3 rounded-xl border border-transparent px-6 py-3 transition-colors hover:border-slate-100 hover:bg-slate-50"
+                    className="flex shrink-0 cursor-default items-center gap-3 rounded-xl border border-transparent px-6 py-3 transition-colors select-none hover:border-slate-100 hover:bg-slate-50"
                     title={logo.type}
                   >
                     {/* Icon */}
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                      <Icon
-                        size={20}
-                        strokeWidth={1.8}
-                        aria-hidden="true"
-                      />
+                      <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
                     </div>
 
                     {/* Organization Name */}
-                    <span className="whitespace-nowrap text-lg font-medium text-slate-700">
+                    <span className="text-lg font-medium whitespace-nowrap text-slate-700">
                       {logo.name}
                     </span>
                   </div>
-                );
+                )
               })}
             </motion.div>
           </div>
         </div>
       </div>
     </section>
-  );
+  )
 }
 
-export default LogoCloud;
+export default LogoCloud

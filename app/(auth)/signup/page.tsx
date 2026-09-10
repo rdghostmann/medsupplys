@@ -3,11 +3,11 @@
 import type { Metadata } from "next"
 import SignupPage from "./SignupPage"
 
-
 export const metadata: Metadata = {
   title: "Sign Up | MedSupply",
 
-  description: "Access your MedSupply procurement dashboard, supplier marketplace, and pharmaceutical sourcing platform.",
+  description:
+    "Access your MedSupply procurement dashboard, supplier marketplace, and pharmaceutical sourcing platform.",
 }
 
 export default function Page() {

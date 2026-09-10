@@ -1,45 +1,40 @@
 // controllers/supplier.action.ts
 
-"use server";
+"use server"
 
-import { getServerSession } from "next-auth";
-import { connectToDB } from "@/lib/connectToDB";
-import { User } from "@/models/User";
-import { Procurement } from "@/models/Procurement";
-import { Order } from "@/models/Order";
-import { SupplierPayout } from "@/models/SupplierPayout";
-import { authOptions } from "@/auth";
+import { getServerSession } from "next-auth"
+import { connectToDB } from "@/lib/connectToDB"
+import { User } from "@/models/User"
+import { Procurement } from "@/models/Procurement"
+import { Order } from "@/models/Order"
+import { SupplierPayout } from "@/models/SupplierPayout"
+import { authOptions } from "@/auth"
 
 /* -------------------------------------------------------------------------- */
 /* Current Supplier                                                           */
 /* -------------------------------------------------------------------------- */
 
 export interface CurrentSupplierUser {
-  id: string;
-  name: string;
-  organization: string;
+  id: string
+  name: string
+  organization: string
 
-  supplierType:
-  | "IMPORTER"
-  | "DISTRIBUTOR"
-  | "RETAILER";
+  supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-  supplierApprovalStatus?:
-  | "APPROVED"
-  | "PENDING";
+  supplierApprovalStatus?: "APPROVED" | "PENDING"
 
-  pcnPremisesLicense?: string;
-  nafdacGdpLicense?: string;
+  pcnPremisesLicense?: string
+  nafdacGdpLicense?: string
 
-  settlementBankName?: string;
-  settlementAccountNumber?: string;
-  settlementAccountName?: string;
+  settlementBankName?: string
+  settlementAccountNumber?: string
+  settlementAccountName?: string
 
-  email?: string;
-  username?: string;
+  email?: string
+  username?: string
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string
+  updatedAt: string
 }
 
 /* -------------------------------------------------------------------------- */
@@ -47,94 +42,88 @@ export interface CurrentSupplierUser {
 /* -------------------------------------------------------------------------- */
 
 export interface IncomingSupplierQueueItem {
-  supplierId: string;
-  supplierName: string;
+  supplierId: string
+  supplierName: string
 
-  supplierType:
-  | "IMPORTER"
-  | "DISTRIBUTOR"
-  | "RETAILER";
+  supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-  supplierProductId: string;
+  supplierProductId: string
 
-  unitPrice: number;
-  totalPrice: number;
-  stock: number;
+  unitPrice: number
+  totalPrice: number
+  stock: number
 
-  rank: number;
-  score: number;
+  rank: number
+  score: number
 
   status:
-  | "QUEUED"
-  | "CONTACTED"
-  | "ACCEPTED"
-  | "DECLINED"
-  | "TIMEOUT"
-  | "SKIPPED";
-}
-
-export interface IncomingProcurementRequest {
-  id: string;
-  procurementNumber: string;
-
-  buyerId: string;
-  buyerName: string;
-
-  productId: string;
-  productName: string;
-
-  quantity: number;
-  unit: string;
-
-  totalAmount: number;
-  paymentMethod: "WALLET" | "CREDIT" | "WALLET_AND_CREDIT";
-
-  status:
-  | "SUPPLIER_CONTACTED"
-  | "SUPPLIER_CONFIRMED"
-  | "VERIFICATION"
-  | "SOURCING"
-  | "MATCHING"
-  | "OPEN";
-
-  deliveryAddress: string;
-
-  currentSupplierIndex: number;
-  currentSupplierId: string;
-  currentSupplierName: string;
-
-  supplierQueue: IncomingSupplierQueueItem[];
-
-  attemptHistory: {
-    attemptNumber: number;
-    supplierId: string;
-    supplierName: string;
-
-    supplierType:
-    | "IMPORTER"
-    | "DISTRIBUTOR"
-    | "RETAILER";
-
-    offeredPrice?: number;
-
-    status:
     | "QUEUED"
     | "CONTACTED"
     | "ACCEPTED"
     | "DECLINED"
     | "TIMEOUT"
-    | "SKIPPED";
+    | "SKIPPED"
+}
 
-    contactedAt?: string;
-    respondedAt?: string;
-  }[];
+export interface IncomingProcurementRequest {
+  id: string
+  procurementNumber: string
 
-  notes?: string;
+  buyerId: string
+  buyerName: string
 
-  expiresAt?: string;
+  productId: string
+  productName: string
 
-  createdAt: string;
-  updatedAt: string;
+  quantity: number
+  unit: string
+
+  totalAmount: number
+  paymentMethod: "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
+
+  status:
+    | "SUPPLIER_CONTACTED"
+    | "SUPPLIER_CONFIRMED"
+    | "VERIFICATION"
+    | "SOURCING"
+    | "MATCHING"
+    | "OPEN"
+
+  deliveryAddress: string
+
+  currentSupplierIndex: number
+  currentSupplierId: string
+  currentSupplierName: string
+
+  supplierQueue: IncomingSupplierQueueItem[]
+
+  attemptHistory: {
+    attemptNumber: number
+    supplierId: string
+    supplierName: string
+
+    supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
+
+    offeredPrice?: number
+
+    status:
+      | "QUEUED"
+      | "CONTACTED"
+      | "ACCEPTED"
+      | "DECLINED"
+      | "TIMEOUT"
+      | "SKIPPED"
+
+    contactedAt?: string
+    respondedAt?: string
+  }[]
+
+  notes?: string
+
+  expiresAt?: string
+
+  createdAt: string
+  updatedAt: string
 }
 
 /* -------------------------------------------------------------------------- */
@@ -142,105 +131,96 @@ export interface IncomingProcurementRequest {
 /* -------------------------------------------------------------------------- */
 
 export interface SupplierOrderItem {
-  id: string;
+  id: string
 
-  productId: string;
-  supplierProductId: string;
+  productId: string
+  supplierProductId: string
 
-  name: string;
-  unit: string;
+  name: string
+  unit: string
 
-  quantity: number;
+  quantity: number
 
-  unitPrice: number;
-  subtotal: number;
+  unitPrice: number
+  subtotal: number
 
-  batchNumber: string;
-  expiryDate: string;
+  batchNumber: string
+  expiryDate: string
 }
 
 export interface SupplierOrderTrackingUpdate {
-  status: string;
-  title: string;
-  description: string;
-  timestamp: string;
+  status: string
+  title: string
+  description: string
+  timestamp: string
 }
 
 export interface SupplierPharmacistVerification {
-  verifiedBy: string;
-  verifiedByName: string;
+  verifiedBy: string
+  verifiedByName: string
 
-  result:
-  | "PENDING"
-  | "APPROVED"
-  | "REJECTED";
+  result: "PENDING" | "APPROVED" | "REJECTED"
 
-  batchValid: boolean;
-  expiryValid: boolean;
-  sealIntact: boolean;
-  storageCompliant: boolean;
+  batchValid: boolean
+  expiryValid: boolean
+  sealIntact: boolean
+  storageCompliant: boolean
 
-  notes?: string;
+  notes?: string
 
-  verifiedAt?: string;
+  verifiedAt?: string
 }
 
 export interface SupplierOrder {
-  id: string;
-  orderNumber: string;
+  id: string
+  orderNumber: string
 
-  procurementId: string;
+  procurementId: string
 
-  buyerId: string;
-  buyerName: string;
+  buyerId: string
+  buyerName: string
 
-  supplierId: string;
-  supplierName: string;
+  supplierId: string
+  supplierName: string
 
-  supplierType:
-  | "IMPORTER"
-  | "DISTRIBUTOR"
-  | "RETAILER";
+  supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-  items: SupplierOrderItem[];
+  items: SupplierOrderItem[]
 
-  subtotal: number;
-  commission: number;
-  total: number;
+  subtotal: number
+  commission: number
+  total: number
 
-  paymentMethod:
-  | "WALLET"
-  | "CREDIT"
-  | "WALLET_AND_CREDIT";
+  paymentMethod: "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
 
-  walletAmount: number;
-  creditAmount: number;
+  walletAmount: number
+  creditAmount: number
 
   status:
-  | "PENDING"
-  | "PAYMENT_PENDING"
-  | "PAYMENT_CONFIRMED"
-  | "SUPPLIER_CONTACTED"
-  | "VERIFICATION"
-  | "READY_FOR_DISPATCH"
-  | "DISPATCHED"
-  | "IN_TRANSIT"
-  | "DELIVERED"
-  | "COMPLETED"
-  | "CANCELLED"
-  | "REFUNDED";
+    | "PENDING"
+    | "PAYMENT_PENDING"
+    | "PAYMENT_CONFIRMED"
+    | "SUPPLIER_CONTACTED"
+    | "VERIFICATION"
+    | "READY_FOR_DISPATCH"
+    | "DISPATCHED"
+    | "IN_TRANSIT"
+    | "DELIVERED"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "REFUNDED"
 
-  deliveryAddress: string;
+  deliveryAddress: string
 
-  batchNumber?: string;
-  expiryDate?: string;
+  batchNumber?: string
+  expiryDate?: string
 
-  pharmacistVerification?: SupplierPharmacistVerification;
+  pharmacistVerification?: SupplierPharmacistVerification
 
-  trackingUpdates: SupplierOrderTrackingUpdate[];
+  trackingUpdates: SupplierOrderTrackingUpdate[]
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string
+  updatedAt: string
 }
 
 /* -------------------------------------------------------------------------- */
@@ -248,40 +228,37 @@ export interface SupplierOrder {
 /* -------------------------------------------------------------------------- */
 
 export interface SupplierDashboardData {
-  user: CurrentSupplierUser | null;
+  user: CurrentSupplierUser | null
 
-  incomingProcurementRequests: IncomingProcurementRequest[];
+  incomingProcurementRequests: IncomingProcurementRequest[]
 
-  orders: SupplierOrder[];
+  orders: SupplierOrder[]
 
-  payouts: SupplierPayoutRecord[];
+  payouts: SupplierPayoutRecord[]
 }
-
 
 export interface SupplierPayoutRecord {
-  id: string;
-  supplierId: string;
-  reference: string;
-  amount: number;
-  transferFee: number;
-  netAmount: number;
-  status: "PENDING" | "PROCESSING" | "SETTLED" | "FAILED" | "REVERSED";
-  bankName: string;
-  accountNumber: string;
-  accountName: string;
-  notes?: string;
-  createdAt: string;
+  id: string
+  supplierId: string
+  reference: string
+  amount: number
+  transferFee: number
+  netAmount: number
+  status: "PENDING" | "PROCESSING" | "SETTLED" | "FAILED" | "REVERSED"
+  bankName: string
+  accountNumber: string
+  accountName: string
+  notes?: string
+  createdAt: string
 }
 
-export type SupplierProcurementResponse =
-  | "ACCEPT"
-  | "UNAVAILABLE";
+export type SupplierProcurementResponse = "ACCEPT" | "UNAVAILABLE"
 
 export interface SupplierProcurementResponseResult {
-  procurementId: string;
-  response: SupplierProcurementResponse;
-  nextSupplierName?: string;
-  nextSupplierRank?: number;
+  procurementId: string
+  response: SupplierProcurementResponse
+  nextSupplierName?: string
+  nextSupplierRank?: number
 }
 
 /* -------------------------------------------------------------------------- */
@@ -291,23 +268,23 @@ export interface SupplierProcurementResponseResult {
 function normalizeSupplierType(
   value?: string
 ): CurrentSupplierUser["supplierType"] {
-  const normalized = String(value || "").toLowerCase();
+  const normalized = String(value || "").toLowerCase()
 
   if (normalized === "importer") {
-    return "IMPORTER";
+    return "IMPORTER"
   }
 
   if (normalized === "distributor") {
-    return "DISTRIBUTOR";
+    return "DISTRIBUTOR"
   }
 
-  return "RETAILER";
+  return "RETAILER"
 }
 
 function normalizeCandidateSupplierType(
   value?: string
 ): IncomingSupplierQueueItem["supplierType"] {
-  return normalizeSupplierType(value);
+  return normalizeSupplierType(value)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -335,7 +312,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
     /* Authenticate                                                           */
     /* ---------------------------------------------------------------------- */
 
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions)
 
     if (!session?.user?.email) {
       return {
@@ -343,14 +320,14 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
         incomingProcurementRequests: [],
         orders: [],
         payouts: [],
-      };
+      }
     }
 
     /* ---------------------------------------------------------------------- */
     /* Database                                                               */
     /* ---------------------------------------------------------------------- */
 
-    await connectToDB();
+    await connectToDB()
 
     /* ---------------------------------------------------------------------- */
     /* Resolve authenticated supplier                                         */
@@ -378,7 +355,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
           "updatedAt",
         ].join(" ")
       )
-      .lean();
+      .lean()
 
     if (!user) {
       return {
@@ -386,70 +363,49 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
         incomingProcurementRequests: [],
         orders: [],
         payouts: [],
-      };
+      }
     }
 
     /* ---------------------------------------------------------------------- */
     /* Normalize Supplier                                                     */
     /* ---------------------------------------------------------------------- */
 
-    const supplierType =
-      normalizeSupplierType(user.supplierType);
+    const supplierType = normalizeSupplierType(user.supplierType)
 
     const supplierApprovalStatus =
-      String(
-        user.supplierApprovalStatus || ""
-      ).toLowerCase() === "approved"
+      String(user.supplierApprovalStatus || "").toLowerCase() === "approved"
         ? "APPROVED"
-        : "PENDING";
+        : "PENDING"
 
     const currentSupplier: CurrentSupplierUser = {
       id: user._id.toString(),
 
-      name:
-        user.username ||
-        "Authorized Pharmaceutical Supplier",
+      name: user.username || "Authorized Pharmaceutical Supplier",
 
-      organization:
-        user.organizationName ||
-        "Pharmaceutical Supplier",
+      organization: user.organizationName || "Pharmaceutical Supplier",
 
       supplierType,
 
       supplierApprovalStatus,
 
-      pcnPremisesLicense:
-        user.pcnPremisesLicense ||
-        "Not provided",
+      pcnPremisesLicense: user.pcnPremisesLicense || "Not provided",
 
-      nafdacGdpLicense:
-        user.nafdacGdpLicense ||
-        "Not provided",
+      nafdacGdpLicense: user.nafdacGdpLicense || "Not provided",
 
-      settlementBankName:
-        user.settlementBankName ||
-        "Not configured",
+      settlementBankName: user.settlementBankName || "Not configured",
 
-      settlementAccountNumber:
-        user.settlementAccountNumber ||
-        "Not configured",
+      settlementAccountNumber: user.settlementAccountNumber || "Not configured",
 
-      settlementAccountName:
-        user.settlementAccountName ||
-        "Not configured",
+      settlementAccountName: user.settlementAccountName || "Not configured",
 
-      email:
-        user.email || undefined,
+      email: user.email || undefined,
 
-      username:
-        user.username || undefined,
+      username: user.username || undefined,
 
-      createdAt:
-        user.createdAt?.toISOString() || "",
+      createdAt: user.createdAt?.toISOString() || "",
 
-      updatedAt:
-        user.updatedAt?.toISOString() || "",
-    };
+      updatedAt: user.updatedAt?.toISOString() || "",
+    }
 
     /* ---------------------------------------------------------------------- */
     /* Fetch Incoming Procurement Requests                                    */
@@ -463,7 +419,7 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       .sort({
         createdAt: -1,
       })
-      .lean();
+      .lean()
 
     /* ---------------------------------------------------------------------- */
     /* Normalize Procurement Requests                                          */
@@ -471,153 +427,95 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
 
     const incomingProcurementRequests: IncomingProcurementRequest[] =
       procurements.map((procurement) => {
-        const firstItem =
-          procurement.items?.[0];
+        const firstItem = procurement.items?.[0]
 
         return {
-          id:
-            procurement._id.toString(),
+          id: procurement._id.toString(),
 
-          procurementNumber:
-            procurement.procurementNumber,
+          procurementNumber: procurement.procurementNumber,
 
-          buyerId:
-            procurement.buyerId.toString(),
+          buyerId: procurement.buyerId.toString(),
 
-          buyerName:
-            procurement.buyerName,
+          buyerName: procurement.buyerName,
 
-          productId:
-            firstItem?.productId?.toString() ||
-            "",
+          productId: firstItem?.productId?.toString() || "",
 
-          productName:
-            firstItem?.productName ||
-            "",
+          productName: firstItem?.productName || "",
 
-          quantity:
-            Number(firstItem?.quantity || 0),
+          quantity: Number(firstItem?.quantity || 0),
 
-          unit:
-            firstItem?.unit || "",
+          unit: firstItem?.unit || "",
 
-          totalAmount:
-            Number(procurement.financials?.totalAmount || 0),
+          totalAmount: Number(procurement.financials?.totalAmount || 0),
 
-          paymentMethod:
-            procurement.financials?.paymentMethod ||
-            "WALLET",
+          paymentMethod: procurement.financials?.paymentMethod || "WALLET",
 
-          status:
-            procurement.status as IncomingProcurementRequest["status"],
+          status: procurement.status as IncomingProcurementRequest["status"],
 
-          deliveryAddress:
-            procurement.deliveryAddress,
+          deliveryAddress: procurement.deliveryAddress,
 
-          currentSupplierIndex:
-            Number(
-              procurement.currentSupplierIndex || 0
-            ),
+          currentSupplierIndex: Number(procurement.currentSupplierIndex || 0),
 
-          currentSupplierId:
-            procurement.currentSupplierId?.toString() ||
-            "",
+          currentSupplierId: procurement.currentSupplierId?.toString() || "",
 
-          currentSupplierName:
-            procurement.currentSupplierName ||
-            "",
+          currentSupplierName: procurement.currentSupplierName || "",
 
-          supplierQueue:
-            (
-              procurement.supplierCandidates ||
-              []
-            ).map((candidate) => ({
-              supplierId:
-                candidate.supplierId.toString(),
+          supplierQueue: (procurement.supplierCandidates || []).map(
+            (candidate) => ({
+              supplierId: candidate.supplierId.toString(),
 
-              supplierName:
-                candidate.supplierName,
+              supplierName: candidate.supplierName,
 
-              supplierType:
-                normalizeCandidateSupplierType(
-                  candidate.supplierType
-                ),
+              supplierType: normalizeCandidateSupplierType(
+                candidate.supplierType
+              ),
 
-              supplierProductId:
-                candidate.supplierProductId.toString(),
+              supplierProductId: candidate.supplierProductId.toString(),
 
-              unitPrice:
-                Number(candidate.unitPrice || 0),
+              unitPrice: Number(candidate.unitPrice || 0),
 
-              totalPrice:
-                Number(candidate.totalPrice || 0),
+              totalPrice: Number(candidate.totalPrice || 0),
 
-              stock:
-                Number(candidate.stock || 0),
+              stock: Number(candidate.stock || 0),
 
-              rank:
-                Number(candidate.rank || 0),
+              rank: Number(candidate.rank || 0),
 
-              score:
-                Number(candidate.score || 0),
+              score: Number(candidate.score || 0),
 
-              status:
-                candidate.status,
-            })),
+              status: candidate.status,
+            })
+          ),
 
-          attemptHistory:
-            (
-              procurement.attemptHistory ||
-              []
-            ).map((attempt) => ({
-              attemptNumber:
-                Number(
-                  attempt.attemptNumber || 0
-                ),
+          attemptHistory: (procurement.attemptHistory || []).map((attempt) => ({
+            attemptNumber: Number(attempt.attemptNumber || 0),
 
-              supplierId:
-                attempt.supplierId.toString(),
+            supplierId: attempt.supplierId.toString(),
 
-              supplierName:
-                attempt.supplierName,
+            supplierName: attempt.supplierName,
 
-              supplierType:
-                normalizeSupplierType(
-                  attempt.supplierType
-                ),
+            supplierType: normalizeSupplierType(attempt.supplierType),
 
-              offeredPrice:
-                attempt.offeredPrice != null
-                  ? Number(
-                    attempt.offeredPrice
-                  )
-                  : undefined,
+            offeredPrice:
+              attempt.offeredPrice != null
+                ? Number(attempt.offeredPrice)
+                : undefined,
 
-              status:
-                attempt.status,
+            status: attempt.status,
 
-              contactedAt:
-                attempt.contactedAt?.toISOString(),
+            contactedAt: attempt.contactedAt?.toISOString(),
 
-              respondedAt:
-                attempt.respondedAt?.toISOString(),
-            })),
+            respondedAt: attempt.respondedAt?.toISOString(),
+          })),
 
-          notes:
-            procurement.notes || undefined,
+          notes: procurement.notes || undefined,
 
-          expiresAt:
-            procurement.expiresAt?.toISOString(),
+          expiresAt: procurement.expiresAt?.toISOString(),
 
-          createdAt:
-            procurement.createdAt?.toISOString() ||
-            "",
+          createdAt: procurement.createdAt?.toISOString() || "",
 
-          updatedAt:
-            procurement.updatedAt?.toISOString() ||
-            "",
-        };
-      });
+          updatedAt: procurement.updatedAt?.toISOString() || "",
+        }
+      })
 
     /* ---------------------------------------------------------------------- */
     /* Fetch Orders Belonging to Current Supplier                             */
@@ -629,202 +527,130 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
       .sort({
         createdAt: -1,
       })
-      .lean();
+      .lean()
 
     const payouts = await SupplierPayout.find()
       .where("supplierId")
       .equals(user._id.toString())
       .sort({ createdAt: -1 })
-      .lean();
+      .lean()
 
-    const supplierPayouts: SupplierPayoutRecord[] = payouts.map(
-      (payout) => ({
-        id: payout._id.toString(),
-        supplierId: payout.supplierId.toString(),
-        reference: payout.reference,
-        amount: Number(payout.amount || 0),
-        transferFee: Number(payout.transferFee || 0),
-        netAmount: Number(payout.netAmount || 0),
-        status: payout.status,
-        bankName: payout.bankName,
-        accountNumber: payout.accountNumber,
-        accountName: payout.accountName,
-        notes: payout.failureReason,
-        createdAt: payout.createdAt.toISOString(),
-      })
-    );
+    const supplierPayouts: SupplierPayoutRecord[] = payouts.map((payout) => ({
+      id: payout._id.toString(),
+      supplierId: payout.supplierId.toString(),
+      reference: payout.reference,
+      amount: Number(payout.amount || 0),
+      transferFee: Number(payout.transferFee || 0),
+      netAmount: Number(payout.netAmount || 0),
+      status: payout.status,
+      bankName: payout.bankName,
+      accountNumber: payout.accountNumber,
+      accountName: payout.accountName,
+      notes: payout.failureReason,
+      createdAt: payout.createdAt.toISOString(),
+    }))
 
     /* ---------------------------------------------------------------------- */
     /* Normalize Supplier Orders                                               */
     /* ---------------------------------------------------------------------- */
 
-    const supplierOrders: SupplierOrder[] =
-      orders.map((order) => ({
-        id:
-          order._id.toString(),
+    const supplierOrders: SupplierOrder[] = orders.map((order) => ({
+      id: order._id.toString(),
 
-        orderNumber:
-          order.orderNumber,
+      orderNumber: order.orderNumber,
 
-        procurementId:
-          order.procurementId.toString(),
+      procurementId: order.procurementId.toString(),
 
-        buyerId:
-          order.buyerId.toString(),
+      buyerId: order.buyerId.toString(),
 
-        buyerName:
-          order.buyerName,
+      buyerName: order.buyerName,
 
-        supplierId:
-          order.supplierId.toString(),
+      supplierId: order.supplierId.toString(),
 
-        supplierName:
-          order.supplierName,
+      supplierName: order.supplierName,
 
-        supplierType:
-          normalizeSupplierType(
-            order.supplierType
-          ),
+      supplierType: normalizeSupplierType(order.supplierType),
 
-        items:
-          (order.items || []).map(
-            (item, index) => ({
-              id:
-                `${order._id.toString()}-${index}`,
+      items: (order.items || []).map((item, index) => ({
+        id: `${order._id.toString()}-${index}`,
 
-              productId:
-                item.productId.toString(),
+        productId: item.productId.toString(),
 
-              supplierProductId:
-                item.supplierProductId.toString(),
+        supplierProductId: item.supplierProductId.toString(),
 
-              name:
-                item.name,
+        name: item.name,
 
-              unit:
-                item.unit,
+        unit: item.unit,
 
-              quantity:
-                Number(item.quantity || 0),
+        quantity: Number(item.quantity || 0),
 
-              unitPrice:
-                Number(item.unitPrice || 0),
+        unitPrice: Number(item.unitPrice || 0),
 
-              subtotal:
-                Number(item.subtotal || 0),
+        subtotal: Number(item.subtotal || 0),
 
-              batchNumber:
-                item.batchNumber,
+        batchNumber: item.batchNumber,
 
-              expiryDate:
-                item.expiryDate?.toISOString() ||
-                "",
-            })
-          ),
+        expiryDate: item.expiryDate?.toISOString() || "",
+      })),
 
-        subtotal:
-          Number(order.subtotal || 0),
+      subtotal: Number(order.subtotal || 0),
 
-        commission:
-          Number(order.commission || 0),
+      commission: Number(order.commission || 0),
 
-        total:
-          Number(order.total || 0),
+      total: Number(order.total || 0),
 
-        paymentMethod:
-          order.paymentMethod,
+      paymentMethod: order.paymentMethod,
 
-        walletAmount:
-          Number(order.walletAmount || 0),
+      walletAmount: Number(order.walletAmount || 0),
 
-        creditAmount:
-          Number(order.creditAmount || 0),
+      creditAmount: Number(order.creditAmount || 0),
 
-        status:
-          order.status,
+      status: order.status,
 
-        deliveryAddress:
-          order.deliveryAddress,
+      deliveryAddress: order.deliveryAddress,
 
-        batchNumber:
-          order.batchNumber || undefined,
+      batchNumber: order.batchNumber || undefined,
 
-        expiryDate:
-          order.expiryDate?.toISOString(),
+      expiryDate: order.expiryDate?.toISOString(),
 
-        pharmacistVerification:
-          order.pharmacistVerification
-            ? {
-              verifiedBy:
-                order.pharmacistVerification.verifiedBy.toString(),
+      pharmacistVerification: order.pharmacistVerification
+        ? {
+            verifiedBy: order.pharmacistVerification.verifiedBy.toString(),
 
-              verifiedByName:
-                order.pharmacistVerification.verifiedByName,
+            verifiedByName: order.pharmacistVerification.verifiedByName,
 
-              result:
-                order.pharmacistVerification.result,
+            result: order.pharmacistVerification.result,
 
-              batchValid:
-                Boolean(
-                  order.pharmacistVerification
-                    .batchValid
-                ),
+            batchValid: Boolean(order.pharmacistVerification.batchValid),
 
-              expiryValid:
-                Boolean(
-                  order.pharmacistVerification
-                    .expiryValid
-                ),
+            expiryValid: Boolean(order.pharmacistVerification.expiryValid),
 
-              sealIntact:
-                Boolean(
-                  order.pharmacistVerification
-                    .sealIntact
-                ),
+            sealIntact: Boolean(order.pharmacistVerification.sealIntact),
 
-              storageCompliant:
-                Boolean(
-                  order.pharmacistVerification
-                    .storageCompliant
-                ),
+            storageCompliant: Boolean(
+              order.pharmacistVerification.storageCompliant
+            ),
 
-              notes:
-                order.pharmacistVerification
-                  .notes,
+            notes: order.pharmacistVerification.notes,
 
-              verifiedAt:
-                order.pharmacistVerification
-                  .verifiedAt
-                  ?.toISOString(),
-            }
-            : undefined,
+            verifiedAt: order.pharmacistVerification.verifiedAt?.toISOString(),
+          }
+        : undefined,
 
-        trackingUpdates:
-          (order.trackingUpdates || []).map(
-            (update) => ({
-              status:
-                update.status,
+      trackingUpdates: (order.trackingUpdates || []).map((update) => ({
+        status: update.status,
 
-              title:
-                update.title,
+        title: update.title,
 
-              description:
-                update.description,
+        description: update.description,
 
-              timestamp:
-                update.timestamp?.toISOString() ||
-                "",
-            })
-          ),
+        timestamp: update.timestamp?.toISOString() || "",
+      })),
 
-        createdAt:
-          order.createdAt?.toISOString() ||
-          "",
+      createdAt: order.createdAt?.toISOString() || "",
 
-        updatedAt:
-          order.updatedAt?.toISOString() ||
-          "",
-      }));
+      updatedAt: order.updatedAt?.toISOString() || "",
+    }))
 
     /* ---------------------------------------------------------------------- */
     /* Return                                                                */
@@ -837,19 +663,16 @@ export async function getCurrentSupplierDashboard(): Promise<SupplierDashboardDa
 
       orders: supplierOrders,
       payouts: supplierPayouts,
-    };
+    }
   } catch (error) {
-    console.error(
-      "[getCurrentSupplierDashboard] Failed:",
-      error
-    );
+    console.error("[getCurrentSupplierDashboard] Failed:", error)
 
     return {
       user: null,
       incomingProcurementRequests: [],
       orders: [],
       payouts: [],
-    };
+    }
   }
 }
 
@@ -862,47 +685,47 @@ export async function respondToSupplierProcurement(
   response: SupplierProcurementResponse,
   responseNotes?: string
 ): Promise<SupplierProcurementResponseResult> {
-  const session = await getServerSession(authOptions);
+  const session = await getServerSession(authOptions)
 
   if (!session?.user?.email) {
-    throw new Error("Unauthenticated supplier");
+    throw new Error("Unauthenticated supplier")
   }
 
-  await connectToDB();
+  await connectToDB()
 
   const supplier = await User.findOne({
     email: session.user.email,
     role: "supplier",
   })
     .select("_id")
-    .lean();
+    .lean()
 
   if (!supplier) {
-    throw new Error("Supplier account not found");
+    throw new Error("Supplier account not found")
   }
 
   const procurement = await Procurement.findOne({
     _id: procurementId,
     currentSupplierId: supplier._id,
     status: "SUPPLIER_CONTACTED",
-  });
+  })
 
   if (!procurement) {
-    throw new Error("Procurement request is no longer available");
+    throw new Error("Procurement request is no longer available")
   }
 
-  const currentIndex = procurement.currentSupplierIndex;
-  const currentSupplier = procurement.supplierCandidates[currentIndex];
+  const currentIndex = procurement.currentSupplierIndex
+  const currentSupplier = procurement.supplierCandidates[currentIndex]
 
   if (!currentSupplier) {
-    throw new Error("Current supplier candidate not found");
+    throw new Error("Current supplier candidate not found")
   }
 
-  const now = new Date();
-  const note = responseNotes?.trim();
-  const candidateStatus = response === "ACCEPT" ? "ACCEPTED" : "DECLINED";
+  const now = new Date()
+  const note = responseNotes?.trim()
+  const candidateStatus = response === "ACCEPT" ? "ACCEPTED" : "DECLINED"
 
-  currentSupplier.status = candidateStatus;
+  currentSupplier.status = candidateStatus
 
   procurement.attemptHistory.push({
     attemptNumber: procurement.attemptHistory.length + 1,
@@ -915,44 +738,44 @@ export async function respondToSupplierProcurement(
     contactedAt: procurement.supplierContactedAt,
     respondedAt: now,
     responseNotes: note,
-  });
+  })
 
   if (response === "ACCEPT") {
-    procurement.status = "SUPPLIER_CONFIRMED";
-    procurement.supplierConfirmedAt = now;
-    procurement.notes = note || procurement.notes;
-    await procurement.save();
+    procurement.status = "SUPPLIER_CONFIRMED"
+    procurement.supplierConfirmedAt = now
+    procurement.notes = note || procurement.notes
+    await procurement.save()
 
     return {
       procurementId,
       response,
-    };
+    }
   }
 
-  const nextSupplierIndex = currentIndex + 1;
-  const nextSupplier = procurement.supplierCandidates[nextSupplierIndex];
+  const nextSupplierIndex = currentIndex + 1
+  const nextSupplier = procurement.supplierCandidates[nextSupplierIndex]
 
   if (nextSupplier) {
-    nextSupplier.status = "CONTACTED";
-    procurement.currentSupplierIndex = nextSupplierIndex;
-    procurement.currentSupplierId = nextSupplier.supplierId;
-    procurement.currentSupplierProductId = nextSupplier.supplierProductId;
-    procurement.currentSupplierName = nextSupplier.supplierName;
-    procurement.supplierContactedAt = now;
-    procurement.notes = note || procurement.notes;
+    nextSupplier.status = "CONTACTED"
+    procurement.currentSupplierIndex = nextSupplierIndex
+    procurement.currentSupplierId = nextSupplier.supplierId
+    procurement.currentSupplierProductId = nextSupplier.supplierProductId
+    procurement.currentSupplierName = nextSupplier.supplierName
+    procurement.supplierContactedAt = now
+    procurement.notes = note || procurement.notes
   } else {
-    procurement.status = "CANCELLED";
-    procurement.notes = note || "Supplier queue exhausted";
+    procurement.status = "CANCELLED"
+    procurement.notes = note || "Supplier queue exhausted"
   }
 
-  await procurement.save();
+  await procurement.save()
 
   return {
     procurementId,
     response,
     nextSupplierName: nextSupplier?.supplierName,
     nextSupplierRank: nextSupplier?.rank,
-  };
+  }
 }
 
 /* -------------------------------------------------------------------------- */
@@ -960,35 +783,29 @@ export async function respondToSupplierProcurement(
 /* -------------------------------------------------------------------------- */
 
 export interface SupplierOrderTrackingData {
-  id: string;
-  orderNumber: string;
+  id: string
+  orderNumber: string
 
-  procurementId: string;
+  procurementId: string
 
-  buyerId: string;
-  buyerName: string;
+  buyerId: string
+  buyerName: string
 
-  supplierId: string;
-  supplierName: string;
+  supplierId: string
+  supplierName: string
 
-  supplierType:
-    | "IMPORTER"
-    | "DISTRIBUTOR"
-    | "RETAILER";
+  supplierType: "IMPORTER" | "DISTRIBUTOR" | "RETAILER"
 
-  items: SupplierOrderItem[];
+  items: SupplierOrderItem[]
 
-  subtotal: number;
-  commission: number;
-  total: number;
+  subtotal: number
+  commission: number
+  total: number
 
-  paymentMethod:
-    | "WALLET"
-    | "CREDIT"
-    | "WALLET_AND_CREDIT";
+  paymentMethod: "WALLET" | "CREDIT" | "WALLET_AND_CREDIT"
 
-  walletAmount: number;
-  creditAmount: number;
+  walletAmount: number
+  creditAmount: number
 
   status:
     | "PENDING"
@@ -1002,21 +819,20 @@ export interface SupplierOrderTrackingData {
     | "DELIVERED"
     | "COMPLETED"
     | "CANCELLED"
-    | "REFUNDED";
+    | "REFUNDED"
 
-  deliveryAddress: string;
+  deliveryAddress: string
 
-  batchNumber?: string;
-  expiryDate?: string;
+  batchNumber?: string
+  expiryDate?: string
 
-  pharmacistVerification?: SupplierPharmacistVerification;
+  pharmacistVerification?: SupplierPharmacistVerification
 
-  trackingUpdates: SupplierOrderTrackingUpdate[];
+  trackingUpdates: SupplierOrderTrackingUpdate[]
 
-  createdAt: string;
-  updatedAt: string;
+  createdAt: string
+  updatedAt: string
 }
-
 
 /* -------------------------------------------------------------------------- */
 /* Get Orders For Authenticated Supplier                                      */
@@ -1047,17 +863,17 @@ export async function getCurrentSupplierOrders(): Promise<
     /* Authenticate                                                           */
     /* ---------------------------------------------------------------------- */
 
-    const session = await getServerSession(authOptions);
+    const session = await getServerSession(authOptions)
 
     if (!session?.user?.email) {
-      return [];
+      return []
     }
 
     /* ---------------------------------------------------------------------- */
     /* Database                                                               */
     /* ---------------------------------------------------------------------- */
 
-    await connectToDB();
+    await connectToDB()
 
     /* ---------------------------------------------------------------------- */
     /* Resolve Current Supplier                                               */
@@ -1068,10 +884,10 @@ export async function getCurrentSupplierOrders(): Promise<
       role: "supplier",
     })
       .select("_id")
-      .lean();
+      .lean()
 
     if (!supplier) {
-      return [];
+      return []
     }
 
     /* ---------------------------------------------------------------------- */
@@ -1084,7 +900,7 @@ export async function getCurrentSupplierOrders(): Promise<
       .sort({
         createdAt: -1,
       })
-      .lean();
+      .lean()
 
     /* ---------------------------------------------------------------------- */
     /* Normalize Orders                                                       */
@@ -1096,178 +912,105 @@ export async function getCurrentSupplierOrders(): Promise<
 
         orderNumber: order.orderNumber,
 
-        procurementId:
-          order.procurementId.toString(),
+        procurementId: order.procurementId.toString(),
 
-        buyerId:
-          order.buyerId.toString(),
+        buyerId: order.buyerId.toString(),
 
-        buyerName:
-          order.buyerName,
+        buyerName: order.buyerName,
 
-        supplierId:
-          order.supplierId.toString(),
+        supplierId: order.supplierId.toString(),
 
-        supplierName:
-          order.supplierName,
+        supplierName: order.supplierName,
 
-        supplierType:
-          normalizeSupplierType(
-            order.supplierType
-          ),
+        supplierType: normalizeSupplierType(order.supplierType),
 
-        items:
-          (order.items || []).map(
-            (item, index) => ({
-              id:
-                `${order._id.toString()}-${index}`,
+        items: (order.items || []).map((item, index) => ({
+          id: `${order._id.toString()}-${index}`,
 
-              productId:
-                item.productId.toString(),
+          productId: item.productId.toString(),
 
-              supplierProductId:
-                item.supplierProductId.toString(),
+          supplierProductId: item.supplierProductId.toString(),
 
-              name:
-                item.name,
+          name: item.name,
 
-              unit:
-                item.unit,
+          unit: item.unit,
 
-              quantity:
-                Number(item.quantity || 0),
+          quantity: Number(item.quantity || 0),
 
-              unitPrice:
-                Number(item.unitPrice || 0),
+          unitPrice: Number(item.unitPrice || 0),
 
-              subtotal:
-                Number(item.subtotal || 0),
+          subtotal: Number(item.subtotal || 0),
 
-              batchNumber:
-                item.batchNumber,
+          batchNumber: item.batchNumber,
 
-              expiryDate:
-                item.expiryDate
-                  ? item.expiryDate.toISOString()
-                  : "",
-            })
-          ),
+          expiryDate: item.expiryDate ? item.expiryDate.toISOString() : "",
+        })),
 
-        subtotal:
-          Number(order.subtotal || 0),
+        subtotal: Number(order.subtotal || 0),
 
-        commission:
-          Number(order.commission || 0),
+        commission: Number(order.commission || 0),
 
-        total:
-          Number(order.total || 0),
+        total: Number(order.total || 0),
 
-        paymentMethod:
-          order.paymentMethod,
+        paymentMethod: order.paymentMethod,
 
-        walletAmount:
-          Number(order.walletAmount || 0),
+        walletAmount: Number(order.walletAmount || 0),
 
-        creditAmount:
-          Number(order.creditAmount || 0),
+        creditAmount: Number(order.creditAmount || 0),
 
-        status:
-          order.status,
+        status: order.status,
 
-        deliveryAddress:
-          order.deliveryAddress,
+        deliveryAddress: order.deliveryAddress,
 
-        batchNumber:
-          order.batchNumber || undefined,
+        batchNumber: order.batchNumber || undefined,
 
-        expiryDate:
-          order.expiryDate
-            ? order.expiryDate.toISOString()
-            : undefined,
+        expiryDate: order.expiryDate
+          ? order.expiryDate.toISOString()
+          : undefined,
 
-        pharmacistVerification:
-          order.pharmacistVerification
-            ? {
-                verifiedBy:
-                  order.pharmacistVerification.verifiedBy.toString(),
+        pharmacistVerification: order.pharmacistVerification
+          ? {
+              verifiedBy: order.pharmacistVerification.verifiedBy.toString(),
 
-                verifiedByName:
-                  order.pharmacistVerification.verifiedByName,
+              verifiedByName: order.pharmacistVerification.verifiedByName,
 
-                result:
-                  order.pharmacistVerification.result,
+              result: order.pharmacistVerification.result,
 
-                batchValid:
-                  Boolean(
-                    order.pharmacistVerification
-                      .batchValid
-                  ),
+              batchValid: Boolean(order.pharmacistVerification.batchValid),
 
-                expiryValid:
-                  Boolean(
-                    order.pharmacistVerification
-                      .expiryValid
-                  ),
+              expiryValid: Boolean(order.pharmacistVerification.expiryValid),
 
-                sealIntact:
-                  Boolean(
-                    order.pharmacistVerification
-                      .sealIntact
-                  ),
+              sealIntact: Boolean(order.pharmacistVerification.sealIntact),
 
-                storageCompliant:
-                  Boolean(
-                    order.pharmacistVerification
-                      .storageCompliant
-                  ),
+              storageCompliant: Boolean(
+                order.pharmacistVerification.storageCompliant
+              ),
 
-                notes:
-                  order.pharmacistVerification
-                    .notes,
+              notes: order.pharmacistVerification.notes,
 
-                verifiedAt:
-                  order.pharmacistVerification
-                    .verifiedAt
-                    ?.toISOString(),
-              }
-            : undefined,
+              verifiedAt:
+                order.pharmacistVerification.verifiedAt?.toISOString(),
+            }
+          : undefined,
 
-        trackingUpdates:
-          (order.trackingUpdates || []).map(
-            (update) => ({
-              status:
-                update.status,
+        trackingUpdates: (order.trackingUpdates || []).map((update) => ({
+          status: update.status,
 
-              title:
-                update.title,
+          title: update.title,
 
-              description:
-                update.description,
+          description: update.description,
 
-              timestamp:
-                update.timestamp
-                  ? update.timestamp.toISOString()
-                  : "",
-            })
-          ),
+          timestamp: update.timestamp ? update.timestamp.toISOString() : "",
+        })),
 
-        createdAt:
-          order.createdAt
-            ? order.createdAt.toISOString()
-            : "",
+        createdAt: order.createdAt ? order.createdAt.toISOString() : "",
 
-        updatedAt:
-          order.updatedAt
-            ? order.updatedAt.toISOString()
-            : "",
+        updatedAt: order.updatedAt ? order.updatedAt.toISOString() : "",
       })
-    );
+    )
   } catch (error) {
-    console.error(
-      "[getCurrentSupplierOrders] Failed:",
-      error
-    );
+    console.error("[getCurrentSupplierOrders] Failed:", error)
 
-    return [];
+    return []
   }
 }

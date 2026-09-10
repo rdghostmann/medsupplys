@@ -1,37 +1,31 @@
-"use server";
+"use server"
 
-import { redirect } from "next/navigation";
-import { Types } from "mongoose";
+import { redirect } from "next/navigation"
+import { Types } from "mongoose"
 
-import { connectToDB } from "@/lib/connectToDB";
-import { User } from "@/models/User";
-import {
-  SupplierPayout,
-  SupplierPayoutStatus,
-} from "@/models/SupplierPayout";
+import { connectToDB } from "@/lib/connectToDB"
+import { User } from "@/models/User"
+import { SupplierPayout, SupplierPayoutStatus } from "@/models/SupplierPayout"
 
 /* ==========================================================================
    CONSTANTS
 ============================================================================= */
 
-const SUPPLIER_OBJECT_ID = new Types.ObjectId(
-  "6a9cb82e853e785e43c110b9"
-);
+const SUPPLIER_OBJECT_ID = new Types.ObjectId("6a9cb82e853e785e43c110b9")
 
-const SEED_PAGE =
-  "/seed";
+const SEED_PAGE = "/seed"
 
 /* ==========================================================================
    TYPES
 ============================================================================= */
 
 interface MockPayout {
-  reference: string;
-  amount: number;
-  transferFee: number;
-  netAmount: number;
-  status: SupplierPayoutStatus;
-  createdAt: string;
+  reference: string
+  amount: number
+  transferFee: number
+  netAmount: number
+  status: SupplierPayoutStatus
+  createdAt: string
 }
 
 /* ==========================================================================
@@ -83,7 +77,7 @@ const MOCK_PAYOUTS: MockPayout[] = [
     status: "SETTLED",
     createdAt: "2026-08-20T13:10:00.000Z",
   },
-];
+]
 
 /* ==========================================================================
    SERVER ACTION
@@ -92,32 +86,29 @@ const MOCK_PAYOUTS: MockPayout[] = [
 export async function seedMayBakerSupplierPayouts(
   _formData: FormData
 ): Promise<void> {
-  let redirectUrl = SEED_PAGE;
+  let redirectUrl = SEED_PAGE
 
   try {
-    await connectToDB();
+    await connectToDB()
 
     /* ----------------------------------------------------------------------
        FIND SUPPLIER
     ---------------------------------------------------------------------- */
 
-    const supplier =
-      await User.findOne({
-        _id: SUPPLIER_OBJECT_ID,
-        role: "supplier",
-      })
-        .select(
-          "_id organizationName username supplierType settlementBankName settlementAccountNumber settlementAccountName"
-        )
-        .lean();
+    const supplier = await User.findOne({
+      _id: SUPPLIER_OBJECT_ID,
+      role: "supplier",
+    })
+      .select(
+        "_id organizationName username supplierType settlementBankName settlementAccountNumber settlementAccountName"
+      )
+      .lean()
 
     if (!supplier) {
       redirectUrl =
         `${SEED_PAGE}?status=error` +
         "&message=" +
-        encodeURIComponent(
-          "May & Baker Nigeria Plc supplier was not found."
-        );
+        encodeURIComponent("May & Baker Nigeria Plc supplier was not found.")
     } else {
       /* --------------------------------------------------------------------
          SUPPLIER INFORMATION
@@ -126,68 +117,53 @@ export async function seedMayBakerSupplierPayouts(
       const supplierName =
         supplier.organizationName ||
         supplier.username ||
-        "May & Baker Nigeria Plc";
+        "May & Baker Nigeria Plc"
 
-      const bankName =
-        supplier.settlementBankName ||
-        "Zenith Bank Plc";
+      const bankName = supplier.settlementBankName || "Zenith Bank Plc"
 
-      const accountNumber =
-        supplier.settlementAccountNumber ||
-        "1014892841";
+      const accountNumber = supplier.settlementAccountNumber || "1014892841"
 
       const accountName =
         supplier.settlementAccountName ||
-        "MAY & BAKER NIGERIA PLC / MEDISUPPLY ESCROW";
+        "MAY & BAKER NIGERIA PLC / MEDISUPPLY ESCROW"
 
       /* --------------------------------------------------------------------
          COUNTERS
       -------------------------------------------------------------------- */
 
-      let created = 0;
-      let skipped = 0;
+      let created = 0
+      let skipped = 0
 
       /* --------------------------------------------------------------------
          SEED PAYOUTS
       -------------------------------------------------------------------- */
 
       for (const mockPayout of MOCK_PAYOUTS) {
-        const existingPayout =
-          await SupplierPayout.findOne({
-            reference:
-              mockPayout.reference,
-          }).lean();
+        const existingPayout = await SupplierPayout.findOne({
+          reference: mockPayout.reference,
+        }).lean()
 
         if (existingPayout) {
-          skipped++;
-          continue;
+          skipped++
+          continue
         }
 
-        const payoutCreatedAt =
-          new Date(
-            mockPayout.createdAt
-          );
+        const payoutCreatedAt = new Date(mockPayout.createdAt)
 
         await SupplierPayout.create({
-          supplierId:
-            SUPPLIER_OBJECT_ID,
+          supplierId: SUPPLIER_OBJECT_ID,
 
           supplierName,
 
-          amount:
-            mockPayout.amount,
+          amount: mockPayout.amount,
 
-          transferFee:
-            mockPayout.transferFee,
+          transferFee: mockPayout.transferFee,
 
-          netAmount:
-            mockPayout.netAmount,
+          netAmount: mockPayout.netAmount,
 
-          status:
-            mockPayout.status,
+          status: mockPayout.status,
 
-          reference:
-            mockPayout.reference,
+          reference: mockPayout.reference,
 
           bankName,
 
@@ -198,30 +174,23 @@ export async function seedMayBakerSupplierPayouts(
           orderIds: [],
 
           processedAt:
-            mockPayout.status ===
-            "SETTLED"
-              ? payoutCreatedAt
-              : undefined,
+            mockPayout.status === "SETTLED" ? payoutCreatedAt : undefined,
 
-          createdAt:
-            payoutCreatedAt,
+          createdAt: payoutCreatedAt,
 
-          updatedAt:
-            payoutCreatedAt,
-        });
+          updatedAt: payoutCreatedAt,
+        })
 
-        created++;
+        created++
       }
 
       /* --------------------------------------------------------------------
          TOTAL
       -------------------------------------------------------------------- */
 
-      const total =
-        await SupplierPayout.countDocuments({
-          supplierId:
-            SUPPLIER_OBJECT_ID,
-        });
+      const total = await SupplierPayout.countDocuments({
+        supplierId: SUPPLIER_OBJECT_ID,
+      })
 
       /* --------------------------------------------------------------------
          SUCCESS REDIRECT
@@ -235,13 +204,10 @@ export async function seedMayBakerSupplierPayouts(
         "&message=" +
         encodeURIComponent(
           `Supplier payouts seeded successfully for ${supplierName}.`
-        );
+        )
     }
   } catch (error) {
-    console.error(
-      "SEED SUPPLIER PAYOUTS ERROR:",
-      error
-    );
+    console.error("SEED SUPPLIER PAYOUTS ERROR:", error)
 
     redirectUrl =
       `${SEED_PAGE}?status=error` +
@@ -250,8 +216,8 @@ export async function seedMayBakerSupplierPayouts(
         error instanceof Error
           ? error.message
           : "Failed to seed supplier payouts."
-      );
+      )
   }
 
-  redirect(redirectUrl);
+  redirect(redirectUrl)
 }

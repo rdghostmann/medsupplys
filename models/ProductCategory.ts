@@ -1,16 +1,16 @@
-import mongoose, { Document, Model, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose"
 
 export interface IProductCategory extends Document {
-  name: string;
-  slug: string;
-  code: string;
-  description?: string;
+  name: string
+  slug: string
+  code: string
+  description?: string
 
-  isActive: boolean;
-  sortOrder: number;
+  isActive: boolean
+  sortOrder: number
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date
+  updatedAt: Date
 }
 
 const ProductCategorySchema = new Schema<IProductCategory>(
@@ -74,13 +74,10 @@ const ProductCategorySchema = new Schema<IProductCategory>(
   {
     timestamps: true,
   }
-);
+)
 
 const ProductCategory: Model<IProductCategory> =
   mongoose.models.ProductCategory ||
-  mongoose.model<IProductCategory>(
-    "ProductCategory",
-    ProductCategorySchema
-  );
+  mongoose.model<IProductCategory>("ProductCategory", ProductCategorySchema)
 
-export default ProductCategory;
+export default ProductCategory

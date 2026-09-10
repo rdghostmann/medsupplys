@@ -1,10 +1,6 @@
 "use client"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,7 +16,13 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { DotsThreeVerticalIcon, UserCircleIcon, CreditCardIcon, BellIcon, SignOutIcon } from "@phosphor-icons/react"
+import {
+  DotsThreeVerticalIcon,
+  UserCircleIcon,
+  CreditCardIcon,
+  BellIcon,
+  SignOutIcon,
+} from "@phosphor-icons/react"
 import { LogoutButton } from "./LogoutButton/LogoutButton"
 
 export function NavUser({
@@ -79,8 +81,7 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <UserCircleIcon
-                />
+                <UserCircleIcon />
                 Account
               </DropdownMenuItem>
               {/* <DropdownMenuItem>
@@ -89,14 +90,12 @@ export function NavUser({
                 Billing
               </DropdownMenuItem> */}
               <DropdownMenuItem>
-                <BellIcon
-                />
+                <BellIcon />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-    
               <LogoutButton />
             </DropdownMenuItem>
           </DropdownMenuContent>

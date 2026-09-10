@@ -1,16 +1,10 @@
 // /types/next-auth.d.ts
 
-import NextAuth, {
-  DefaultSession,
-} from "next-auth"
+import NextAuth, { DefaultSession } from "next-auth"
 
 import { DefaultJWT } from "next-auth/jwt"
 
-export type UserRole =
-  | "buyer"
-  | "supplier"
-  | "admin"
-  | "pharmacist"
+export type UserRole = "buyer" | "supplier" | "admin" | "pharmacist"
 
 declare module "next-auth" {
   interface Session {

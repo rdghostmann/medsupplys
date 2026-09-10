@@ -1,13 +1,15 @@
 // services/payment-provider.ts
 
-import { InitializePaymentParams, InitializePaymentResult, VerifyPaymentResult } from "@/types";
+import {
+  InitializePaymentParams,
+  InitializePaymentResult,
+  VerifyPaymentResult,
+} from "@/types"
 
 export interface PaymentProvider {
   initializePayment(
     params: InitializePaymentParams
-  ): Promise<InitializePaymentResult>;
+  ): Promise<InitializePaymentResult>
 
-  verifyPayment(
-    reference: string
-  ): Promise<VerifyPaymentResult>;
+  verifyPayment(reference: string): Promise<VerifyPaymentResult>
 }

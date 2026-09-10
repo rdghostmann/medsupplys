@@ -1,69 +1,42 @@
 // /app/buyer/buyerwallet/topup/callback/page.tsx
 
-"use client";
+"use client"
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useEffect, useRef, useState } from "react"
 
-import {
-  CheckCircle2,
-  XCircle,
-  Loader2,
-  ArrowLeft,
-} from "lucide-react";
+import { CheckCircle2, XCircle, Loader2, ArrowLeft } from "lucide-react"
 
-import {
-  useRouter,
-  useSearchParams,
-} from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation"
 
-import { toast } from "sonner";
+import { toast } from "sonner"
 
-type CallbackStatus =
-  | "VERIFYING"
-  | "SUCCESS"
-  | "FAILED";
+type CallbackStatus = "VERIFYING" | "SUCCESS" | "FAILED"
 
-type PaymentProvider =
-  | "paystack"
-  | "flutterwave";
+type PaymentProvider = "paystack" | "flutterwave"
 
 interface VerifyResponse {
-  success?: boolean;
-  message?: string;
-  amount?: number;
-  reference?: string;
-  provider?: PaymentProvider;
-  status?: string;
+  success?: boolean
+  message?: string
+  amount?: number
+  reference?: string
+  provider?: PaymentProvider
+  status?: string
 }
 
 export default function WalletTopupCallbackPage() {
-  const router = useRouter();
+  const router = useRouter()
 
-  const searchParams =
-    useSearchParams();
+  const searchParams = useSearchParams()
 
-  const verificationStarted =
-    useRef(false);
+  const verificationStarted = useRef(false)
 
-  const [status, setStatus] =
-    useState<CallbackStatus>(
-      "VERIFYING"
-    );
+  const [status, setStatus] = useState<CallbackStatus>("VERIFYING")
 
-  const [message, setMessage] =
-    useState(
-      "Verifying your payment..."
-    );
+  const [message, setMessage] = useState("Verifying your payment...")
 
-  const [amount, setAmount] =
-    useState<number | null>(null);
+  const [amount, setAmount] = useState<number | null>(null)
 
-  const [reference, setReference] =
-    useState("");
+  const [reference, setReference] = useState("")
 
   useEffect(() => {
     /*
@@ -73,24 +46,18 @@ export default function WalletTopupCallbackPage() {
      * Prevent duplicate verification requests.
      */
     if (verificationStarted.current) {
-      return;
+      return
     }
 
-    verificationStarted.current = true;
+    verificationStarted.current = true
 
-    let cancelled = false;
+    let cancelled = false
 
     const verifyPayment = async () => {
       try {
-        const providerParam =
-          searchParams.get(
-            "provider"
-          );
+        const providerParam = searchParams.get("provider")
 
-        const provider =
-          providerParam as
-          | PaymentProvider
-          | null;
+        const provider = providerParam as PaymentProvider | null
 
         /*
          * Paystack callback:
@@ -108,163 +75,114 @@ export default function WalletTopupCallbackPage() {
         const paymentReference =
           searchParams.get("reference") ||
           searchParams.get("trxref") ||
-          searchParams.get("tx_ref");
+          searchParams.get("tx_ref")
 
         if (!provider) {
-          throw new Error(
-            "Payment provider was not provided."
-          );
+          throw new Error("Payment provider was not provided.")
         }
 
-        if (
-          provider !== "paystack" &&
-          provider !== "flutterwave"
-        ) {
-          throw new Error(
-            "Unsupported payment provider."
-          );
+        if (provider !== "paystack" && provider !== "flutterwave") {
+          throw new Error("Unsupported payment provider.")
         }
 
         if (!paymentReference) {
-          throw new Error(
-            "Payment reference was not provided."
-          );
+          throw new Error("Payment reference was not provided.")
         }
 
         if (cancelled) {
-          return;
+          return
         }
 
-        setReference(
-          paymentReference
-        );
+        setReference(paymentReference)
 
         const endpoint =
           provider === "paystack"
             ? "/api/payments/paystack/verify"
-            : "/api/payments/flutterwave/verify";
+            : "/api/payments/flutterwave/verify"
 
-        const response =
-          await fetch(
-            endpoint,
-            {
-              method: "POST",
+        const response = await fetch(endpoint, {
+          method: "POST",
 
-              headers: {
-                "Content-Type":
-                  "application/json",
-              },
+          headers: {
+            "Content-Type": "application/json",
+          },
 
-              /*
-               * IMPORTANT:
-               *
-               * Only send the internal payment
-               * reference to our server.
-               *
-               * The server authenticates the buyer
-               * and independently verifies the
-               * transaction with Paystack/Flutterwave.
-               */
-              body: JSON.stringify({
-                reference:
-                  paymentReference,
-              }),
-            }
-          );
+          /*
+           * IMPORTANT:
+           *
+           * Only send the internal payment
+           * reference to our server.
+           *
+           * The server authenticates the buyer
+           * and independently verifies the
+           * transaction with Paystack/Flutterwave.
+           */
+          body: JSON.stringify({
+            reference: paymentReference,
+          }),
+        })
 
-        let data: VerifyResponse;
+        let data: VerifyResponse
 
         try {
-          data =
-            (await response.json()) as VerifyResponse;
+          data = (await response.json()) as VerifyResponse
         } catch {
-          throw new Error(
-            "Invalid response from payment verification service."
-          );
+          throw new Error("Invalid response from payment verification service.")
         }
 
-        if (
-          !response.ok ||
-          !data?.success
-        ) {
-          throw new Error(
-            data?.message ||
-            "Payment verification failed."
-          );
+        if (!response.ok || !data?.success) {
+          throw new Error(data?.message || "Payment verification failed.")
         }
 
         if (cancelled) {
-          return;
+          return
         }
 
-        const verifiedAmount =
-          Number(
-            data.amount ?? 0
-          );
+        const verifiedAmount = Number(data.amount ?? 0)
 
-        setAmount(
-          Number.isFinite(
-            verifiedAmount
-          )
-            ? verifiedAmount
-            : null
-        );
+        setAmount(Number.isFinite(verifiedAmount) ? verifiedAmount : null)
 
-        setStatus(
-          "SUCCESS"
-        );
+        setStatus("SUCCESS")
 
-        setMessage(
-          "Your wallet has been successfully funded."
-        );
+        setMessage("Your wallet has been successfully funded.")
 
-        toast.success(
-          "Wallet funded successfully"
-        );
+        toast.success("Wallet funded successfully")
       } catch (error) {
         if (cancelled) {
-          return;
+          return
         }
 
-        console.error(
-          "[WALLET_TOPUP_CALLBACK]",
-          error
-        );
+        console.error("[WALLET_TOPUP_CALLBACK]", error)
 
-        setStatus(
-          "FAILED"
-        );
+        setStatus("FAILED")
 
         setMessage(
           error instanceof Error
             ? error.message
             : "We could not verify your payment."
-        );
+        )
 
-        toast.error(
-          "Payment verification failed"
-        );
+        toast.error("Payment verification failed")
       }
-    };
+    }
 
-    void verifyPayment();
+    void verifyPayment()
 
     return () => {
-      cancelled = true;
-    };
-  }, [searchParams]);
+      cancelled = true
+    }
+  }, [searchParams])
 
   const returnToWallet = () => {
-    router.push("/buyer/buyerwallet");
+    router.push("/buyer/buyerwallet")
 
-    router.refresh();
-  };
+    router.refresh()
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-12">
       <div className="mx-auto w-full max-w-md">
         <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl">
-
           {/* =========================================================
               VERIFYING
           ========================================================= */}
@@ -279,18 +197,17 @@ export default function WalletTopupCallbackPage() {
               </h1>
 
               <p className="mt-2 text-sm leading-relaxed text-slate-500">
-                Please wait while we verify
-                your payment and update your
+                Please wait while we verify your payment and update your
                 institutional wallet.
               </p>
 
               {reference && (
                 <div className="mt-5 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  <p className="text-[10px] font-medium tracking-wide text-slate-400 uppercase">
                     Transaction Reference
                   </p>
 
-                  <p className="mt-1 break-all font-mono text-xs text-slate-600">
+                  <p className="mt-1 font-mono text-xs break-all text-slate-600">
                     {reference}
                   </p>
                 </div>
@@ -315,29 +232,25 @@ export default function WalletTopupCallbackPage() {
                 {message}
               </p>
 
-              {amount !== null &&
-                amount > 0 && (
-                  <div className="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
-                    <p className="text-xs font-medium text-emerald-700">
-                      Amount Credited
-                    </p>
+              {amount !== null && amount > 0 && (
+                <div className="mt-5 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
+                  <p className="text-xs font-medium text-emerald-700">
+                    Amount Credited
+                  </p>
 
-                    <p className="mt-1 font-mono text-2xl font-bold text-emerald-700">
-                      ₦
-                      {amount.toLocaleString(
-                        "en-NG"
-                      )}
-                    </p>
-                  </div>
-                )}
+                  <p className="mt-1 font-mono text-2xl font-bold text-emerald-700">
+                    ₦{amount.toLocaleString("en-NG")}
+                  </p>
+                </div>
+              )}
 
               {reference && (
                 <div className="mt-4 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  <p className="text-[10px] font-medium tracking-wide text-slate-400 uppercase">
                     Transaction Reference
                   </p>
 
-                  <p className="mt-1 break-all font-mono text-[10px] text-slate-600">
+                  <p className="mt-1 font-mono text-[10px] break-all text-slate-600">
                     {reference}
                   </p>
                 </div>
@@ -345,13 +258,10 @@ export default function WalletTopupCallbackPage() {
 
               <button
                 type="button"
-                onClick={
-                  returnToWallet
-                }
+                onClick={returnToWallet}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
               >
                 <ArrowLeft className="h-4 w-4" />
-
                 Return to Wallet
               </button>
             </div>
@@ -376,11 +286,11 @@ export default function WalletTopupCallbackPage() {
 
               {reference && (
                 <div className="mt-5 rounded-xl bg-slate-50 p-3 text-left">
-                  <p className="text-[10px] font-medium uppercase tracking-wide text-slate-400">
+                  <p className="text-[10px] font-medium tracking-wide text-slate-400 uppercase">
                     Transaction Reference
                   </p>
 
-                  <p className="mt-1 break-all font-mono text-[10px] text-slate-600">
+                  <p className="mt-1 font-mono text-[10px] break-all text-slate-600">
                     {reference}
                   </p>
                 </div>
@@ -388,13 +298,10 @@ export default function WalletTopupCallbackPage() {
 
               <button
                 type="button"
-                onClick={
-                  returnToWallet
-                }
+                onClick={returnToWallet}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white transition hover:bg-slate-800"
               >
                 <ArrowLeft className="h-4 w-4" />
-
                 Return to Wallet
               </button>
             </div>
@@ -402,5 +309,5 @@ export default function WalletTopupCallbackPage() {
         </div>
       </div>
     </main>
-  );
+  )
 }

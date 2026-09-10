@@ -28,12 +28,9 @@ export function NotificationBell() {
       </PopoverTrigger>
 
       {/* PANEL */}
-      <PopoverContent
-        align="end"
-        className="w-[340px] p-0 overflow-hidden"
-      >
+      <PopoverContent align="end" className="w-[340px] overflow-hidden p-0">
         {/* HEADER */}
-        <div className="px-4 py-3 border-b">
+        <div className="border-b px-4 py-3">
           <h3 className="text-sm font-semibold">Notifications</h3>
         </div>
 
@@ -42,26 +39,24 @@ export function NotificationBell() {
           {MOCK_NOTIFICATIONS.map((n, i) => (
             <div
               key={i}
-              className="flex gap-3 px-4 py-3 border-b last:border-0 hover:bg-muted/40 transition"
+              className="flex gap-3 border-b px-4 py-3 transition last:border-0 hover:bg-muted/40"
             >
               <div
-                className={`h-9 w-9 flex items-center justify-center rounded-md text-sm ${n.bg}`}
+                className={`flex h-9 w-9 items-center justify-center rounded-md text-sm ${n.bg}`}
               >
                 {n.icon}
               </div>
 
               <div className="flex-1">
                 <p className="text-sm leading-snug">{n.msg}</p>
-                <span className="text-xs text-muted-foreground">
-                  {n.time}
-                </span>
+                <span className="text-xs text-muted-foreground">{n.time}</span>
               </div>
             </div>
           ))}
         </div>
 
         {/* FOOTER */}
-        <div className="p-3 text-center border-t">
+        <div className="border-t p-3 text-center">
           <button className="text-xs text-blue-600 hover:underline">
             View all notifications
           </button>

@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,7 +7,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
-import PharmacistDashboard from "./PharmacistDashboard";
+import PharmacistDashboard from "./PharmacistDashboard"
 
 export default function Page() {
   return (
@@ -27,15 +27,14 @@ export default function Page() {
       <div className="@container/main flex flex-1 flex-col gap-2">
         <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
           {/* <PharmacistStatsCard /> */}
-          
+
           <div className="px-4 lg:px-6">
-            <PharmacistDashboard/>
+            <PharmacistDashboard />
             {/* <ChartAreaInteractive /> */}
           </div>
-            {/* <DataTable data={data} /> */}
+          {/* <DataTable data={data} /> */}
         </div>
       </div>
     </div>
-
   )
 }

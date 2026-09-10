@@ -2,20 +2,14 @@
 import {
   findAllMasterProducts,
   findAllSupplierProductInventory,
-} from "@/controllers/product.action";
-import MasterCataloguePage from "./MasterCataloguePage";
+} from "@/controllers/product.action"
+import MasterCataloguePage from "./MasterCataloguePage"
 
 export default async function Page() {
   const [products, inventory] = await Promise.all([
     findAllMasterProducts(),
     findAllSupplierProductInventory(),
-  ]);
+  ])
 
-
-  return (
-    <MasterCataloguePage
-      products={products}
-      inventory={inventory}
-    />
-  );
+  return <MasterCataloguePage products={products} inventory={inventory} />
 }

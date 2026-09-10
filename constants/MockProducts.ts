@@ -28,8 +28,7 @@ export const MOCKPRODUCTS = [
     basePrice: 5200,
     commission: 520,
     stock: "low",
-    description:
-      "Non-steroidal anti-inflammatory drug for pain and fever.",
+    description: "Non-steroidal anti-inflammatory drug for pain and fever.",
   },
   {
     productId: "P004",
@@ -39,8 +38,7 @@ export const MOCKPRODUCTS = [
     basePrice: 8000,
     commission: 800,
     stock: "available",
-    description:
-      "First-line medication for type 2 diabetes mellitus.",
+    description: "First-line medication for type 2 diabetes mellitus.",
   },
   {
     productId: "P005",
@@ -50,8 +48,7 @@ export const MOCKPRODUCTS = [
     basePrice: 12000,
     commission: 1200,
     stock: "available",
-    description:
-      "Calcium channel blocker for hypertension and angina.",
+    description: "Calcium channel blocker for hypertension and angina.",
   },
   {
     productId: "P006",
@@ -61,8 +58,7 @@ export const MOCKPRODUCTS = [
     basePrice: 9500,
     commission: 950,
     stock: "out",
-    description:
-      "Antimalarial medication for treatment of malaria.",
+    description: "Antimalarial medication for treatment of malaria.",
   },
   {
     productId: "P007",
@@ -72,8 +68,7 @@ export const MOCKPRODUCTS = [
     basePrice: 7000,
     commission: 700,
     stock: "available",
-    description:
-      "Proton pump inhibitor for acid reflux and ulcers.",
+    description: "Proton pump inhibitor for acid reflux and ulcers.",
   },
   {
     productId: "P008",
@@ -83,8 +78,7 @@ export const MOCKPRODUCTS = [
     basePrice: 4500,
     commission: 450,
     stock: "available",
-    description:
-      "Essential vitamin for bone health and immune function.",
+    description: "Essential vitamin for bone health and immune function.",
   },
   {
     productId: "P009",
@@ -94,9 +88,6 @@ export const MOCKPRODUCTS = [
     basePrice: 11000,
     commission: 1100,
     stock: "low",
-    description:
-      "ACE inhibitor for hypertension and heart failure.",
+    description: "ACE inhibitor for hypertension and heart failure.",
   },
 ] as const
-
-

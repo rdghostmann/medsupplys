@@ -1,10 +1,10 @@
 // /app/api/admin/seed-credit-account/route.ts
 
-import { NextResponse } from "next/server";
-import { connectToDB } from "@/lib/connectToDB";
-import { CreditAccount } from "@/models/CreditAccount";
-import { User } from "@/models/User";
-import { Types } from "mongoose";
+import { NextResponse } from "next/server"
+import { connectToDB } from "@/lib/connectToDB"
+import { CreditAccount } from "@/models/CreditAccount"
+import { User } from "@/models/User"
+import { Types } from "mongoose"
 
 const SEEDED_BUYER = {
   buyerId: "6a9cb82d853e785e43c110b8",
@@ -25,15 +25,13 @@ const SEEDED_BUYER = {
   terms: "Net 30 days",
 
   interestRatePercent: 0,
-};
+}
 
-const buyerObjectId = new Types.ObjectId(
-  SEEDED_BUYER.buyerId
-);
+const buyerObjectId = new Types.ObjectId(SEEDED_BUYER.buyerId)
 
 export async function POST() {
   try {
-    await connectToDB();
+    await connectToDB()
 
     // ---------------------------------------------------------
     // 1. Validate Buyer ID
@@ -47,7 +45,7 @@ export async function POST() {
           buyerId: SEEDED_BUYER.buyerId,
         },
         { status: 400 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
@@ -56,7 +54,7 @@ export async function POST() {
 
     const buyer = await User.findById(buyerObjectId).select(
       "_id fullName role email"
-    );
+    )
 
     if (!buyer) {
       return NextResponse.json(
@@ -66,7 +64,7 @@ export async function POST() {
           buyerId: SEEDED_BUYER.buyerId,
         },
         { status: 404 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
@@ -82,18 +80,17 @@ export async function POST() {
           role: buyer.role,
         },
         { status: 400 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
     // 4. Check Existing Credit Account
     // ---------------------------------------------------------
 
-    const existingCreditAccount =
-      await CreditAccount.findOne()
-        .where("buyerId")
-        .equals(buyerObjectId)
-        .lean();
+    const existingCreditAccount = await CreditAccount.findOne()
+      .where("buyerId")
+      .equals(buyerObjectId)
+      .lean()
 
     if (existingCreditAccount) {
       return NextResponse.json(
@@ -102,66 +99,48 @@ export async function POST() {
           seeded: false,
           alreadyExists: true,
 
-          message:
-            "Buyer credit account already exists.",
+          message: "Buyer credit account already exists.",
 
           creditAccount: {
-            _id:
-              existingCreditAccount._id?.toString(),
+            _id: existingCreditAccount._id?.toString(),
 
-            buyerId:
-              existingCreditAccount.buyerId?.toString(),
+            buyerId: existingCreditAccount.buyerId?.toString(),
 
-            buyerName:
-              existingCreditAccount.buyerName,
+            buyerName: existingCreditAccount.buyerName,
 
-            creditLimit: Number(
-              existingCreditAccount.creditLimit ?? 0
-            ),
+            creditLimit: Number(existingCreditAccount.creditLimit ?? 0),
 
-            availableCredit: Number(
-              existingCreditAccount.availableCredit ?? 0
-            ),
+            availableCredit: Number(existingCreditAccount.availableCredit ?? 0),
 
-            creditUsed: Number(
-              existingCreditAccount.creditUsed ?? 0
-            ),
+            creditUsed: Number(existingCreditAccount.creditUsed ?? 0),
 
             outstandingBalance: Number(
               existingCreditAccount.outstandingBalance ?? 0
             ),
 
-            status:
-              existingCreditAccount.status,
+            status: existingCreditAccount.status,
 
-            ratingTier:
-              existingCreditAccount.ratingTier,
+            ratingTier: existingCreditAccount.ratingTier,
 
-            approvedBy:
-              existingCreditAccount.approvedBy?.toString(),
+            approvedBy: existingCreditAccount.approvedBy?.toString(),
 
-            approvedAt:
-              existingCreditAccount.approvedAt,
+            approvedAt: existingCreditAccount.approvedAt,
 
-            dueDate:
-              existingCreditAccount.dueDate,
+            dueDate: existingCreditAccount.dueDate,
 
-            terms:
-              existingCreditAccount.terms,
+            terms: existingCreditAccount.terms,
 
             interestRatePercent: Number(
               existingCreditAccount.interestRatePercent ?? 0
             ),
 
-            createdAt:
-              existingCreditAccount.createdAt,
+            createdAt: existingCreditAccount.createdAt,
 
-            updatedAt:
-              existingCreditAccount.updatedAt,
+            updatedAt: existingCreditAccount.updatedAt,
           },
         },
         { status: 200 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
@@ -169,90 +148,72 @@ export async function POST() {
     // ---------------------------------------------------------
 
     const calculatedAvailableCredit =
-      SEEDED_BUYER.creditLimit -
-      SEEDED_BUYER.creditUsed;
+      SEEDED_BUYER.creditLimit - SEEDED_BUYER.creditUsed
 
-    if (
-      calculatedAvailableCredit !==
-      SEEDED_BUYER.availableCredit
-    ) {
+    if (calculatedAvailableCredit !== SEEDED_BUYER.availableCredit) {
       return NextResponse.json(
         {
           success: false,
 
-          message:
-            "Invalid credit account configuration.",
+          message: "Invalid credit account configuration.",
 
           calculation: {
-            creditLimit:
-              SEEDED_BUYER.creditLimit,
+            creditLimit: SEEDED_BUYER.creditLimit,
 
-            creditUsed:
-              SEEDED_BUYER.creditUsed,
+            creditUsed: SEEDED_BUYER.creditUsed,
 
             calculatedAvailableCredit,
 
-            configuredAvailableCredit:
-              SEEDED_BUYER.availableCredit,
+            configuredAvailableCredit: SEEDED_BUYER.availableCredit,
           },
         },
         { status: 400 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
     // 6. Create Credit Account
     // ---------------------------------------------------------
 
-    const creditAccount =
-      await CreditAccount.create({
-        buyerId: buyerObjectId,
+    const creditAccount = await CreditAccount.create({
+      buyerId: buyerObjectId,
 
-        buyerName: SEEDED_BUYER.buyerName,
+      buyerName: SEEDED_BUYER.buyerName,
 
-        creditLimit:
-          Number(SEEDED_BUYER.creditLimit),
+      creditLimit: Number(SEEDED_BUYER.creditLimit),
 
-        availableCredit:
-          Number(SEEDED_BUYER.availableCredit),
+      availableCredit: Number(SEEDED_BUYER.availableCredit),
 
-        creditUsed:
-          Number(SEEDED_BUYER.creditUsed),
+      creditUsed: Number(SEEDED_BUYER.creditUsed),
 
-        outstandingBalance:
-          Number(SEEDED_BUYER.outstandingBalance),
+      outstandingBalance: Number(SEEDED_BUYER.outstandingBalance),
 
-        status:
-          SEEDED_BUYER.status,
+      status: SEEDED_BUYER.status,
 
-        ratingTier:
-          SEEDED_BUYER.ratingTier,
+      ratingTier: SEEDED_BUYER.ratingTier,
 
-        terms:
-          SEEDED_BUYER.terms,
+      terms: SEEDED_BUYER.terms,
 
-        interestRatePercent:
-          Number(
-            SEEDED_BUYER.interestRatePercent
-          ),
-      });
+      interestRatePercent: Number(SEEDED_BUYER.interestRatePercent),
+    })
 
     // ---------------------------------------------------------
     // 7. Re-fetch as Plain Object
     // ---------------------------------------------------------
 
-    const createdCreditAccount =  await CreditAccount.findById(creditAccount._id).lean();
+    const createdCreditAccount = await CreditAccount.findById(
+      creditAccount._id
+    ).lean()
 
     if (!createdCreditAccount) {
       return NextResponse.json(
         {
           success: false,
 
-          message:
-            "Credit account was created but could not be retrieved.",
+          message: "Credit account was created but could not be retrieved.",
         },
         { status: 500 }
-      );
+      )
     }
 
     // ---------------------------------------------------------
@@ -260,59 +221,40 @@ export async function POST() {
     // ---------------------------------------------------------
 
     const serializedCreditAccount = {
-      _id:
-        createdCreditAccount._id?.toString(),
+      _id: createdCreditAccount._id?.toString(),
 
-      buyerId:
-        createdCreditAccount.buyerId?.toString(),
+      buyerId: createdCreditAccount.buyerId?.toString(),
 
-      buyerName:
-        createdCreditAccount.buyerName,
+      buyerName: createdCreditAccount.buyerName,
 
-      creditLimit: Number(
-        createdCreditAccount.creditLimit ?? 0
-      ),
+      creditLimit: Number(createdCreditAccount.creditLimit ?? 0),
 
-      availableCredit: Number(
-        createdCreditAccount.availableCredit ?? 0
-      ),
+      availableCredit: Number(createdCreditAccount.availableCredit ?? 0),
 
-      creditUsed: Number(
-        createdCreditAccount.creditUsed ?? 0
-      ),
+      creditUsed: Number(createdCreditAccount.creditUsed ?? 0),
 
-      outstandingBalance: Number(
-        createdCreditAccount.outstandingBalance ?? 0
-      ),
+      outstandingBalance: Number(createdCreditAccount.outstandingBalance ?? 0),
 
-      status:
-        createdCreditAccount.status,
+      status: createdCreditAccount.status,
 
-      ratingTier:
-        createdCreditAccount.ratingTier,
+      ratingTier: createdCreditAccount.ratingTier,
 
-      approvedBy:
-        createdCreditAccount.approvedBy?.toString(),
+      approvedBy: createdCreditAccount.approvedBy?.toString(),
 
-      approvedAt:
-        createdCreditAccount.approvedAt,
+      approvedAt: createdCreditAccount.approvedAt,
 
-      dueDate:
-        createdCreditAccount.dueDate,
+      dueDate: createdCreditAccount.dueDate,
 
-      terms:
-        createdCreditAccount.terms,
+      terms: createdCreditAccount.terms,
 
       interestRatePercent: Number(
         createdCreditAccount.interestRatePercent ?? 0
       ),
 
-      createdAt:
-        createdCreditAccount.createdAt,
+      createdAt: createdCreditAccount.createdAt,
 
-      updatedAt:
-        createdCreditAccount.updatedAt,
-    };
+      updatedAt: createdCreditAccount.updatedAt,
+    }
 
     // ---------------------------------------------------------
     // 9. Return Response
@@ -326,19 +268,14 @@ export async function POST() {
 
         alreadyExists: false,
 
-        message:
-          "Buyer credit account seeded successfully.",
+        message: "Buyer credit account seeded successfully.",
 
-        creditAccount:
-          serializedCreditAccount,
+        creditAccount: serializedCreditAccount,
       },
       { status: 201 }
-    );
+    )
   } catch (error: unknown) {
-    console.error(
-      "SEED_CREDIT_ACCOUNT_ERROR:",
-      error
-    );
+    console.error("SEED_CREDIT_ACCOUNT_ERROR:", error)
 
     // ---------------------------------------------------------
     // Handle Duplicate Credit Account
@@ -350,11 +287,10 @@ export async function POST() {
       "code" in error &&
       error.code === 11000
     ) {
-      const existingCreditAccount =
-        await CreditAccount.findOne()
-          .where("buyerId")
-          .equals(buyerObjectId)
-          .lean();
+      const existingCreditAccount = await CreditAccount.findOne()
+        .where("buyerId")
+        .equals(buyerObjectId)
+        .lean()
 
       return NextResponse.json(
         {
@@ -364,69 +300,53 @@ export async function POST() {
 
           alreadyExists: true,
 
-          message:
-            "A credit account already exists for this buyer.",
+          message: "A credit account already exists for this buyer.",
 
-          creditAccount:
-            existingCreditAccount
-              ? {
-                  _id:
-                    existingCreditAccount._id?.toString(),
+          creditAccount: existingCreditAccount
+            ? {
+                _id: existingCreditAccount._id?.toString(),
 
-                  buyerId:
-                    existingCreditAccount.buyerId?.toString(),
+                buyerId: existingCreditAccount.buyerId?.toString(),
 
-                  buyerName:
-                    existingCreditAccount.buyerName,
+                buyerName: existingCreditAccount.buyerName,
 
-                  creditLimit: Number(
-                    existingCreditAccount.creditLimit ?? 0
-                  ),
+                creditLimit: Number(existingCreditAccount.creditLimit ?? 0),
 
-                  availableCredit: Number(
-                    existingCreditAccount.availableCredit ?? 0
-                  ),
+                availableCredit: Number(
+                  existingCreditAccount.availableCredit ?? 0
+                ),
 
-                  creditUsed: Number(
-                    existingCreditAccount.creditUsed ?? 0
-                  ),
+                creditUsed: Number(existingCreditAccount.creditUsed ?? 0),
 
-                  outstandingBalance: Number(
-                    existingCreditAccount.outstandingBalance ?? 0
-                  ),
+                outstandingBalance: Number(
+                  existingCreditAccount.outstandingBalance ?? 0
+                ),
 
-                  status:
-                    existingCreditAccount.status,
+                status: existingCreditAccount.status,
 
-                  ratingTier:
-                    existingCreditAccount.ratingTier,
+                ratingTier: existingCreditAccount.ratingTier,
 
-                  terms:
-                    existingCreditAccount.terms,
+                terms: existingCreditAccount.terms,
 
-                  interestRatePercent: Number(
-                    existingCreditAccount.interestRatePercent ?? 0
-                  ),
-                }
-              : null,
+                interestRatePercent: Number(
+                  existingCreditAccount.interestRatePercent ?? 0
+                ),
+              }
+            : null,
         },
         { status: 200 }
-      );
+      )
     }
 
     return NextResponse.json(
       {
         success: false,
 
-        message:
-          "Failed to seed buyer credit account.",
+        message: "Failed to seed buyer credit account.",
 
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unknown server error",
+        error: error instanceof Error ? error.message : "Unknown server error",
       },
       { status: 500 }
-    );
+    )
   }
 }
